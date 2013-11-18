@@ -1,0 +1,5 @@
+*/.idea/
+*/.directory
+*/.settings/
+*.pyc
+*/.DS_Store
