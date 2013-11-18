@@ -6,15 +6,14 @@ __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
-
 '''This is the global configuration for mxmcc which consists of a
    directory structure where map and meta data files (should) live.
    Charts and meta data files** need to be placed in their corresponding
    directories. It is up to you to obtain the files from their providing
    hydro-graphic office.
 
-   **With exception of NOAA xml files which are fetched automatically
-   as needed.
+   **With the exception of NOAA xml files which are fetched automatically
+     as needed.
 '''
 
 import os
@@ -70,30 +69,38 @@ ukho_quarterly_extract = os.path.join(ukho_meta_dir, ukho_quarterly_extract)
 
 epoch = int(time.time())
 
+_all_dirs = [_root_dir,
+             _map_dir,
+             _meta_dir,
+             ukho_meta_dir,
+             noaa_meta_dir,
+             catalog_dir,
+             tile_dir,
+             merged_tile_dir,
+             unmerged_tile_dir,
+             noaa_bsb_dir,
+             linz_bsb_dir,
+             brazil_bsb_dir,
+             ukho_geotiff_dir,
+             ukho_png_dir,
+             wavey_line_geotiff_dir,
+             compiled_dir]
+
+
+def check_dirs():
+    for each in _all_dirs:
+        if not os.path.isdir(each):
+            return False
+    return True
+
 
 def setup_dir_structure():
     print 'Setting up MXMCC directory structure'
 
-    for ea_dir in [_root_dir,
-                   _map_dir,
-                   _meta_dir,
-                   ukho_meta_dir,
-                   noaa_meta_dir,
-                   catalog_dir,
-                   tile_dir,
-                   merged_tile_dir,
-                   unmerged_tile_dir,
-                   noaa_bsb_dir,
-                   linz_bsb_dir,
-                   brazil_bsb_dir,
-                   ukho_geotiff_dir,
-                   ukho_png_dir,
-                   wavey_line_geotiff_dir,
-                   compiled_dir]:
-
-        if not os.path.isdir(ea_dir):
-            print 'creating directory: ' + ea_dir
-            os.makedirs(ea_dir)
+    for each in _all_dirs:
+        if not os.path.isdir(each):
+            print 'creating directory: ' + each
+            os.makedirs(each)
 
     print 'MXMCC directory structure is ready :)'
 

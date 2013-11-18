@@ -31,11 +31,10 @@ cutline_kml = '''<?xml version='1.0' encoding='UTF-8'?>
 
 
 def _get_cutline_kml(poly):
-    return cutline_kml % (''.join('%s,%s,0 ' % (ea.split(',')[1], ea.split(',')[0])for ea in poly))
+    return cutline_kml % (''.join('%s,%s,0 ' % (ea.split(',')[1], ea.split(',')[0]) for ea in poly))
 
 
 class BsbLookup:
-
     def __init__(self):
         self.lookup_db = {}
 
@@ -68,9 +67,8 @@ class BsbLookup:
 
 
 class UKHOLookup:
-
     def __init__(self):
-        pass #TODO:
+        pass  # TODO:
 
     def get_name(self, map_path):
         pass
@@ -92,9 +90,8 @@ class UKHOLookup:
 
 
 class WaveylinesLookup:
-
     def __init__(self):
-        pass #TODO:
+        pass  # TODO:
 
     def get_name(self, map_path):
         pass
