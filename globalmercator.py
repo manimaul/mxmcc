@@ -136,7 +136,6 @@ class GlobalMercator:
 
     def lat_lng_to_meters(self, lat, lon):
         """Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913"""
-
         mx = lon * self.origin_shift / 180.0
         my = numpy.log(numpy.tan((90 + lat) * numpy.pi / 360.0)) / (numpy.pi / 180.0)
 
@@ -148,7 +147,7 @@ class GlobalMercator:
         lon = (mx / self.origin_shift) * 180.0
         lat = (my / self.origin_shift) * 180.0
 
-        lat = 180 / numpy.pi * (2 * numpy.arctan( numpy.exp( lat * numpy.pi / 180.0)) - numpy.pi / 2.0)
+        lat = 180 / numpy.pi * (2 * numpy.arctan(numpy.exp(lat * numpy.pi / 180.0)) - numpy.pi / 2.0)
         return lat, lon
 
     def pixels_to_meters(self, px, py, zoom):
@@ -184,7 +183,7 @@ class GlobalMercator:
 
     def tile_lat_lng_bounds(self, tx, ty, zoom ):
         """Returns bounds of the given tile in latutude/longitude using WGS84 datum"""
-        bounds = self.tile_bounds( tx, ty, zoom)
+        bounds = self.tile_bounds(tx, ty, zoom)
         minLat, minLon = self.meters_to_lat_lng(bounds[0], bounds[1])
         maxLat, maxLon = self.meters_to_lat_lng(bounds[2], bounds[3])
 

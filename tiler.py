@@ -111,11 +111,14 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
         zoom = mercator.zoom_for_pixel_size(abs(pixresew))
 
     #generate min max tile coordinates for zoomlevel
-    tminx, tminy = mercator.meters_to_tile( west, south, zoom )
-    tmaxx, tmaxy = mercator.meters_to_tile( east, north, zoom )
+    tminx, tminy = mercator.meters_to_tile(west, south, zoom)
+    tmaxx, tmaxy = mercator.meters_to_tile(east, north, zoom)
     # crop tiles extending world limits (+-180,+-90)
     tminx, tminy = max(0, tminx), max(0, tminy)
     tmaxx, tmaxy = min(2**zoom-1, tmaxx), min(2**zoom-1, tmaxy)
+    #convert tms to google tiles
+    tminx, tminy = mercator.google_tile(tminx, tminy, zoom)
+    tmaxx, tmaxy = mercator.google_tile(tmaxx, tmaxy, zoom)
 
     if verbose:
         print "=" * 80
