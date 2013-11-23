@@ -6,7 +6,9 @@ __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
-'''description of file
+'''This contains methods for looking up information about a region chart file.
+   The lookup methods are used by catalog.py to build a catalog of charts for
+   a region.
 '''
 
 import bsb
@@ -42,6 +44,7 @@ def get_cutline_kml(poly_string):
 
 
 class BsbLookup:
+    """Lookup information using the bsb header"""
     def __init__(self):
         self.lookup_db = {}
 
@@ -69,11 +72,9 @@ class BsbLookup:
     def get_outline(self, map_path):
         return self._get(map_path).get_outline()
 
-    def get_cutline_kml(self, map_path):
-        return _get_cutline_kml(self._get(map_path).get_poly_list())
-
 
 class UKHOLookup:
+    """Lookup information using the ukho excel meta data files"""
     def __init__(self):
         pass  # TODO:
 
@@ -97,6 +98,7 @@ class UKHOLookup:
 
 
 class WaveylinesLookup:
+    """Lookup information using information coded in file names"""
     def __init__(self):
         pass  # TODO:
 

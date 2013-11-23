@@ -6,9 +6,8 @@ __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
-'''specify which maps/charts you would like to process
-   takes a directory as input ... additional options:
-   provide NOAA xml catalog or file list... only files in list will be processed
+'''This is a database of sorts for nautical chart regions, their providing hydro-graphic offices
+   and additional information such as a listing of files or description.
 '''
 
 import os.path
@@ -144,18 +143,21 @@ _db.add_region(provider_ukho, 'REGION_UK4', 'United Kingdom South West Coast and
 
 
 def description_for_region(region):
+    """returns the description for region defined in regions.py"""
     provider = _db.provider_for_region(region)
     region = region.upper()
     return _db.get_description(provider, region)
 
 
 def map_type_for_region(region):
+    """returns the regions map type file extension eg. tif or kap"""
     provider = _db.provider_for_region(region)
     region = region.upper()
     return _db.get_map_type(provider, region)
 
 
 def map_list_for_region(region):
+    """returns a list of absolute paths to chart files for queried region"""
     provider = _db.provider_for_region(region)
     region = region.upper()
     if _db.provider_has_region(provider, region):
@@ -171,6 +173,9 @@ def map_list_for_region(region):
 
 
 def lookup_for_region(region):
+    """returns the lookup class for queried region
+       see lookups.py which are used to build the region's catalog
+    """
     provider = _db.provider_for_region(region)
     if provider is provider_ukho:
         return lookups.UKHOLookup()
@@ -179,13 +184,16 @@ def lookup_for_region(region):
 
 
 def provider_for_region(region):
+    """returns the provider eg. noaa for queried region"""
     return _db.provider_for_region(region)
 
 
 def directory_for_provider(provider):
+    """returns the directory where chart files live for queried region"""
     provider = provider.lower()
     return _db.get_directory_for_provider(provider)
 
 
 def is_valid_region(region):
+    """returns True or False"""
     return _db.is_valid_region(region.upper())

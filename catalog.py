@@ -34,6 +34,9 @@ class CatalogReader:
     def __iter__(self):
         return iter(self._entries)
 
+    def __getitem__(self, index):
+        return self._entries[index]
+
 
 def get_reader_for_region(region):
     return CatalogReader(os.path.join(config.catalog_dir, region.upper() + '.csv'))

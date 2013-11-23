@@ -21,7 +21,7 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
     #if the dataset is vrt continue
     if dataset.GetDriver().ShortName != "VRT":
         print "dataset is not VRT!"
-        return
+        #return
 
     if dataset is None:
         print "dataset cannot be read!"
@@ -29,7 +29,7 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
 
     if dataset.GetRasterBand(1).GetRasterColorTable() != None:
         print "dataset has palette!"
-        return
+        #return
 
     geotransform = dataset.GetGeoTransform()
     projection = dataset.GetProjectionRef()
@@ -44,7 +44,7 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
 
     if geotransform[2] != 0 or geotransform[4] != 0:
         print "dataset is not North Up!"
-        return
+        #return
 
     pixresew = geotransform[1]  # meters per pixel east to west
     pixresns = geotransform[5]  # meters per pixel north to south
@@ -108,11 +108,11 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
             tscale = tscale / 2
             zoom -= 1
     else:
-        zoom = mercator.ZoomForPixelSize(abs(pixresew))
+        zoom = mercator.zoom_for_pixel_size(abs(pixresew))
 
     #generate min max tile coordinates for zoomlevel
-    tminx, tminy = mercator.MetersToTile( west, south, zoom )
-    tmaxx, tmaxy = mercator.MetersToTile( east, north, zoom )
+    tminx, tminy = mercator.meters_to_tile( west, south, zoom )
+    tmaxx, tmaxy = mercator.meters_to_tile( east, north, zoom )
     # crop tiles extending world limits (+-180,+-90)
     tminx, tminy = max(0, tminx), max(0, tminy)
     tmaxx, tmaxy = min(2**zoom-1, tmaxx), min(2**zoom-1, tmaxy)
@@ -145,3 +145,6 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
         print "=" * 80
 
     return zoom
+
+if __name__ == "__main__":
+    vrt_tiles_info('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/18453_1_c.vrt', verbose=True)

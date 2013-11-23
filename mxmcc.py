@@ -22,8 +22,10 @@ def compile_region(region):
     catalog.build_catalog_for_region(region)
 
     reader = catalog.get_reader_for_region(region)
-    for map_entry in reader:
-        pass  # TODO:
+    print reader[0]
+
+    #for map_entry in reader:
+    #    pass  # TODO:
 
         #tile tif, bsb or png
 
