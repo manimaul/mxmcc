@@ -142,8 +142,8 @@ class BsbHeader():
         for line in self.lines:
             print line.strip()
 
-#if __name__ == '__main__':
-#    import config
-#    header = BsbHeader(os.path.join(config.noaa_bsb_dir, 'BSB_ROOT/18445/18445_6.KAP'))
-#    print header.get_outline()
-#    print header.has_duplicate_refs()
+if __name__ == '__main__':
+    import config
+    header = BsbHeader(os.path.join(config.noaa_bsb_dir, 'BSB_ROOT/18445/18445_6.KAP'))
+    print header.get_poly_list()
+    print header.get_outline()

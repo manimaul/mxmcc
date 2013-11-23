@@ -34,6 +34,13 @@ def _get_cutline_kml(poly):
     return cutline_kml % (''.join('%s,%s,0 ' % (ea.split(',')[1], ea.split(',')[0]) for ea in poly))
 
 
+def get_cutline_kml(poly_string):
+    poly = []
+    for coord_str in poly_string.split(':'):
+        poly.append(coord_str)
+    return _get_cutline_kml(poly)
+
+
 class BsbLookup:
     def __init__(self):
         self.lookup_db = {}
