@@ -39,7 +39,7 @@ def get_temp_vrt_stack_peek(vrt_stack):
     return vrt_stack[-1]
 
 
-def build_tmp_vrt_stack_for_map(map_path, cutline=None):
+def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
     """builds a stack of temporary vrt files for an input path to a map file
        the peek of the stack is the target file to use to create tiles
        after use the temporary files should be deleted using cleanup_tmp_vrt_stack(the_stack)
@@ -90,17 +90,39 @@ def build_tmp_vrt_stack_for_map(map_path, cutline=None):
             os.remove(vrt_path)
 
         #if map_type is png:
-        #    command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite %s %s" \
+        #    command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite %s %s" \
         #              % (kml_path, map_stack[-1], vrt_path)
         #else:
-        #    command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite -dstnodata 0 -dstalpha %s %s" \
+        #    command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite -dstnodata 0 -dstalpha %s %s" \
         #              % (kml_path, map_stack[-1], vrt_path)
+
         command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite %s %s" \
                       % (kml_path, map_stack[-1], vrt_path)
+
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
         os.remove(kml_path)  # we are done with the kml and can delete it now
         map_stack.append(vrt_path)
+
+    #-----rescale map to tile system pixels
+    dataset = gdal.Open(get_temp_vrt_stack_peek(map_stack), gdal.GA_ReadOnly)
+    min_lng, min_lat, max_lng, max_lat = gdalds.dataset_lat_lng_bounds(dataset)
+    pixel_min_x, pixel_max_y = tilesystem.lat_lng_to_pixel_xy(min_lat, min_lng, int(zoom_level))
+    pixel_max_x, pixel_min_y = tilesystem.lat_lng_to_pixel_xy(max_lat, max_lng, int(zoom_level))
+    num_pixels_x = pixel_max_x - pixel_min_x + 1
+    num_pixels_y = pixel_max_y - pixel_min_y + 1
+
+    #we can safely scale map to the intended resolution
+    if dataset.RasterXSize is not num_pixels_x or dataset.RasterYSize is not num_pixels_y:
+        s_vrt_path = os.path.join(base_dir, map_name + '_s.vrt')
+        if os.path.isfile(s_vrt_path):
+            os.remove(s_vrt_path)
+        command = 'gdal_translate -of vrt -outsize %d %d %s %s' % (num_pixels_x, num_pixels_y, map_stack[-1], s_vrt_path)
+        subprocess.Popen(shlex.split(command), stdout=log).wait()
+
+        map_stack.append(s_vrt_path)
+
+    del dataset
 
     #-----if map projection is not EPSG:900913, create re-projected vrt
     vrt_ds = gdal.Open(map_stack[-1], gdal.GA_ReadOnly)
@@ -152,39 +174,39 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
     #number of tiles x and y in destination
     num_tiles_x = tile_max_x - tile_min_x + 1
     num_tiles_y = tile_max_y - tile_min_y + 1
-    print 'num tiles x:%d' % num_tiles_x
-    print 'num tiles y:%d' % num_tiles_y
+    #print 'num tiles x:%d' % num_tiles_x
+    #print 'num tiles y:%d' % num_tiles_y
 
     #number of pixels x and y (to be inserted in tile window with offsets)
     num_pixels_x = pixel_max_x - pixel_min_x + 1
     num_pixels_y = pixel_max_y - pixel_min_y + 1
-    print 'num px x:%d' % num_pixels_x
-    print 'num px y:%d' % num_pixels_y
+    #print 'num px x:%d' % num_pixels_x
+    #print 'num px y:%d' % num_pixels_y
     
     offset_west = pixel_min_x % tilesystem.tile_size
     offset_north = pixel_min_y % tilesystem.tile_size
-    offset_east = tilesystem.tile_size - (pixel_max_x % tilesystem.tile_size)
-    offset_south = tilesystem.tile_size - (pixel_max_y % tilesystem.tile_size)
-    print 'offset w:%d, n:%d, e:%d, s:%d' % (offset_west, offset_north, offset_east, offset_south)
+    #offset_east = tilesystem.tile_size - (pixel_max_x % tilesystem.tile_size)
+    #offset_south = tilesystem.tile_size - (pixel_max_y % tilesystem.tile_size)
+    #print 'offset w:%d, n:%d, e:%d, s:%d' % (offset_west, offset_north, offset_east, offset_south)
 
-    print 'scaling map dataset to destination resolution for projection'
-    #in memory dataset scaled to destination resolution (num_pixels_x X num_pixels_y)
-    tmp = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
-    for i in range(1, bands+1):
-        gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), 'average')
-
-    #png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/rgo.png', tmp, strict=0)
-    #return
-
-    del ds
+    #print 'scaling map dataset to destination resolution for projection'
+    ##in memory dataset scaled to destination resolution (num_pixels_x X num_pixels_y)
+    #tmp = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
+    #for i in range(1, bands+1):
+    #    gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), 'average')
+    #
+    ##png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/rgo.png', tmp, strict=0)
+    ##return
+    #
+    #del ds
 
     print 'offsetting map dataset to destination tile set window'
     #in memory dataset properly offset in tile window
     tmp_offset = mem_driver.Create('', num_tiles_x * tilesystem.tile_size, num_tiles_y * tilesystem.tile_size, bands=bands)
-    data = tmp.ReadRaster(0, 0, num_pixels_x, num_pixels_y, num_pixels_x, num_pixels_y)
+    data = ds.ReadRaster(0, 0, num_pixels_x, num_pixels_y, num_pixels_x, num_pixels_y)
     tmp_offset.WriteRaster(offset_west, offset_north, num_pixels_x, num_pixels_y, data, band_list=range(1, bands+1))
 
-    del tmp
+    del ds
     del data
 
     cursor_pixel_x = 0
@@ -220,8 +242,8 @@ if __name__ == "__main__":
     config.noaa_bsb_dir
     reader = catalog.get_reader_for_region('region_15')
     my_chart = reader[67]
-    map_stack = build_tmp_vrt_stack_for_map(my_chart['path'], my_chart['outline'])
+    map_stack = build_tmp_vrt_stack_for_map(my_chart['path'], my_chart['zoom'], my_chart['outline'])
     zoom = int(my_chart['zoom'])
-    
+    #
     make_tiles_for_mapstack(map_stack, zoom)
     cleanup_tmp_vrt_stack(map_stack)
