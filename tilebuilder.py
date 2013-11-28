@@ -6,7 +6,9 @@ __license__ = "BSD"
 __email__ = "will@mxmariner.com"
 __status__ = "Development"  # "Prototype", "Development", or "Production"
 
-'''Builds a vrt with expanded rgba if needed and cropped cut line for a given map and cutline definition'''
+'''Builds a vrt with expanded rgba if needed and cropped cut line for a given map and cutline definition
+   depends on gdal python package as well as gdal command line utilities in your path (tested with 1.10)
+'''
 
 from osgeo import gdal
 import osr
@@ -16,6 +18,8 @@ import shlex
 import lookups
 import tilesystem
 import gdalds
+import catalog
+import config
 
 #http://www.gdal.org/formats_list.html
 geotiff = 'Gtiff'
@@ -24,8 +28,8 @@ png = 'PNG'
 supported_formats = {geotiff, bsb, png}
 
 
-def cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
-    """convenience method for removing temporary vrt files created with build_tmp_vrt_stack_for_map()
+def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
+    """convenience method for removing temporary vrt files created with _build_tmp_vrt_stack_for_map()
     """
     for i in range(1, len(vrt_stack), 1):
         os.remove(vrt_stack[i])
@@ -33,13 +37,13 @@ def cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
             print 'deleting temp file:', vrt_stack[i]
 
 
-def get_temp_vrt_stack_peek(vrt_stack):
+def _stack_peek(vrt_stack):
     """the peek of a vrt stack
     """
     return vrt_stack[-1]
 
 
-def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
+def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
     """builds a stack of temporary vrt files for an input path to a map file
        the peek of the stack is the target file to use to create tiles
        after use the temporary files should be deleted using cleanup_tmp_vrt_stack(the_stack)
@@ -71,7 +75,7 @@ def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
         if os.path.isfile(c_vrt_path):
             os.remove(c_vrt_path)
 
-        command = "gdal_translate -of vrt -expand rgba %s %s" % (map_stack[-1], c_vrt_path)
+        command = "gdal_translate -of vrt -expand rgba %s %s" % (_stack_peek(map_stack), c_vrt_path)
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
         map_stack.append(c_vrt_path)
@@ -91,13 +95,13 @@ def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
 
         #if map_type is png:
         #    command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite %s %s" \
-        #              % (kml_path, map_stack[-1], vrt_path)
+        #              % (kml_path, _stack_peek(map_stack), vrt_path)
         #else:
         #    command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite -dstnodata 0 -dstalpha %s %s" \
-        #              % (kml_path, map_stack[-1], vrt_path)
+        #              % (kml_path, _stack_peek(map_stack), vrt_path)
 
         command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite %s %s" \
-                      % (kml_path, map_stack[-1], vrt_path)
+                      % (kml_path, _stack_peek(map_stack), vrt_path)
 
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
@@ -105,7 +109,7 @@ def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
         map_stack.append(vrt_path)
 
     #-----rescale map to tile system pixels
-    dataset = gdal.Open(get_temp_vrt_stack_peek(map_stack), gdal.GA_ReadOnly)
+    dataset = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
     min_lng, min_lat, max_lng, max_lat = gdalds.dataset_lat_lng_bounds(dataset)
     pixel_min_x, pixel_max_y = tilesystem.lat_lng_to_pixel_xy(min_lat, min_lng, int(zoom_level))
     pixel_max_x, pixel_min_y = tilesystem.lat_lng_to_pixel_xy(max_lat, max_lng, int(zoom_level))
@@ -117,7 +121,7 @@ def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
         s_vrt_path = os.path.join(base_dir, map_name + '_s.vrt')
         if os.path.isfile(s_vrt_path):
             os.remove(s_vrt_path)
-        command = 'gdal_translate -of vrt -outsize %d %d %s %s' % (num_pixels_x, num_pixels_y, map_stack[-1], s_vrt_path)
+        command = 'gdal_translate -of vrt -outsize %d %d %s %s' % (num_pixels_x, num_pixels_y, _stack_peek(map_stack), s_vrt_path)
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
         map_stack.append(s_vrt_path)
@@ -125,7 +129,7 @@ def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
     del dataset
 
     #-----if map projection is not EPSG:900913, create re-projected vrt
-    vrt_ds = gdal.Open(map_stack[-1], gdal.GA_ReadOnly)
+    vrt_ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
 
     in_srs = osr.SpatialReference()
     in_srs_wkt = vrt_ds.GetGCPProjection()
@@ -147,15 +151,19 @@ def build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
     return map_stack
 
 
-def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
-    
+def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
+    """renders a stack of vrts built with _build_tmp_vrt_stack_for_map()
+       into tiles for specified zoom level
+       rendered tiles placed in out_dir directory
+       if out_dir is None or not a directory, tiles placed in map_stack, map directory
+    """
     #---- render tiles in the same directory of the map if not specified
     if out_dir is None or not os.path.isdir(out_dir):
-        out_dir = os.path.dirname(get_temp_vrt_stack_peek(map_stack))
+        out_dir = os.path.dirname(_stack_peek(map_stack))
         out_dir = os.path.join(out_dir, 'tiles')
 
     #---- open the peek vrt / map in the map_stack
-    ds = gdal.Open(get_temp_vrt_stack_peek(map_stack), gdal.GA_ReadOnly)
+    ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
     bands = ds.RasterCount
 
     min_lng, min_lat, max_lng, max_lat = gdalds.dataset_lat_lng_bounds(ds)
@@ -189,6 +197,7 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
     #offset_south = tilesystem.tile_size - (pixel_max_y % tilesystem.tile_size)
     #print 'offset w:%d, n:%d, e:%d, s:%d' % (offset_west, offset_north, offset_east, offset_south)
 
+    ###NOTE: This step skipped by re-scaling re-projected vrt in the map stack
     #print 'scaling map dataset to destination resolution for projection'
     ##in memory dataset scaled to destination resolution (num_pixels_x X num_pixels_y)
     #tmp = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
@@ -223,6 +232,7 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
             data = tmp_offset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size)
             tile_mem = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=bands)
             tile_mem.WriteRaster(0, 0, tilesystem.tile_size, tilesystem.tile_size, data, band_list=range(1, bands+1))
+            #TODO: process png image data with http://pngquant.org/lib/ before saving to disk
             png_driver.CreateCopy(tile_path, tile_mem, strict=0)
 
             del data
@@ -236,14 +246,32 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
     del tmp_offset
 
 
-if __name__ == "__main__":
-    import config
-    import catalog
-    config.noaa_bsb_dir
-    reader = catalog.get_reader_for_region('region_15')
-    my_chart = reader[67]
-    map_stack = build_tmp_vrt_stack_for_map(my_chart['path'], my_chart['zoom'], my_chart['outline'])
-    zoom = int(my_chart['zoom'])
-    #
-    make_tiles_for_mapstack(map_stack, zoom)
-    cleanup_tmp_vrt_stack(map_stack)
+def build_tiles_for_map(map_path, zoom_level, cutline=None, out_dir=None):
+    """builds tiles for a map_path - path to map to render tiles for
+       zoom_level - int or string representing int of the single zoom level to render
+       cutline - string defining the map border cutout... this can be None if the whole
+       map should be rendered.
+       out_dir - path to where tiles will be rendered to, if set to None then
+       tiles will be rendered int map_path's base directory
+
+       cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
+       : dilineated latitude/longitude WGS-84 coordinates (in decimal degrees)
+    """
+    map_stack = _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline)
+    _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir)
+    _cleanup_tmp_vrt_stack()
+
+
+def build_tiles_for_catalog(region):
+    """builds tiles for every map in a catalog
+       tiles output to tile directory in config.py
+    """
+    reader = catalog.get_reader_for_region(region)
+    #TODO: use multiprocessing pool
+    for entry in reader:
+        map_name = os.path.basename(entry['path'])
+        out_dir = os.path.join(config.tile_dir, map_name[0:map_name.find('.')])
+        build_tiles_for_map(entry['path'], entry['zoom'], entry['outline'], out_dir)
+
+#if __name__ == "__main__":
+#    pass
