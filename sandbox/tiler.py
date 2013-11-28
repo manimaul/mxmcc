@@ -9,7 +9,7 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 '''Description of what this does.'''
 
 import numpy
-import globalmercator
+import tilesystem
 from osgeo import gdal
 import osr
 import findzoom
@@ -30,6 +30,12 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
     if dataset.GetRasterBand(1).GetRasterColorTable() != None:
         print "dataset has palette!"
         #return
+
+    out_sr = osr.SpatialReference()
+    out_sr.ImportFromEPSG(900913)
+    out_projection = out_sr.ExportToWkt()
+    out_dataset = gdal.AutoCreateWarpedVRT(dataset, dataset.GetGCPProjection(), out_projection)
+    #out_geotransform = out_dataset.GetGeoTransform()
 
     geotransform = dataset.GetGeoTransform()
     projection = dataset.GetProjectionRef()
@@ -73,11 +79,14 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
     south = min(southwest[1], southeast[1])
     west = min(southwest[0], northwest[0])
 
+    #meters_min_x = out_geotransform[0]
+    #meters_max_x = out_geotransform[0] + out_dataset.RasterXSize * out_geotransform[1]
+    #meters_max_y = out_geotransform[3]
+    #meters_min_y = out_geotransform[3] - out_dataset.RasterYSize * out_geotransform[1]
+
     max_lng, max_lat = transform.TransformPoint(east, north)[:2]
     min_lng, min_lat = transform.TransformPoint(west, south)[:2]
     ctr_lat = min_lat + (max_lat - min_lat) / 2
-
-    mercator = globalmercator.GlobalMercator(tilesize)
 
     diagonal_meters_haversine = findzoom.haversine_distance((max_lng, max_lat), (min_lng, min_lat))
     diagonal_meters_cartesian = findzoom.cartesian_distance((max_lng, max_lat), (min_lng, min_lat))
@@ -101,24 +110,20 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
             zoom -= 1
     elif dpi != None:
         zoom = 30;
-        truescale = (diagonal_meters_haversine) / (diag_inches / globalmercator.INCHES_PER_METER)
+        truescale = (diagonal_meters_haversine) / (diag_inches / tilesystem.inches_per_meter)
         scale = truescale * distortion_avg
         tscale = truescale
         while tscale > 1:
             tscale = tscale / 2
             zoom -= 1
     else:
-        zoom = mercator.zoom_for_pixel_size(abs(pixresew))
+        zoom = tilesystem.level_of_detail_for_pixel_size(ctr_lat, pixresew)
+        #zoom = mercator.zoom_for_pixel_size(abs(pixresew))
 
-    #generate min max tile coordinates for zoomlevel
-    tminx, tminy = mercator.meters_to_tile(west, south, zoom)
-    tmaxx, tmaxy = mercator.meters_to_tile(east, north, zoom)
-    # crop tiles extending world limits (+-180,+-90)
-    tminx, tminy = max(0, tminx), max(0, tminy)
-    tmaxx, tmaxy = min(2**zoom-1, tmaxx), min(2**zoom-1, tmaxy)
-    #convert tms to google tiles
-    tminx, tminy = mercator.google_tile(tminx, tminy, zoom)
-    tmaxx, tmaxy = mercator.google_tile(tmaxx, tmaxy, zoom)
+    tminx, tminy = tilesystem.lat_lng_to_tile_xy(min_lat, min_lng, zoom)
+    tmaxx, tmaxy = tilesystem.lat_lng_to_tile_xy(max_lat, max_lng, zoom)
+    #tminx, tminy = tilesystem.meters_to_tile(meters_min_x, meters_min_y, zoom)
+    #tmaxx, tmaxy = tilesystem.meters_to_tile(meters_max_x, meters_max_y, zoom)
 
     if verbose:
         print "=" * 80
@@ -131,7 +136,7 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
         print "scale:", scale
         print "meters per pixel east - west: ", pixresew
         print "meters per pixel north - south:", pixresns
-        print "meters accross:", east - west
+        print "meters across:", east - west
         print "print diagonal inches:", diag_inches
         print "haversine meters diagonal:", diagonal_meters_haversine
         print "cartesian meters diagonal:", diagonal_meters_cartesian
@@ -150,4 +155,7 @@ def vrt_tiles_info(input_file, tilesize=256, dpi=None, scale=None, verbose=False
     return zoom
 
 if __name__ == "__main__":
-    vrt_tiles_info('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/18453_1_c.vrt', verbose=True)
+    import os.path
+    import config
+    map_path = os.path.join(config.noaa_bsb_dir, 'BSB_ROOT/18453/18453_1_w.vrt')
+    vrt_tiles_info(map_path, verbose=True)

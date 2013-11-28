@@ -4,11 +4,13 @@
 __author__ = 'Will Kamp'
 __email__ = 'will@mxmariner.com'
 # most of the credit belongs to:
-__credits__ = ['http://msdn.microsoft.com/en-us/library/bb259689.aspx']
+__credits__ = ['http://msdn.microsoft.com/en-us/library/bb259689.aspx',
+               'http://www.klokan.cz/projects/gdal2tiles/gdal2tiles.py']
 __copyright__ = 'Copyright (c) 2013, Matrix Mariner Inc.\n' +\
-                'Copyright (c) 2006-2009 Microsoft Corporation.  All rights reserved.'
+                'Copyright (c) 2006-2009 Microsoft Corporation.  All rights reserved.\n' +\
+                'Copyright (c) 2008, Klokan Petr Pridal'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
-__license__ = 'It\'s not too clear from the original source ?(Public domain)'
+__license__ = 'It\'s not too clear from the multiple sources, GPL and ?(Public domain)'
 
 
 '''Microsoft, Google, Osmdroid tile system methods to convert between
@@ -126,6 +128,52 @@ def tile_xy_to_pixel_xy(tile_x, tile_y):
     return tile_x * tile_size, tile_y * tile_size
 
 
+#commented out until we need these and we can get them adapted to work for zxy (Google tiles)
+##Following methods adapted from http://www.klokan.cz/projects/gdal2tiles/gdal2tiles.py
+#
+#
+#def resolution(level_of_detail):
+#    """resolution (meters/pixel) for given zoom level (measured at Equator)
+#    """
+#    return earth_circumference / (tile_size * 2**level_of_detail)
+#
+#
+#def meters_to_pixels(meters_x, meters_y, level_of_detail):
+#    """Converts EPSG:900913 to pixel coordinates in given zoom level
+#    """
+#    res = resolution(level_of_detail)
+#    x = (meters_x + origin_shift) / res
+#    y = (meters_y + origin_shift) / res
+#    return x, y
+#
+#
+#def meters_to_tile(meters_x, meters_y, level_of_detail):
+#    x, y = meters_to_pixels(meters_x, meters_y, level_of_detail)
+#    return pixel_xy_to_tile_xy(x, y)
+#
+#
+#def meters_to_lat_lng(meters_x, meters_y):
+#    """converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum
+#    """
+#    lng = (meters_x / origin_shift) * 180.0
+#    lat = (meters_y / origin_shift) * 180.0
+#
+#    lat = 180 / numpy.pi * (2 * numpy.arctan(numpy.exp(lat * numpy.pi / 180.0)) - numpy.pi / 2.0)
+#    return lat, lng
+#
+#
+#def lat_lng_to_meters(lat, lng):
+#    """converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913
+#    """
+#    meters_x = lng * origin_shift / 180.0
+#    meters_y = numpy.log(numpy.tan((90 + lat) * numpy.pi / 360.0)) / (numpy.pi / 180.0)
+#
+#    meters_y = meters_y * origin_shift / 180.0
+#    return meters_x, meters_y
+#
+#
+
+
 def level_of_detail_for_pixel_size(latitude, pixel_size):
     """Maximal scale down zoom of the pyramid closest to the pixel_size
     """
@@ -135,3 +183,18 @@ def level_of_detail_for_pixel_size(latitude, pixel_size):
                 return zoom
             else:
                 return 0  # We don't want to scale up
+
+if __name__ == "__main__":
+    max_latitude = 47.3259538178
+    max_longitude = -122.352033442
+    min_latitude = 47.230768098
+    min_longitude = -122.55316056
+    px, py = lat_lng_to_pixel_xy(max_latitude, max_longitude, 16)
+    print px, py
+    tx, ty = pixel_xy_to_tile_xy(px, py)
+    print tx, ty
+    print pixel_xy_to_lat_lng(px, py, 16)
+
+    px, py = lat_lng_to_pixel_xy(min_latitude, min_longitude, 16)
+    print pixel_xy_to_tile_xy(px, py)
+    print pixel_xy_to_lat_lng(px, py, 16)

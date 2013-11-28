@@ -10,14 +10,10 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
    in the zxy map format a la Google style.'''
 
 import numpy
-import globalmercator
 from osgeo import gdal
 import osr
 import findzoom
-import lookups
-import shlex
-import subprocess
-
+import globalmercator
 
 def tile_map_for_zoom(map_path, zoom, outline):
     ####step 1 create vrt
