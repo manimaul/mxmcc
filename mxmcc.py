@@ -15,28 +15,28 @@ import sys
 import config
 import regions
 import catalog
+import tilebuilder
 
 
 def compile_region(region):
     print 'building catalog for:', region
     catalog.build_catalog_for_region(region)
 
-    reader = catalog.get_reader_for_region(region)
-    print reader[0]
+    #reader = catalog.get_reader_for_region(region)
+    #print reader[0]
 
-    #for map_entry in reader:
-    #    pass  # TODO:
+    #create tiles (handle tif, bsb or png datasets)
+    tilebuilder.build_tiles_for_catalog(region)
 
-        #tile tif, bsb or png
+    # TODO:
 
-        #merge
+    #merge
 
+    #optimize
 
-        #optimize
+    #gemf
 
-        #gemf
-
-        #zdat
+    #zdat
 
 
 def print_usage():

@@ -72,6 +72,9 @@ class BsbLookup:
     def get_outline(self, map_path):
         return self._get(map_path).get_outline()
 
+    def get_is_valid(self, map_path):
+        return self._get(map_path).get_is_valid()
+
 
 class UKHOLookup:
     """Lookup information using the ukho excel meta data files"""
@@ -96,6 +99,9 @@ class UKHOLookup:
     def get_outline(self, map_path):
         pass
 
+    def get_is_valid(self, map_path):
+        pass
+
 
 class WaveylinesLookup:
     """Lookup information using information coded in file names"""
@@ -118,4 +124,7 @@ class WaveylinesLookup:
         pass
 
     def get_outline(self, map_path):
+        pass
+
+    def get_is_valid(self, map_path):
         pass

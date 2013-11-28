@@ -24,8 +24,8 @@ import time
 ######################################################################
 
 #InputOutput directory
-_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-#_root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
+#_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
+_root_dir = os.path.join('/Volumes/USB-DATA/', 'mxmcc')
 
 #UKHO specific meta data excel sheets that change every quarter
 ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Sep 2013.xls'
@@ -51,9 +51,9 @@ wavey_line_geotiff_dir = os.path.join(_map_dir, 'wavey-lines/geotiff')
 compiled_dir = os.path.join(_root_dir, 'compiled')
 
 #tile directories
-tile_dir = os.path.join(_root_dir, 'tiles')
-merged_tile_dir = os.path.join(_root_dir, 'merged')
-unmerged_tile_dir = os.path.join(_root_dir, 'unmerged')
+_tile_dir = os.path.join(_root_dir, 'tiles')
+merged_tile_dir = os.path.join(_tile_dir, 'merged')
+unmerged_tile_dir = os.path.join(_tile_dir, 'unmerged')
 
 #meta data and catalogs
 _meta_dir = os.path.join(_root_dir, 'metadata')

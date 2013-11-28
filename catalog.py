@@ -17,6 +17,7 @@ from operator import itemgetter
 
 import regions
 import config
+import lookups
 
 
 class CatalogReader:
@@ -38,8 +39,13 @@ class CatalogReader:
         return self._entries[index]
 
 
-def get_reader_for_region(region):
-    return CatalogReader(os.path.join(config.catalog_dir, region.upper() + '.csv'))
+def get_reader_for_region(catalog_name):
+    catalog_path = os.path.join(config.catalog_dir, catalog_name.upper() + '.csv')
+
+    if not os.path.isfile(catalog_path):
+        raise Exception('catalog does not exist: %s' % catalog_path)
+
+    return CatalogReader(catalog_path)
 
 
 def build_catalog(region, list_of_map_paths, lookup):
@@ -54,14 +60,15 @@ def build_catalog(region, list_of_map_paths, lookup):
     rows = []
 
     for map_path in list_of_map_paths:
-        row = [map_path,
-               lookup.get_name(map_path),
-               lookup.get_zoom(map_path),
-               lookup.get_scale(map_path),
-               lookup.get_updated(map_path),
-               lookup.get_depth_units(map_path),
-               lookup.get_outline(map_path)]
-        rows.append(row)
+        if lookup.get_is_valid(map_path):
+            row = [map_path,
+                   lookup.get_name(map_path),
+                   lookup.get_zoom(map_path),
+                   lookup.get_scale(map_path),
+                   lookup.get_updated(map_path),
+                   lookup.get_depth_units(map_path),
+                   lookup.get_outline(map_path)]
+            rows.append(row)
 
     #sort row items by scale descending and write to catalog
     for i in sorted(rows, key=itemgetter(3), reverse=True):
@@ -71,10 +78,15 @@ def build_catalog(region, list_of_map_paths, lookup):
 def build_catalog_for_region(region):
     build_catalog(region.upper(), regions.map_list_for_region(region), regions.lookup_for_region(region))
 
-    #if __name__ == '__main__':
-    #    build_catalog_by_region('noaa', 'region_15')
-    #    cr = CatalogReader(os.path.join(config.catalog_dir, 'region_15.csv'))
-    #    for entry in cr:
-    #        for key in cr.keys():
-    #            print key + ':' + entry[key]
-    #        print '----------------------------------------------'
+
+def build_catalog_for_bsb_directory(bsb_dir, name=None):
+    map_search = regions.MapPathSearch(bsb_dir, ['kap'])
+
+    if name is None:
+        name = os.path.basename(bsb_dir).lower()
+
+    build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
+
+if __name__ == '__main__':
+    test_dir = '/Volumes/USB-DATA/mxmcc/charts/noaa/PugetSound'
+    build_catalog_for_bsb_directory(test_dir)

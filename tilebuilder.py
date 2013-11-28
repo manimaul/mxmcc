@@ -27,6 +27,10 @@ bsb = 'BSB'
 png = 'PNG'
 supported_formats = {geotiff, bsb, png}
 
+#needed to set this to be able to process new 400dpi charts from NOAA
+#http://www.charts.noaa.gov/RNCs_400/
+os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
+
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
     """convenience method for removing temporary vrt files created with _build_tmp_vrt_stack_for_map()
@@ -157,10 +161,15 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
        rendered tiles placed in out_dir directory
        if out_dir is None or not a directory, tiles placed in map_stack, map directory
     """
+
+    gdal.AllRegister()
+
     #---- render tiles in the same directory of the map if not specified
-    if out_dir is None or not os.path.isdir(out_dir):
+    if out_dir is None:
         out_dir = os.path.dirname(_stack_peek(map_stack))
         out_dir = os.path.join(out_dir, 'tiles')
+    elif not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
 
     #---- open the peek vrt / map in the map_stack
     ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
@@ -259,19 +268,19 @@ def build_tiles_for_map(map_path, zoom_level, cutline=None, out_dir=None):
     """
     map_stack = _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline)
     _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir)
-    _cleanup_tmp_vrt_stack()
+    _cleanup_tmp_vrt_stack(map_stack)
 
 
-def build_tiles_for_catalog(region):
+def build_tiles_for_catalog(catalog_name):
     """builds tiles for every map in a catalog
        tiles output to tile directory in config.py
     """
-    reader = catalog.get_reader_for_region(region)
+    reader = catalog.get_reader_for_region(catalog_name)
     #TODO: use multiprocessing pool
     for entry in reader:
         map_name = os.path.basename(entry['path'])
-        out_dir = os.path.join(config.tile_dir, map_name[0:map_name.find('.')])
+        out_dir = os.path.join(config.unmerged_tile_dir, map_name[0:map_name.find('.')])
         build_tiles_for_map(entry['path'], entry['zoom'], entry['outline'], out_dir)
 
-#if __name__ == "__main__":
-#    pass
+if __name__ == "__main__":
+    build_tiles_for_catalog('pugetsound')

@@ -40,7 +40,8 @@ class MapPathSearch:
     def __walker(self, args, p_dir, p_file):
         map_extensions, include_only = args
         for f in p_file:
-            if f.upper().endswith(map_extensions) and (include_only is None or f in include_only):
+            if f.upper().endswith(map_extensions) and (include_only is None or f in include_only) and not f.startswith(
+                    "."):
                 self.file_paths.append(os.path.join(p_dir, f))
 
 

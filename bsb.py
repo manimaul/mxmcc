@@ -75,6 +75,12 @@ class BsbHeader():
         if self.poly.__len__() > 0:
             self.poly.append(self.poly[0])  # add first coord to close polygon
 
+    def get_is_valid(self):
+        if self.scale is None or 'Cover for Chart' in self.name:
+            return False
+
+        return True
+
     def get_lines(self):
         return self.lines
 
@@ -85,6 +91,9 @@ class BsbHeader():
         return self.scale
 
     def get_zoom(self):
+        if self.scale is None:
+            return 0
+
         return findzoom.get_zoom(self.scale, self.get_center()[1])
 
     def get_projection(self):
@@ -119,6 +128,9 @@ class BsbHeader():
             lng = ll.split(',')[1]
             lngs.append(float(lng))
 
+        if len(lngs) is 0:
+            return False
+
         return min(lngs) < 0 and max(lngs) > 0
 
     def has_duplicate_refs(self):
@@ -134,16 +146,30 @@ class BsbHeader():
             lat, lon = ll.split(',')
             lats.append(float(lat))
             lngs.append(float(lon))
-        centerlat = min(lats) + (max(lats) - min(lats)) / 2
-        centerlng = min(lngs) + (max(lngs) - min(lngs)) / 2
+
+        if len(lats) is 0:
+            centerlat = 0
+        else:
+            centerlat = min(lats) + (max(lats) - min(lats)) / 2
+
+        if len(lngs) is 0:
+            centerlng = 0
+        else:
+            centerlng = min(lngs) + (max(lngs) - min(lngs)) / 2
+
         return centerlng, centerlat
 
     def print_header(self):
         for line in self.lines:
             print line.strip()
 
-if __name__ == '__main__':
-    import config
-    header = BsbHeader(os.path.join(config.noaa_bsb_dir, 'BSB_ROOT/18445/18445_6.KAP'))
-    print header.get_poly_list()
-    print header.get_outline()
+#if __name__ == '__main__':
+#    import config
+#    #header = BsbHeader(os.path.join(config.noaa_bsb_dir, 'BSB_ROOT/18445/18445_6.KAP'))
+#    header = BsbHeader('/Volumes/USB-DATA/mxmcc/charts/noaa/PugetSound/18423_19.kap')
+#    print header.get_poly_list()
+#    print header.get_center()
+#    print header.get_scale()
+#    print header.get_outline()
+#    print header.get_zoom()
+#    print header.crosses_dateline()
