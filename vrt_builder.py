@@ -65,6 +65,17 @@ def build_tmp_vrt_stack_for_map(map_path, cutline=None):
     map_fname = os.path.basename(map_path)
     map_name = map_fname[0:map_fname.find('.')]  # remove file extension
 
+    #-----if map has a palette create vrt with expanded rgba
+    if gdalds.dataset_has_color_palette(dataset):
+        c_vrt_path = os.path.join(base_dir, map_name + '_c.vrt')
+        if os.path.isfile(c_vrt_path):
+            os.remove(c_vrt_path)
+
+        command = "gdal_translate -of vrt -expand rgba %s %s" % (map_stack[-1], c_vrt_path)
+        subprocess.Popen(shlex.split(command), stdout=log).wait()
+
+        map_stack.append(c_vrt_path)
+
     #-----create a cutline
     if cutline is not None:
         #----create kml with cutline polygon
@@ -78,27 +89,18 @@ def build_tmp_vrt_stack_for_map(map_path, cutline=None):
         if os.path.isfile(vrt_path):
             os.remove(vrt_path)
 
-        if map_type is png:
-            command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite %s %s" \
-                      % (kml_path, map_stack[-1], vrt_path)
-        else:
-            command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite -dstnodata 0 -dstalpha %s %s" \
+        #if map_type is png:
+        #    command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite %s %s" \
+        #              % (kml_path, map_stack[-1], vrt_path)
+        #else:
+        #    command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite -dstnodata 0 -dstalpha %s %s" \
+        #              % (kml_path, map_stack[-1], vrt_path)
+        command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite %s %s" \
                       % (kml_path, map_stack[-1], vrt_path)
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
         os.remove(kml_path)  # we are done with the kml and can delete it now
         map_stack.append(vrt_path)
-
-    #-----if map has a palette create vrt with expanded rgba
-    if gdalds.dataset_has_color_palette(dataset):
-        c_vrt_path = os.path.join(base_dir, map_name + '_c.vrt')
-        if os.path.isfile(c_vrt_path):
-            os.remove(c_vrt_path)
-
-        command = "gdal_translate -of vrt -expand rgba %s %s" % (map_stack[-1], c_vrt_path)
-        subprocess.Popen(shlex.split(command), stdout=log).wait()
-
-        map_stack.append(c_vrt_path)
 
     #-----if map projection is not EPSG:900913, create re-projected vrt
     vrt_ds = gdal.Open(map_stack[-1], gdal.GA_ReadOnly)
@@ -171,7 +173,10 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
     for i in range(1, bands+1):
         gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), 'average')
 
-    ds = None
+    #png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/rgo.png', tmp, strict=0)
+    #return
+
+    del ds
 
     print 'offsetting map dataset to destination tile set window'
     #in memory dataset properly offset in tile window
@@ -179,9 +184,8 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
     data = tmp.ReadRaster(0, 0, num_pixels_x, num_pixels_y, num_pixels_x, num_pixels_y)
     tmp_offset.WriteRaster(offset_west, offset_north, num_pixels_x, num_pixels_y, data, band_list=range(1, bands+1))
 
-    #png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/scaled-avg-offset.png', tmp_offset, strict=0)
-    tmp = None
-    data = None
+    del tmp
+    del data
 
     cursor_pixel_x = 0
     cursor_pixel_y = 0
@@ -198,10 +202,16 @@ def make_tiles_for_mapstack(map_stack, zoom_level, out_dir=None):
             tile_mem = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=bands)
             tile_mem.WriteRaster(0, 0, tilesystem.tile_size, tilesystem.tile_size, data, band_list=range(1, bands+1))
             png_driver.CreateCopy(tile_path, tile_mem, strict=0)
+
+            del data
+            del tile_mem
+
             cursor_pixel_y += tilesystem.tile_size
 
         cursor_pixel_x += tilesystem.tile_size
         cursor_pixel_y = 0
+
+    del tmp_offset
 
 
 if __name__ == "__main__":
