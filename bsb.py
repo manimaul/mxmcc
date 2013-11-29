@@ -162,14 +162,3 @@ class BsbHeader():
     def print_header(self):
         for line in self.lines:
             print line.strip()
-
-#if __name__ == '__main__':
-#    import config
-#    #header = BsbHeader(os.path.join(config.noaa_bsb_dir, 'BSB_ROOT/18445/18445_6.KAP'))
-#    header = BsbHeader('/Volumes/USB-DATA/mxmcc/charts/noaa/PugetSound/18423_19.kap')
-#    print header.get_poly_list()
-#    print header.get_center()
-#    print header.get_scale()
-#    print header.get_outline()
-#    print header.get_zoom()
-#    print header.crosses_dateline()

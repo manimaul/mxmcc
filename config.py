@@ -25,7 +25,8 @@ import time
 
 #InputOutput directory
 #_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-_root_dir = os.path.join('/Volumes/USB-DATA/', 'mxmcc')
+#_root_dir = os.path.join('/Volumes/USB-DATA', 'mxmcc')
+_root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 
 #UKHO specific meta data excel sheets that change every quarter
 ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Sep 2013.xls'
@@ -75,7 +76,7 @@ _all_dirs = [_root_dir,
              ukho_meta_dir,
              noaa_meta_dir,
              catalog_dir,
-             tile_dir,
+             _tile_dir,
              merged_tile_dir,
              unmerged_tile_dir,
              noaa_bsb_dir,

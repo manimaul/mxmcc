@@ -11,8 +11,8 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 __license__ = 'It\'s not too clear from the original source ?(Public domain)'
 
 
-'''Microsoft, Google, Osmdroid tile system methods to convert between
-   tile ZXY, WGS84 latitude longitude, and EPSG:900913 meter coordinates
+'''Microsoft, Google, Osmdroid ZXY tile system methods to convert between
+   WGS84 latitude longitude, and EPSG:900913 / ZXY coordinates
 '''
 
 import numpy

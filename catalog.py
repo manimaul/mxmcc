@@ -14,7 +14,6 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import os
 import csv
 from operator import itemgetter
-
 import regions
 import config
 import lookups
@@ -86,7 +85,3 @@ def build_catalog_for_bsb_directory(bsb_dir, name=None):
         name = os.path.basename(bsb_dir).lower()
 
     build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
-
-if __name__ == '__main__':
-    test_dir = '/Volumes/USB-DATA/mxmcc/charts/noaa/PugetSound'
-    build_catalog_for_bsb_directory(test_dir)

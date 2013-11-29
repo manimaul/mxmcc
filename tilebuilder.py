@@ -6,8 +6,21 @@ __license__ = "BSD"
 __email__ = "will@mxmariner.com"
 __status__ = "Development"  # "Prototype", "Development", or "Production"
 
-'''Builds a vrt with expanded rgba if needed and cropped cut line for a given map and cutline definition
-   depends on gdal python package as well as gdal command line utilities in your path (tested with 1.10)
+'''Builds zxy map tiles for a single map or all the maps within a map catalog (catalog.py)
+
+   1.) A (stack) gdal vrt files is created as follows:
+        --rescale to tilesystem pixels--
+        --EPSG:900913 (tilesystem) re-projection if needed--
+        --cropped cut line if defined--
+        --expanded rgba if needed--
+
+    2.) The peek of the (stack) is offset (into tile window) and tiles are then rendered
+
+    3.) The files in the vrt stack are then disposed of
+
+   depends on gdal (1.10+)
+        gdal python package
+        gdal command line utilities
 '''
 
 from osgeo import gdal
@@ -94,6 +107,7 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
 
         #-----create vrt of dataset using cutline
         vrt_path = os.path.join(base_dir, map_name + '.vrt')
+
         if os.path.isfile(vrt_path):
             os.remove(vrt_path)
 
@@ -105,11 +119,11 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
         #              % (kml_path, _stack_peek(map_stack), vrt_path)
 
         command = "gdalwarp -of vrt -r average -cutline %s -crop_to_cutline -overwrite %s %s" \
-                      % (kml_path, _stack_peek(map_stack), vrt_path)
+                  % (kml_path, _stack_peek(map_stack), vrt_path)
 
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
-        os.remove(kml_path)  # we are done with the kml and can delete it now
+        #os.remove(kml_path)  # we are done with the kml and can delete it now
         map_stack.append(vrt_path)
 
     #-----rescale map to tile system pixels
@@ -232,7 +246,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     print 'producing map tiles'
     for x in range(tile_min_x, tile_max_x + 1, 1):
 
-        tile_dir = os.path.join(out_dir, str(x))
+        tile_dir = os.path.join(out_dir, str(zoom), str(x))
         if not os.path.isdir(tile_dir):
             os.makedirs(tile_dir)
 
@@ -281,6 +295,3 @@ def build_tiles_for_catalog(catalog_name):
         map_name = os.path.basename(entry['path'])
         out_dir = os.path.join(config.unmerged_tile_dir, map_name[0:map_name.find('.')])
         build_tiles_for_map(entry['path'], entry['zoom'], entry['outline'], out_dir)
-
-if __name__ == "__main__":
-    build_tiles_for_catalog('pugetsound')
