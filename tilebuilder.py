@@ -127,7 +127,7 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
 
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
-        #os.remove(kml_path)  # we are done with the kml and can delete it now
+        os.remove(kml_path)  # we are done with the kml and can delete it now
         map_stack.append(vrt_path)
 
     #-----rescale map to tile system pixels
