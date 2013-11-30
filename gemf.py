@@ -375,6 +375,3 @@ def generate_gemf(name, add_uid=False):
         file_size += this_file_size
 
     fhHeader.close()
-
-if __name__ == '__main__':
-    generate_gemf('pugetsound')

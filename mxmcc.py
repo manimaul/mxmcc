@@ -19,11 +19,26 @@ import tilebuilder
 import tilesmerge
 import gemf
 import zdata
+import os
 
 
 def compile_region(region):
     print 'building catalog for:', region
-    catalog.build_catalog_for_region(region)
+    if not regions.is_valid_region(region):
+        #look for a custom directory if this is not a known region
+        found = False
+        for root, dirs, files in os.walk(config.map_dir):
+            if region in dirs:
+                found = True
+                catalog.build_catalog_for_bsb_directory(os.path.join(root, region), region)
+                break
+
+        if not found:
+            print region, 'not found'
+            return
+
+    else:
+        catalog.build_catalog_for_region(region)
 
     #create tiles (handle tif, bsb or png datasets)
     print 'building tiles for:', region
@@ -52,7 +67,7 @@ def print_usage():
 if __name__ == "__main__":
     if config.check_dirs():
         args = sys.argv
-        if len(args) is not 2 or not regions.is_valid_region(args[1]):
+        if len(args) is not 2:
             print_usage()
         else:
             compile_region(args[1])
