@@ -6,7 +6,7 @@ __license__ = "BSD"
 __email__ = "will@mxmariner.com"
 __status__ = "Development"  # "Prototype", "Development", or "Production"
 
-'''This is the program that ties it all together to complete this programs
+'''This is the wrapper program that ties it all together to complete this set of programs'
    task of compiling charts into the MX Mariner format.
 '''
 
@@ -16,27 +16,33 @@ import config
 import regions
 import catalog
 import tilebuilder
+import tilesmerge
+import gemf
+import zdata
 
 
 def compile_region(region):
     print 'building catalog for:', region
     catalog.build_catalog_for_region(region)
 
-    #reader = catalog.get_reader_for_region(region)
-    #print reader[0]
-
     #create tiles (handle tif, bsb or png datasets)
+    print 'building tiles for:', region
     tilebuilder.build_tiles_for_catalog(region)
 
-    # TODO:
-
     #merge
+    print 'merging tiles for:', region
+    tilesmerge.merge_catalog(region)
 
     #optimize
+    #TODO:
 
     #gemf
+    print 'archiving:', region
+    gemf.generate_gemf(region, add_uid=regions.provider_for_region(region) is regions.provider_ukho)
 
     #zdat
+    print 'building metadata archive for:', region
+    zdata.generate_zdat_for_catalog(region)
 
 
 def print_usage():
