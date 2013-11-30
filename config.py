@@ -25,8 +25,8 @@ import time
 
 #InputOutput directory
 #_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-#_root_dir = os.path.join('/Volumes/USB-DATA', 'mxmcc')
-_root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
+_root_dir = os.path.join('/Volumes/USB-DATA', 'mxmcc')
+#_root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 
 #UKHO specific meta data excel sheets that change every quarter
 ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Sep 2013.xls'
@@ -40,13 +40,13 @@ ukho_chart_data = 'Titles,Scale,Edition,Codes,Projection,Vertices,Shifts,Sep 201
 ######################################################################
 
 #chart directories
-_map_dir = os.path.join(_root_dir, 'charts')
-brazil_bsb_dir = os.path.join(_map_dir, 'brazil')
-linz_bsb_dir = os.path.join(_map_dir, 'linz')
-noaa_bsb_dir = os.path.join(_map_dir, 'noaa')
-ukho_geotiff_dir = os.path.join(_map_dir, 'ukho/geotiff')
-ukho_png_dir = os.path.join(_map_dir, 'ukho/png')
-wavey_line_geotiff_dir = os.path.join(_map_dir, 'wavey-lines/geotiff')
+map_dir = os.path.join(_root_dir, 'charts')
+brazil_bsb_dir = os.path.join(map_dir, 'brazil')
+linz_bsb_dir = os.path.join(map_dir, 'linz')
+noaa_bsb_dir = os.path.join(map_dir, 'noaa')
+ukho_geotiff_dir = os.path.join(map_dir, 'ukho/geotiff')
+ukho_png_dir = os.path.join(map_dir, 'ukho/png')
+wavey_line_geotiff_dir = os.path.join(map_dir, 'wavey-lines/geotiff')
 
 #finished directory
 compiled_dir = os.path.join(_root_dir, 'compiled')
@@ -71,7 +71,7 @@ ukho_quarterly_extract = os.path.join(ukho_meta_dir, ukho_quarterly_extract)
 epoch = int(time.time())
 
 _all_dirs = [_root_dir,
-             _map_dir,
+             map_dir,
              _meta_dir,
              ukho_meta_dir,
              noaa_meta_dir,

@@ -219,15 +219,22 @@ def merge_catalog(catalog_name, nothreads=False):
     else:
         shutil.rmtree(merge_dir, ignore_errors=True)
 
+    unmerged_tile_dir = None
+
+    #find unmerged dir
+    for ea in os.listdir(config.unmerged_tile_dir):
+        if ea.upper() == catalog_name.upper():
+            unmerged_tile_dir = os.path.join(config.unmerged_tile_dir, ea)
+            break
+
+    if unmerged_tile_dir is None:
+        raise Exception('%s is not in unmerged tiles directory' % catalog_name)
+
     for entry in reader:
         map_name = os.path.basename(entry['path'])
         map_name = map_name[0:map_name.find('.')]
-        tile_dir = os.path.join(config.unmerged_tile_dir, map_name)
+        tile_dir = os.path.join(unmerged_tile_dir, map_name)
         if os.path.isdir(tile_dir):
             MergeSet(tile_dir, merge_dir)
         else:
-            raise Exception('map %s missing from tiles', map_name)
-
-
-if __name__ == '__main__':
-    merge_catalog('pugetsound')
+            raise Exception('map %s missing from tiles' % map_name)

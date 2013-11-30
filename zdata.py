@@ -94,4 +94,4 @@ def generate_zdat_for_catalog(catalog_name, description=None):
     zdat_file.close()
 
 if __name__ == '__main__':
-    generate_zdat_for_catalog('pugetsound')
+    generate_zdat_for_catalog('detroit')

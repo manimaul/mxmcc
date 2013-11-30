@@ -33,6 +33,8 @@ import tilesystem
 import gdalds
 import catalog
 import config
+import multiprocessing
+from functools import partial
 
 #http://www.gdal.org/formats_list.html
 geotiff = 'Gtiff'
@@ -43,6 +45,8 @@ supported_formats = {geotiff, bsb, png}
 #needed to set this to be able to process new 400dpi charts from NOAA
 #http://www.charts.noaa.gov/RNCs_400/
 os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
+
+#running = multiprocessing.Value("i", 0)
 
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
@@ -285,13 +289,20 @@ def build_tiles_for_map(map_path, zoom_level, cutline=None, out_dir=None):
     _cleanup_tmp_vrt_stack(map_stack)
 
 
+def _build_tiles_for_map_helper(entry, name):
+    """helper method for multiprocessing pool map_async
+    """
+    map_name = os.path.basename(entry['path'])
+    out_dir = os.path.join(config.unmerged_tile_dir, name, map_name[0:map_name.find('.')])
+    build_tiles_for_map(entry['path'], entry['zoom'], entry['outline'], out_dir)
+
+
 def build_tiles_for_catalog(catalog_name):
     """builds tiles for every map in a catalog
        tiles output to tile directory in config.py
     """
     reader = catalog.get_reader_for_region(catalog_name)
-    #TODO: use multiprocessing pool
-    for entry in reader:
-        map_name = os.path.basename(entry['path'])
-        out_dir = os.path.join(config.unmerged_tile_dir, map_name[0:map_name.find('.')])
-        build_tiles_for_map(entry['path'], entry['zoom'], entry['outline'], out_dir)
+    pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+    pool.map_async(partial(_build_tiles_for_map_helper, name=catalog_name), reader)
+    pool.close()
+    pool.join() # wait for pool to empty

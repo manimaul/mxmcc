@@ -20,6 +20,7 @@ def dataset_has_color_palette(gdal_ds):
 
 def dataset_lat_lng_bounds(gdal_ds):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
+       bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
 
     geotransform = gdal_ds.GetGeoTransform()
