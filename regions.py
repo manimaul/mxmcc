@@ -68,7 +68,11 @@ class _RegionDatabase:
             self.rdb[region] = provider
 
     def provider_for_region(self, region):
-        return self.rdb[region.upper()]
+        region = region.upper()
+        if region in self.rdb:
+            return self.rdb[region]
+
+        return None
 
     def get_description(self, provider, region):
         if provider in self.db and region in self.db[provider]:
@@ -198,3 +202,12 @@ def directory_for_provider(provider):
 def is_valid_region(region):
     """returns True or False"""
     return _db.is_valid_region(region.upper())
+
+
+def find_custom_region_path(region):
+    """look for a custom regions' directory if this is not a known (invalid) region"""
+    for root, dirs, files in os.walk(config.map_dir):
+        if region in dirs:
+            return os.path.join(root, region)
+
+    return None

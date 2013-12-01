@@ -83,7 +83,8 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
     if not map_type in supported_formats:
         raise Exception(map_type + ' is not a supported format')
 
-    log = open(os.devnull, 'w')
+    #log = open(os.devnull, 'w')
+    log = subprocess.PIPE
 
     #-----paths and file names
     base_dir = os.path.dirname(map_path)
@@ -101,19 +102,18 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
 
         map_stack.append(c_vrt_path)
 
-    #-----create a cutline
+    #-----create vrt of dataset using cutline
+    vrt_path = os.path.join(base_dir, map_name + '.vrt')
+
+    if os.path.isfile(vrt_path):
+        os.remove(vrt_path)
+
     if cutline is not None:
         #----create kml with cutline polygon
         kml_path = os.path.join(base_dir, map_name + '_cutline.kml')
         kml_file = open(kml_path, 'w')
         kml_file.write(lookups.get_cutline_kml(cutline))
         kml_file.close()
-
-        #-----create vrt of dataset using cutline
-        vrt_path = os.path.join(base_dir, map_name + '.vrt')
-
-        if os.path.isfile(vrt_path):
-            os.remove(vrt_path)
 
         #if map_type is png:
         #    command = "gdalwarp -of vrt -cutline %s -crop_to_cutline -overwrite %s %s" \
@@ -128,6 +128,13 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
         os.remove(kml_path)  # we are done with the kml and can delete it now
+        map_stack.append(vrt_path)
+    else:  # we still need warp to rotation is north up
+        command = "gdalwarp -of vrt -r average -overwrite %s %s" \
+                  % (_stack_peek(map_stack), vrt_path)
+
+        subprocess.Popen(shlex.split(command), stdout=log).wait()
+
         map_stack.append(vrt_path)
 
     #-----rescale map to tile system pixels
@@ -153,9 +160,9 @@ def _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline=None):
     #-----if map projection is not EPSG:900913, create re-projected vrt
     vrt_ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
 
-    in_srs = osr.SpatialReference()
     in_srs_wkt = vrt_ds.GetGCPProjection()
-    in_srs.ImportFromWkt(in_srs_wkt)
+    in_srs = osr.SpatialReference(in_srs_wkt)
+    #in_srs.ImportFromWkt(in_srs_wkt)
 
     out_srs = osr.SpatialReference()
     out_srs.ImportFromEPSG(900913)
@@ -305,4 +312,8 @@ def build_tiles_for_catalog(catalog_name):
     pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     pool.map_async(partial(_build_tiles_for_map_helper, name=catalog_name), reader)
     pool.close()
-    pool.join() # wait for pool to empty
+    pool.join()  # wait for pool to empty
+
+if __name__ == "__main__":
+    print _build_tmp_vrt_stack_for_map('/media/will/USB-DATA/mxmcc/charts/noaa/Test/18423_3.kap', '15', '48.5375,-122.6253:48.53528,-122.5917:48.49472,-122.5978:48.49694,-122.6314:48.5375,-122.6253')
+    #build_tiles_for_map('/media/will/USB-DATA/mxmcc/charts/noaa/Test/18423_3.kap', '15')

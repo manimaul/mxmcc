@@ -33,25 +33,30 @@ def dataset_lat_lng_bounds(gdal_ds):
     #geotransform[4] #rotation, 0 if image is "north up"
     #geotransform[5] n-s pixel resolution
 
-    dataset_bbox_cells = (
-        (0., 0.),
-        (0, gdal_ds.RasterYSize),
-        (gdal_ds.RasterXSize, gdal_ds.RasterYSize),
-        (gdal_ds.RasterXSize, 0),
-    )
+    #dataset_bbox_cells = (
+    #    (0., 0.),
+    #    (0, gdal_ds.RasterYSize),
+    #    (gdal_ds.RasterXSize, gdal_ds.RasterYSize),
+    #    (gdal_ds.RasterXSize, 0),
+    #)
+    #
+    #geo_pts = []  # upper left, lower left, lower right, upper right
+    #
+    #for x, y in dataset_bbox_cells:
+    #    xx = geotransform[0] + geotransform[1] * x + geotransform[2] * y
+    #    yy = geotransform[3] + geotransform[4] * x + geotransform[5] * y
+    #    geo_pts.append((xx, yy))
+    #
+    #northwest, southwest, southeast, northeast = geo_pts
+    #north = max(northwest[1], northeast[1])
+    #east = max(southeast[0], northeast[0])
+    #south = min(southwest[1], southeast[1])
+    #west = min(southwest[0], northwest[0])
 
-    geo_pts = []  # upper left, lower left, lower right, upper right
-
-    for x, y in dataset_bbox_cells:
-        xx = geotransform[0] + geotransform[1] * x + geotransform[2] * y
-        yy = geotransform[3] + geotransform[4] * x + geotransform[5] * y
-        geo_pts.append((xx, yy))
-
-    northwest, southwest, southeast, northeast = geo_pts
-    north = max(northwest[1], northeast[1])
-    east = max(southeast[0], northeast[0])
-    south = min(southwest[1], southeast[1])
-    west = min(southwest[0], northwest[0])
+    north = geotransform[3]
+    south = geotransform[3] + geotransform[5] * gdal_ds.RasterYSize
+    east = geotransform[0] + geotransform[1] * gdal_ds.RasterXSize
+    west = geotransform[0]
 
     wgs84_wkt = """
     GEOGCS["WGS 84",
@@ -64,10 +69,13 @@ def dataset_lat_lng_bounds(gdal_ds):
         UNIT["degree",0.01745329251994328,
             AUTHORITY["EPSG","9122"]],
         AUTHORITY["EPSG","4326"]]"""
-    geo_srs = osr.SpatialReference()
-    geo_srs.ImportFromWkt(wgs84_wkt)
+    geo_srs = osr.SpatialReference(wgs84_wkt)
 
-    org_srs = osr.SpatialReference(gdal_ds.GetProjectionRef())
+    ds_wkt = gdal_ds.GetProjectionRef()
+    if ds_wkt is '' or ds_wkt is None:
+        ds_wkt = gdal_ds.GetGCPProjection()
+
+    org_srs = osr.SpatialReference(ds_wkt)
     transform = osr.CoordinateTransformation(org_srs, geo_srs)
 
     max_lng, max_lat = transform.TransformPoint(east, north)[:2]

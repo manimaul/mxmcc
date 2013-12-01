@@ -25,39 +25,33 @@ import os
 def compile_region(region):
     print 'building catalog for:', region
     if not regions.is_valid_region(region):
-        #look for a custom directory if this is not a known region
-        found = False
-        for root, dirs, files in os.walk(config.map_dir):
-            if region in dirs:
-                found = True
-                catalog.build_catalog_for_bsb_directory(os.path.join(root, region), region)
-                break
-
-        if not found:
-            print region, 'not found'
-            return
+        region_dir = regions.find_custom_region_path(region)
+        if region_dir is not None:
+            catalog.build_catalog_for_bsb_directory(region_dir, region)
+        else:
+            raise Exception('custom region: %s does not have a directory' % region)
 
     else:
         catalog.build_catalog_for_region(region)
 
-    #create tiles (handle tif, bsb or png datasets)
-    print 'building tiles for:', region
-    tilebuilder.build_tiles_for_catalog(region)
-
+    ##create tiles (handle tif, bsb or png datasets)
+    #print 'building tiles for:', region
+    #tilebuilder.build_tiles_for_catalog(region)
+    #
     #merge
-    print 'merging tiles for:', region
-    tilesmerge.merge_catalog(region)
-
-    #optimize
-    #TODO:
+    #print 'merging tiles for:', region
+    #tilesmerge.merge_catalog(region)
+    #
+    ##optimize
+    ##TODO:
 
     #gemf
     print 'archiving:', region
     gemf.generate_gemf(region, add_uid=regions.provider_for_region(region) is regions.provider_ukho)
 
     #zdat
-    print 'building metadata archive for:', region
-    zdata.generate_zdat_for_catalog(region)
+    #print 'building metadata archive for:', region
+    #zdata.generate_zdat_for_catalog(region)
 
 
 def print_usage():
