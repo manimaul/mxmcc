@@ -159,7 +159,7 @@ class GlobalMercator:
 
     def meters_to_pixels(self, mx, my, zoom):
         """Converts EPSG:900913 to pyramid pixel coordinates in given zoom level"""
-        res = self.resolution( zoom )
+        res = self.resolution(zoom)
         px = (mx + self.origin_shift) / res
         py = (my + self.origin_shift) / res
         return px, py

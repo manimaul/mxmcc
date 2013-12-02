@@ -6,10 +6,71 @@ __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
+from osgeo import gdal
 import osr
 
 '''some convenience methods for information about gdal data sets
 '''
+
+
+def dataset_get_cutline_geometry(gdal_ds, cutline):
+    """return a cutline in WKT geometry with coordinates expressed in dataset source pixel/line coordinates.
+
+       cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
+       : dilineated latitude/longitude WGS-84 coordinates (in decimal degrees)
+    """
+
+    #---- create coordinate transform from lat lng to data set coords
+    ds_wkt = dataset_get_projection_wkt(gdal_ds)
+    ds_srs = osr.SpatialReference()
+    ds_srs.ImportFromWkt(ds_wkt)
+
+    wgs84_srs = osr.SpatialReference()
+    wgs84_srs.ImportFromEPSG(4326)
+
+    transform = osr.CoordinateTransformation(wgs84_srs, ds_srs)
+
+    #---- grab inverted geomatrix from ground control points
+    gcps = gdal_ds.GetGCPs()
+    geotransform = gdal.GCPsToGeoTransform(gcps)
+    _success, inv_geotransform = gdal.InvGeoTransform(geotransform)
+
+    #---- transform lat long to dataset coordinates, then coordinates to pixel/lines
+    polygon_wkt = 'POLYGON (('
+
+    #x_coords = []
+    #y_coords = []
+
+    for latlng in cutline.split(':'):
+        lat, lng = latlng.split(',')
+        geo_x, geo_y = transform.TransformPoint(float(lng), float(lat))[:2]
+        px = int(inv_geotransform[0] + inv_geotransform[1] * geo_x + inv_geotransform[2] * geo_y)
+        py = int(inv_geotransform[3] + inv_geotransform[4] * geo_x + inv_geotransform[5] * geo_y)
+        #x_coords.append(geo_x)
+        #y_coords.append(geo_y)
+        polygon_wkt += '%d %d,' % (px, py)
+
+    polygon_wkt = polygon_wkt[:-1] + '))'
+
+    ##--- get extents
+    #extents = [str(min(x_coords)), str(min(y_coords)), str(max(x_coords)), str(max(y_coords))]  # xmin ymin xmax ymax
+
+    return polygon_wkt #, extents
+
+
+def dataset_get_projection_wkt(gdal_ds):
+    """returns a gdal dataset's projection in well known text"""
+    ds_wkt = gdal_ds.GetProjectionRef()
+    if ds_wkt is '':
+        ds_wkt = gdal_ds.GetGCPProjection()
+
+    return ds_wkt
+
+
+def dataset_get_proj4_srs_declaration(gdal_ds):
+    ds_wkt = dataset_get_projection_wkt(gdal_ds)
+    sr = osr.SpatialReference(ds_wkt)
+    return sr.ExportToProj4()
 
 
 def dataset_has_color_palette(gdal_ds):
@@ -23,7 +84,17 @@ def dataset_lat_lng_bounds(gdal_ds):
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
 
-    geotransform = gdal_ds.GetGeoTransform()
+    out_srs = osr.SpatialReference()
+    out_srs.ImportFromEPSG(4326)
+
+    ds_wkt = dataset_get_projection_wkt(gdal_ds)
+    ds_srs = osr.SpatialReference()
+    ds_srs.ImportFromWkt(ds_wkt)
+
+    #we need a north up dataset
+    ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
+    geotransform = ds.GetGeoTransform()
+    transform = osr.CoordinateTransformation(ds_srs, out_srs)
 
     #useful information about geotransform
     #geotransform[0] #top left X
@@ -33,52 +104,24 @@ def dataset_lat_lng_bounds(gdal_ds):
     #geotransform[4] #rotation, 0 if image is "north up"
     #geotransform[5] n-s pixel resolution
 
-    #dataset_bbox_cells = (
-    #    (0., 0.),
-    #    (0, gdal_ds.RasterYSize),
-    #    (gdal_ds.RasterXSize, gdal_ds.RasterYSize),
-    #    (gdal_ds.RasterXSize, 0),
-    #)
-    #
-    #geo_pts = []  # upper left, lower left, lower right, upper right
-    #
-    #for x, y in dataset_bbox_cells:
-    #    xx = geotransform[0] + geotransform[1] * x + geotransform[2] * y
-    #    yy = geotransform[3] + geotransform[4] * x + geotransform[5] * y
-    #    geo_pts.append((xx, yy))
-    #
-    #northwest, southwest, southeast, northeast = geo_pts
-    #north = max(northwest[1], northeast[1])
-    #east = max(southeast[0], northeast[0])
-    #south = min(southwest[1], southeast[1])
-    #west = min(southwest[0], northwest[0])
-
-    north = geotransform[3]
-    south = geotransform[3] + geotransform[5] * gdal_ds.RasterYSize
-    east = geotransform[0] + geotransform[1] * gdal_ds.RasterXSize
     west = geotransform[0]
+    east = west + ds.RasterXSize * geotransform[1]
+    north = geotransform[3]
+    south = north - ds.RasterYSize * geotransform[1]
 
-    wgs84_wkt = """
-    GEOGCS["WGS 84",
-        DATUM["WGS_1984",
-            SPHEROID["WGS 84",6378137,298.257223563,
-                AUTHORITY["EPSG","7030"]],
-            AUTHORITY["EPSG","6326"]],
-        PRIMEM["Greenwich",0,
-            AUTHORITY["EPSG","8901"]],
-        UNIT["degree",0.01745329251994328,
-            AUTHORITY["EPSG","9122"]],
-        AUTHORITY["EPSG","4326"]]"""
-    geo_srs = osr.SpatialReference(wgs84_wkt)
+    east, south = transform.TransformPoint(east, south)[:2]
+    west, north = transform.TransformPoint(west, north)[:2]
 
-    ds_wkt = gdal_ds.GetProjectionRef()
-    if ds_wkt is '' or ds_wkt is None:
-        ds_wkt = gdal_ds.GetGCPProjection()
+    #min_lng, max_lat, max_lng, min_lat
+    return west, north, east, south
 
-    org_srs = osr.SpatialReference(ds_wkt)
-    transform = osr.CoordinateTransformation(org_srs, geo_srs)
-
-    max_lng, max_lat = transform.TransformPoint(east, north)[:2]
-    min_lng, min_lat = transform.TransformPoint(west, south)[:2]
-
-    return min_lng, min_lat, max_lng, max_lat
+#if __name__ == '__main__':
+#    import tilesystem
+#    import gpxrte
+#    map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/18423_3.kap'
+#    ds = gdal.Open(map_path, gdal.GA_ReadOnly)
+#    bounds = dataset_lat_lng_bounds(ds)
+#    min_lng, max_lat, max_lng, min_lat = bounds
+#    gpxrte.export_bounds(bounds, '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/test.gpx')
+#    print bounds
+#    print tilesystem.lat_lng_bounds_to_tile_bounds_count(bounds, 15)
