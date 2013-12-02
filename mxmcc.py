@@ -35,12 +35,12 @@ def compile_region(region):
         catalog.build_catalog_for_region(region)
 
     ##create tiles (handle tif, bsb or png datasets)
-    #print 'building tiles for:', region
-    #tilebuilder.build_tiles_for_catalog(region)
-    #
+    print 'building tiles for:', region
+    tilebuilder.build_tiles_for_catalog(region)
+
     #merge
-    #print 'merging tiles for:', region
-    #tilesmerge.merge_catalog(region)
+    print 'merging tiles for:', region
+    tilesmerge.merge_catalog(region)
     #
     ##optimize
     ##TODO:
@@ -50,8 +50,8 @@ def compile_region(region):
     gemf.generate_gemf(region, add_uid=regions.provider_for_region(region) is regions.provider_ukho)
 
     #zdat
-    #print 'building metadata archive for:', region
-    #zdata.generate_zdat_for_catalog(region)
+    print 'building metadata archive for:', region
+    zdata.generate_zdat_for_catalog(region)
 
 
 def print_usage():
