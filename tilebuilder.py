@@ -49,16 +49,16 @@ os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
 #running = multiprocessing.Value("i", 0)
 
 
-def _cutline_to_lat_lng_bounds(cutline):
-    lats = []
-    lngs = []
-    for ll in cutline.split(':'):
-        lat, lon = ll.split(',')
-        lats.append(float(lat))
-        lngs.append(float(lon))
-
-    #'min_lng, max_lat, max_lng, min_lat'
-    return min(lngs), max(lats), max(lngs), min(lats)
+#def _cutline_to_lat_lng_bounds(cutline):
+#    lats = []
+#    lngs = []
+#    for ll in cutline.split(':'):
+#        lat, lon = ll.split(',')
+#        lats.append(float(lat))
+#        lngs.append(float(lon))
+#
+#    #'min_lng, max_lat, max_lng, min_lat'
+#    return min(lngs), max(lats), max(lngs), min(lats)
 
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
@@ -124,11 +124,7 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
 
-    if cutline is None:
-        lat_lng_bounds = gdalds.dataset_lat_lng_bounds(dataset)
-    else:
-        lat_lng_bounds = _cutline_to_lat_lng_bounds(cutline)
-
+    lat_lng_bounds = gdalds.dataset_lat_lng_bounds(dataset)
     zoom = int(zoom_level)
     pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
     tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
@@ -146,17 +142,20 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     resampling = 'bilinear'
 
     print 'warping dataset using resampling:', resampling
-    command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
+    #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
+    command = ['gdalwarp', '-of', 'vrt', '-r', '%s' % resampling, '-t_srs', 'EPSG:900913']
 
     if cutline is not None:
-        command += ' -wo CUTLINE="%s"' % (gdalds.dataset_get_cutline_in_srs_wkt_geometry(dataset, cutline))
+        cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
+        command += ['-wo', 'CUTLINE=%s' % cut_poly]
+                    #'-te'] + extents # crop to cutline
 
 
-    command += ' -ts %d' % res_x + \
-               ' %d' % res_y + \
-               ' %s' % _stack_peek(map_stack) +  \
-               ' %s' % w_vrt_path
-    subprocess.Popen(shlex.split(command)).wait()
+    command += ['-ts', str(res_x), str(res_y),  # scale to tile pixel window
+                _stack_peek(map_stack),  # gdal input source
+                w_vrt_path]  # gdal output destination
+
+    subprocess.Popen(command).wait()
     map_stack.append(w_vrt_path)
 
     return map_stack
@@ -182,57 +181,47 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
     bands = ds.RasterCount
 
-    latlng_bounds = gdalds.dataset_lat_lng_bounds(ds)
-    min_lng, min_lat, max_lng, max_lat = latlng_bounds
+    lat_lng_bounds = gdalds.dataset_lat_lng_bounds(ds)
+    zoom = int(zoom_level)
+    pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
+    tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
+    offset_west = pixel_min_x % tilesystem.tile_size
+    offset_north = pixel_min_y % tilesystem.tile_size
+
+    #print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
+    #print 'min tile x:%d' % tile_min_x
+    #print 'max tile x:%d' % tile_max_x
+    #print 'min tile y:%d' % tile_min_y
+    #print 'max tile y:%d' % tile_max_y
+    #print 'resolution x x:%d' % res_x
+    #print 'resolution y:%d' % res_y
+    #print 'num tiles x:%d' % num_tiles_x
+    #print 'num tiles y:%d' % num_tiles_y
+    #print 'offset_west:%d' % offset_west
+    #print 'offset_north:%d' % offset_north
 
     mem_driver = gdal.GetDriverByName('MEM')
     png_driver = gdal.GetDriverByName('PNG')
 
-    #this seems counter intuitive... tile and pixel 0,0 is top left where as lat long 0,0 is bottom left
-    zoom = int(zoom_level)
-    pixel_min_x, pixel_max_y = tilesystem.lat_lng_to_pixel_xy(min_lat, min_lng, zoom)
-    tile_min_x, tile_max_y = tilesystem.lat_lng_to_tile_xy(min_lat, min_lng, zoom)
-
-    pixel_max_x, pixel_min_y = tilesystem.lat_lng_to_pixel_xy(max_lat, max_lng, zoom)
-    tile_max_x, tile_min_y = tilesystem.lat_lng_to_tile_xy(max_lat, max_lng, zoom)
-
-    #number of tiles x and y in destination
-    num_tiles_x = tile_max_x - tile_min_x + 1
-    num_tiles_y = tile_max_y - tile_min_y + 1
-    #print 'num tiles x:%d' % num_tiles_x
-    #print 'num tiles y:%d' % num_tiles_y
-
-    #number of pixels x and y (to be inserted in tile window with offsets)
-    num_pixels_x = pixel_max_x - pixel_min_x + 1
-    num_pixels_y = pixel_max_y - pixel_min_y + 1
-    #print 'num px x:%d' % num_pixels_x
-    #print 'num px y:%d' % num_pixels_y
-    
-    offset_west = pixel_min_x % tilesystem.tile_size
-    offset_north = pixel_min_y % tilesystem.tile_size
-    #offset_east = tilesystem.tile_size - (pixel_max_x % tilesystem.tile_size)
-    #offset_south = tilesystem.tile_size - (pixel_max_y % tilesystem.tile_size)
-    #print 'offset w:%d, n:%d, e:%d, s:%d' % (offset_west, offset_north, offset_east, offset_south)
-
-    #NOTE: This step skipped by re-scaling re-projected vrt in the map stack
-    print 'scaling map dataset to destination resolution for projection'
-    #in memory dataset scaled to destination resolution (num_pixels_x X num_pixels_y)
-    tmp = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
-    for i in range(1, bands+1):
-        gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), 'average')
-
-    #png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/rgo.png', tmp, strict=0)
-    #return
-
-    del ds
+    ##NOTE: This step skipped by re-scaling re-projected vrt in the map stack
+    #print 'scaling map dataset to destination resolution for projection'
+    ##in memory dataset scaled to destination resolution (num_pixels_x X num_pixels_y)
+    #tmp = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
+    #for i in range(1, bands+1):
+    #    gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), 'average')
+    #
+    ##png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/rgo.png', tmp, strict=0)
+    ##return
+    #
+    #del ds
 
     print 'offsetting map dataset to destination tile set window'
     #in memory dataset properly offset in tile window
     tmp_offset = mem_driver.Create('', num_tiles_x * tilesystem.tile_size, num_tiles_y * tilesystem.tile_size, bands=bands)
-    data = tmp.ReadRaster(0, 0, num_pixels_x, num_pixels_y, num_pixels_x, num_pixels_y)
-    tmp_offset.WriteRaster(offset_west, offset_north, num_pixels_x, num_pixels_y, data, band_list=range(1, bands+1))
+    data = ds.ReadRaster(0, 0, ds.RasterXSize, ds.RasterYSize, ds.RasterXSize, ds.RasterYSize)
+    tmp_offset.WriteRaster(offset_west, offset_north, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
 
-    del tmp
+    del ds
     del data
 
     cursor_pixel_x = 0
@@ -298,9 +287,10 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
-if __name__ == '__main__':
-    cl = '48.5375,-122.6253:48.53528,-122.5917:48.49472,-122.5978:48.49694,-122.6314:48.5375,-122.6253'
-
-    map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/18423_3.kap'
-    print '_build_tile_vrt_for_map'
-    _build_tile_vrt_for_map(map_path, 15)
+#if __name__ == '__main__':
+#    cl = '48.5375,-122.6253:48.53528,-122.5917:48.49472,-122.5978:48.49694,-122.6314:48.5375,-122.6253'
+#
+#    map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/18423_3.kap'
+#    #print '_build_tile_vrt_for_map'
+#    #_build_tile_vrt_for_map(map_path, 15, cl)
+#    build_tiles_for_map(map_path, '15', cl)

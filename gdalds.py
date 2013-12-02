@@ -13,7 +13,7 @@ import osr
 '''
 
 
-def dataset_get_cutline_in_srs_wkt_geometry(gdal_ds, cutline):
+def dataset_get_cutline_geometry(gdal_ds, cutline):
     """return a cutline in WKT geometry with coordinates expressed in dataset source pixel/line coordinates.
 
        cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
@@ -38,14 +38,24 @@ def dataset_get_cutline_in_srs_wkt_geometry(gdal_ds, cutline):
     #---- transform lat long to dataset coordinates, then coordinates to pixel/lines
     polygon_wkt = 'POLYGON (('
 
+    #x_coords = []
+    #y_coords = []
+
     for latlng in cutline.split(':'):
         lat, lng = latlng.split(',')
         geo_x, geo_y = transform.TransformPoint(float(lng), float(lat))[:2]
         px = int(inv_geotransform[0] + inv_geotransform[1] * geo_x + inv_geotransform[2] * geo_y)
         py = int(inv_geotransform[3] + inv_geotransform[4] * geo_x + inv_geotransform[5] * geo_y)
+        #x_coords.append(geo_x)
+        #y_coords.append(geo_y)
         polygon_wkt += '%d %d,' % (px, py)
 
-    return polygon_wkt[:-1] + '))'
+    polygon_wkt = polygon_wkt[:-1] + '))'
+
+    ##--- get extents
+    #extents = [str(min(x_coords)), str(min(y_coords)), str(max(x_coords)), str(max(y_coords))]  # xmin ymin xmax ymax
+
+    return polygon_wkt #, extents
 
 
 def dataset_get_projection_wkt(gdal_ds):
