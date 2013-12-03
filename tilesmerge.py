@@ -127,30 +127,27 @@ class MergeSet:
             src_path = os.path.join(self.src, tile)
             dst_tile = os.path.join(self.dest, tile)
             dpath = os.path.dirname(dst_tile)
-            if not os.path.exists(dpath):
-                try:  # thread race safety
-                    os.makedirs(dpath)
-                except os.error:
-                    pass
             src_raster = None
             transp = self.src_transp[tile]
             if transp == None:  # transparency value not cached yet
                 src_raster = Image.open(src_path).convert("RGBA")
                 transp = transparency(src_raster)
-            if transp == 0:  # fully transparent
-                #pf('-',end='')
-                #os.remove(src_path)
-                pass
-            elif transp == 1 or not os.path.exists(dst_tile):
-            # fully opaque or no destination tile exists yet
-                shutil.copy(src_path, dst_tile)
-            else:  # semitransparent, combine with destination (exists! see above)
-                if not src_raster:
-                    src_raster = Image.open(src_path).convert("RGBA")
-                dst_raster = Image.composite(src_raster, Image.open(dst_tile).convert("RGBA"), src_raster)
-                dst_raster.save(dst_tile)
-            #if options.underlay and transp != 0:
-            #    self.underlay(tile, src_path, src_raster, options.underlay)
+            if transp != 0:  # fully transparent
+                if not os.path.exists(dpath):
+                    try:  # thread race safety
+                        os.makedirs(dpath)
+                    except os.error:
+                        pass
+                if transp == 1 or not os.path.exists(dst_tile):
+                    # fully opaque or no destination tile exists yet
+                    shutil.copy(src_path, dst_tile)
+                else:  # semitransparent, combine with destination (exists! see above)
+                    if not src_raster:
+                        src_raster = Image.open(src_path).convert("RGBA")
+                    dst_raster = Image.composite(src_raster, Image.open(dst_tile).convert("RGBA"), src_raster)
+                    dst_raster.save(dst_tile)
+                #if options.underlay and transp != 0:
+                #    self.underlay(tile, src_path, src_raster, options.underlay)
         except KeyboardInterrupt: # http://jessenoller.com/2009/01/08/multiprocessingpool-and-keyboardinterrupt/
             print 'got KeyboardInterrupt'
             raise KeyboardInterruptError()
