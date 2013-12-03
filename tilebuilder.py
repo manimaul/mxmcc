@@ -24,11 +24,9 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 '''
 
 from osgeo import gdal
-import osr
 import subprocess
 import os
 import shlex
-import lookups
 import tilesystem
 import gdalds
 import catalog
@@ -128,20 +126,19 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     zoom = int(zoom_level)
     pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
     tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
-    print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
-    print 'min tile x:%d' % tile_min_x
-    print 'max tile x:%d' % tile_max_x
-    print 'min tile y:%d' % tile_min_y
-    print 'max tile y:%d' % tile_max_y
-
-    print 'resolution x x:%d' % res_x
-    print 'resolution y:%d' % res_y
-    print 'num tiles x:%d' % num_tiles_x
-    print 'num tiles y:%d' % num_tiles_y
+    #print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
+    #print 'min tile x:%d' % tile_min_x
+    #print 'max tile x:%d' % tile_max_x
+    #print 'min tile y:%d' % tile_min_y
+    #print 'max tile y:%d' % tile_max_y
+    #
+    #print 'resolution x x:%d' % res_x
+    #print 'resolution y:%d' % res_y
+    #print 'num tiles x:%d' % num_tiles_x
+    #print 'num tiles y:%d' % num_tiles_y
 
     resampling = 'bilinear'
 
-    print 'warping dataset using resampling:', resampling
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     command = ['gdalwarp', '-of', 'vrt', '-r', '%s' % resampling, '-t_srs', 'EPSG:900913']
 
@@ -216,7 +213,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     #del ds
 
     print 'offsetting map dataset to destination tile set window'
-    #in memory dataset properly offset in tile window
+    #in memory dataset offset in tiled window
     tmp_offset = mem_driver.Create('', num_tiles_x * tilesystem.tile_size, num_tiles_y * tilesystem.tile_size, bands=bands)
     data = ds.ReadRaster(0, 0, ds.RasterXSize, ds.RasterYSize, ds.RasterXSize, ds.RasterYSize)
     tmp_offset.WriteRaster(offset_west, offset_north, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
@@ -263,7 +260,6 @@ def build_tiles_for_map(map_path, zoom_level, cutline=None, out_dir=None):
        cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
        : dilineated latitude/longitude WGS-84 coordinates (in decimal degrees)
     """
-    #map_stack = _build_tmp_vrt_stack_for_map(map_path, zoom_level, cutline)
     map_stack = _build_tile_vrt_for_map(map_path, zoom_level, cutline)
     _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir)
     _cleanup_tmp_vrt_stack(map_stack)
