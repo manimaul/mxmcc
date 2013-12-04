@@ -114,14 +114,3 @@ def dataset_lat_lng_bounds(gdal_ds):
 
     #min_lng, max_lat, max_lng, min_lat
     return west, north, east, south
-
-#if __name__ == '__main__':
-#    import tilesystem
-#    import gpxrte
-#    map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/18423_3.kap'
-#    ds = gdal.Open(map_path, gdal.GA_ReadOnly)
-#    bounds = dataset_lat_lng_bounds(ds)
-#    min_lng, max_lat, max_lng, min_lat = bounds
-#    gpxrte.export_bounds(bounds, '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/test.gpx')
-#    print bounds
-#    print tilesystem.lat_lng_bounds_to_tile_bounds_count(bounds, 15)

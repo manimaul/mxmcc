@@ -49,6 +49,14 @@ def map_size(level_of_detail):
     return float(tile_size << level_of_detail)
 
 
+def map_size_tiles(level_of_detail):
+    """determines the map width and height (in tiles) at a specified level of detail
+       level_of_detail, from 1 (lowest detail) to 23 (highest detail)
+       returns map height and width in number of tiles
+    """
+    return int(map_size(level_of_detail) / tile_size)
+
+
 def ground_resolution(latitude, level_of_detail):
     """determines the ground resolution (in meters per pixel) at a specifiec latitude and
        level of detail

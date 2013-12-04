@@ -34,7 +34,7 @@ def compile_region(region):
     else:
         catalog.build_catalog_for_region(region)
 
-    ##create tiles (handle tif, bsb or png datasets)
+    ##create tiles
     print 'building tiles for:', region
     tilebuilder.build_tiles_for_catalog(region)
 
