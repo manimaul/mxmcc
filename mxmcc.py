@@ -19,6 +19,8 @@ import tilebuilder
 import tilesmerge
 import gemf
 import zdata
+import verify
+import tiles_opt
 import os
 
 
@@ -38,16 +40,24 @@ def compile_region(region):
     print 'building tiles for:', region
     tilebuilder.build_tiles_for_catalog(region)
 
+    ##verify
+    if not verify.verify_catalog(region):
+        raise Exception(region + ' was not verified... ' + verify.error_message)
+
     #merge
     print 'merging tiles for:', region
     tilesmerge.merge_catalog(region)
-    #
+
     ##optimize
-    ##TODO:
+    tiles_opt.optimize_dir(os.path.join(config.merged_tile_dir, region))
+
+    ##verify all optimized tiles are there
+    if not verify.verify_opt(region):
+        raise Exception(region + ' was not optimized fully')
 
     #gemf
     print 'archiving:', region
-    gemf.generate_gemf(region, add_uid=regions.provider_for_region(region) is regions.provider_ukho)
+    gemf.generate_gemf(region + '.opt', add_uid=regions.provider_for_region(region) is regions.provider_ukho)
 
     #zdat
     print 'building metadata archive for:', region

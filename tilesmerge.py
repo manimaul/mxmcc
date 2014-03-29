@@ -26,7 +26,7 @@
 #  DEALINGS IN THE SOFTWARE.
 #******************************************************************************
 
-import Image
+from PIL import Image
 import glob
 import catalog
 import config
