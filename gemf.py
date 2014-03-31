@@ -124,7 +124,6 @@ def generate_gemf(name, add_uid=False):
 
                 results[zoom_level][x_val] = x_set[:]
 
-
         if 'allow-empty' in options:
             full_sets = {}
             for zoom_level in results.keys():

@@ -9,10 +9,16 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 '''Builds zxy map tiles for a single map or all the maps within a map catalog (catalog.py)
 
    1.) A (stack) gdal vrt files is created as follows:
-        --rescale to tilesystem pixels--
-        --EPSG:900913 (tilesystem) re-projection if needed--
-        --cropped cut line if defined / rotated to be north up--
-        --expanded rgba if needed--
+
+        --warped (base_w.vrt)
+          rescaled to tile system pixels
+          EPSG:900913 (tile system) re-projection if needed
+          cropped cut line if defined
+          rotated to be north up
+
+        --expanded rgba if needed (base_c.vrt)--
+
+        --base (the source map)--
 
     2.) The peek of the (stack) is offset (into tile window) and tiles are then rendered
 
@@ -44,64 +50,6 @@ supported_formats = {geotiff, bsb, png}
 #needed to set this to be able to process new 400dpi charts from NOAA
 #http://www.charts.noaa.gov/RNCs_400/
 os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
-
-#running = multiprocessing.Value("i", 0)
-
-
-#def _cutline_to_lat_lng_bounds(cutline):
-#    lats = []
-#    lngs = []
-#    for ll in cutline.split(':'):
-#        lat, lon = ll.split(',')
-#        lats.append(float(lat))
-#        lngs.append(float(lon))
-#
-#    #'min_lng, max_lat, max_lng, min_lat'
-#    return min(lngs), max(lats), max(lngs), min(lats)
-
-
-def _cutline_split_at_dateline(cutline):
-    """splits a cutline definition into two definitions where the seem is the international date line
-       returns a tuple of two new cutline definitions
-    """
-    values = []
-    for coords in cutline.split(':'):
-        c_lat, c_lng = coords.split(',')
-        values.append((float(c_lat), float(c_lng)))
-
-    key = False
-    result_coords = {False: [], True: []}
-
-    num_coords = len(values)
-    for i in range(num_coords):
-        if i < num_coords - 1:
-            lat1_d, lng1_d = values[i]
-            lat2_d, lng2_d = values[i+1]
-            if latlng.crosses_dateline(lng1_d, lng2_d):
-                split = latlng.intersection2(lat1_d, lng1_d, lat2_d, lng2_d, tilesystem.min_latitude, 180, tilesystem.max_latitude, 180)
-                result_coords[key].append(split)
-                key = not key
-                result_coords[key].append((split[0], -split[1]))
-                result_coords[not key].append(values[i])
-            else:
-                result_coords[key].append(values[i])
-
-    result_coords[False].append(result_coords[False][0])
-    result_coords[True].append(result_coords[True][0])
-
-    f_cutline = ''
-    for coord in result_coords[False]:
-        f_cutline += '%f,%f:' % coord
-
-    f_cutline = f_cutline[:-1]
-
-    t_cutline = ''
-    for coord in result_coords[True]:
-        t_cutline += '%f,%f:' % coord
-
-    t_cutline = t_cutline[:-1]
-
-    return f_cutline, t_cutline
 
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
@@ -169,8 +117,10 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
 
     lat_lng_bounds = gdalds.dataset_lat_lng_bounds(dataset)
     zoom = int(zoom_level)
-    pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
-    tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
+    pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
+        tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
+    tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = \
+        tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
 
     offset_west = pixel_min_x % tilesystem.tile_size
     offset_north = pixel_min_y % tilesystem.tile_size
@@ -198,17 +148,16 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     print 'offset_west:%d' % offset_west
     print 'offset_north:%d' % offset_north
 
-
     resampling = 'bilinear'
 
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
-    command = ['gdalwarp', '-of', 'vrt', '-r', '%s' % resampling, '-t_srs', 'EPSG:900913']
+    epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
+    command = ['gdalwarp', '-of', 'vrt', '-r', '%s' % resampling, '-t_srs', epsg_900913]
 
     if cutline is not None:
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
         command += ['-wo', 'CUTLINE=%s' % cut_poly]
                     #'-te'] + extents # crop to cutline
-
 
     command += ['-ts', str(res_x), str(res_y),  # scale to tile pixel window
                 _stack_peek(map_stack),  # gdal input source
@@ -242,8 +191,10 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
 
     lat_lng_bounds = gdalds.dataset_lat_lng_bounds(ds)
     zoom = int(zoom_level)
-    pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
-    tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
+    pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
+        tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
+    tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = \
+        tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
     offset_west = pixel_min_x % tilesystem.tile_size
     offset_north = pixel_min_y % tilesystem.tile_size
 
@@ -294,7 +245,8 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
 
         for y in range(tile_min_y, tile_max_y+1, 1):
             tile_path = os.path.join(tile_dir, str(y) + '.png')
-            data = tmp_offset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size)
+            data = tmp_offset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size, tilesystem.tile_size,
+                                         tilesystem.tile_size, tilesystem.tile_size)
             tile_mem = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=bands)
             tile_mem.WriteRaster(0, 0, tilesystem.tile_size, tilesystem.tile_size, data, band_list=range(1, bands+1))
             #TODO: process png image data with http://pngquant.org/lib/ before saving to disk
@@ -346,9 +298,9 @@ def build_tiles_for_catalog(catalog_name):
     pool.join()  # wait for pool to empty
 
 if __name__ == '__main__':
-    cl = '18.75,172.3267:32.08333,172.3267:32.08333,172.1667:32.5,172.1667:32.5,172.3267:60.33333,172.3267:60.33333,-173.25:60.75,-173.25:60.75,-171.5:60.33333,-171.5:60.33333,-116.3333:18.75,-116.3333:18.75,172.3267'
-    print _cutline_split_at_dateline(cl)
-    #map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/530_1.KAP'
-    ##print '_build_tile_vrt_for_map'
-    #_build_tile_vrt_for_map(map_path, 7)
-    ##build_tiles_for_map(map_path, '7', cl)
+    import bsb
+    'gdalwarp -of vrt -r bilinear -t_srs EPSG:900913 530_1_c.vrt 530_1_w.vrt'
+    test_map = '/Volumes/UNTITLED/530_1.KAP'
+    test_bsb = bsb.BsbHeader(test_map)
+    build_tiles_for_map(test_map, test_bsb.get_zoom(), test_bsb.get_outline())
+    # _cleanup_tmp_vrt_stack(test_vrt_stack, True)

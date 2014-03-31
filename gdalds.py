@@ -73,6 +73,18 @@ def dataset_get_proj4_srs_declaration(gdal_ds):
     return sr.ExportToProj4()
 
 
+def dataset_get_as_epsg_900913(gdal_ds):
+    epsg_900913 = '+proj=merc %s +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+    srs = dataset_get_proj4_srs_declaration(gdal_ds)
+    val = '0'
+    for ea in srs.split(' '):
+        ea = ea.strip()
+        if ea.startswith('+lon_0='):
+            val = ea[7:]
+
+    return epsg_900913 % ('+lon_0=' + val)
+
+
 def dataset_has_color_palette(gdal_ds):
     """returns true of false wether a gdal dataset has a color palette
     """
