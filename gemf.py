@@ -54,7 +54,7 @@ def generate_gemf(name, add_uid=False):
     else:
         ext = '.gemf'
 
-    output_file = os.path.join(config.compiled_dir, name.upper() + ext)
+    output_file = os.path.join(config.compiled_dir, name.upper().rstrip('.OPT') + ext)
     tilesize = 256
 
     extensions = (".png.tile", ".jpg.tile", ".png", ".jpg")
