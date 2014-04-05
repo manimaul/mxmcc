@@ -209,6 +209,11 @@ def lat_lng_bounds_to_pixel_bounds_res((min_lng, max_lat, max_lng, min_lat), lev
     pixel_max_x, pixel_min_y = lat_lng_to_pixel_xy(max_lat, max_lng, int(level_of_detail))
     res_x = pixel_max_x - pixel_min_x + 1
     res_y = pixel_max_y - pixel_min_y + 1
+
+    #dateline wrap
+    if res_x < 0:
+        res_x = (map_size(level_of_detail) - pixel_min_x) + pixel_max_x + 2
+
     return pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y
 
 
@@ -218,6 +223,11 @@ def lat_lng_bounds_to_tile_bounds_count((min_lng, max_lat, max_lng, min_lat), le
     tile_max_x, tile_min_y = lat_lng_to_tile_xy(max_lat, max_lng, level_of_detail)
     num_tiles_x = tile_max_x - tile_min_x + 1
     num_tiles_y = tile_max_y - tile_min_y + 1
+
+    #dateline wrap
+    if num_tiles_x < 0:
+        num_tiles_x = (map_size_tiles(level_of_detail) - tile_min_x) + tile_max_x + 2
+
     return tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y
 
 
