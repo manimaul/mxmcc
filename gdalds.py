@@ -17,7 +17,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
     """return a cutline in WKT geometry with coordinates expressed in dataset source pixel/line coordinates.
 
        cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
-       : dilineated latitude/longitude WGS-84 coordinates (in decimal degrees)
+       : dilineated latitude,longitude WGS-84 coordinates (in decimal degrees)
     """
 
     #---- create coordinate transform from lat lng to data set coords
@@ -55,7 +55,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
     ##--- get extents
     #extents = [str(min(x_coords)), str(min(y_coords)), str(max(x_coords)), str(max(y_coords))]  # xmin ymin xmax ymax
 
-    return polygon_wkt #, extents
+    return polygon_wkt
 
 
 def dataset_get_projection_wkt(gdal_ds):
@@ -71,6 +71,18 @@ def dataset_get_proj4_srs_declaration(gdal_ds):
     ds_wkt = dataset_get_projection_wkt(gdal_ds)
     sr = osr.SpatialReference(ds_wkt)
     return sr.ExportToProj4()
+
+
+def dataset_get_as_epsg_900913(gdal_ds):
+    epsg_900913 = '+proj=merc %s +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+    srs = dataset_get_proj4_srs_declaration(gdal_ds)
+    val = '0'
+    for ea in srs.split(' '):
+        ea = ea.strip()
+        if ea.startswith('+lon_0='):
+            val = ea[7:]
+
+    return epsg_900913 % ('+lon_0=' + val)
 
 
 def dataset_has_color_palette(gdal_ds):

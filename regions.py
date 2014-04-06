@@ -164,17 +164,28 @@ def map_type_for_region(region):
 def map_list_for_region(region):
     """returns a list of absolute paths to chart files for queried region"""
     provider = _db.provider_for_region(region)
+    print 'provider', provider
     region = region.upper()
     if _db.provider_has_region(provider, region):
         if provider is privider_noaa:
             reader = NoaaXmlReader(region)
             mps = MapPathSearch(config.noaa_bsb_dir, [map_type_for_region(region)], reader.get_map_files())
             return mps.file_paths
-        elif provider is provider_ukho:
-            return None  # TODO:
-        else:
-            mps = MapPathSearch(config.noaa_bsb_dir, [map_type_for_region(region)])
+        elif provider is provider_linz:
+            mps = MapPathSearch(config.linz_bsb_dir, [map_type_for_region(region)])
             return mps.file_paths
+        elif provider is provider_brazil:
+            mps = MapPathSearch(config.brazil_bsb_dir, [map_type_for_region(region)])
+            return mps.file_paths
+        # elif provider is provider_wavey_lines:
+        #     mps = MapPathSearch(config.wavey_line_geotiff_dir, [map_type_for_region(region)])
+        #     return mps.file_paths
+        # elif provider is provider_ukho:
+        #     mps = MapPathSearch(config.ukho_geotiff_dir, [map_type_for_region(region)])
+        #     return mps.file_paths
+        else:
+            raise Exception('unknown region')
+
 
 
 def lookup_for_region(region):
