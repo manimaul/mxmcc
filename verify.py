@@ -45,7 +45,7 @@ def verify_opt(catalog_name):
         for _ in files:
             n += 1
 
-    return i == n
+    return i == n and i != 0
 
 
 def verify_catalog(catalog_name):
@@ -56,7 +56,12 @@ def verify_catalog(catalog_name):
     global error_message
     error_message = ''
 
-    reader = catalog.get_reader_for_region(catalog_name)
+    # noinspection PyBroadException
+    try:
+        reader = catalog.get_reader_for_region(catalog_name)
+    except:
+        return False
+
     region_tile_dir = os.path.join(config.unmerged_tile_dir, catalog_name)
     tile_chart_dirs = set(os.listdir(region_tile_dir))
 
@@ -106,4 +111,7 @@ def verify_catalog(catalog_name):
     return True
 
 if __name__=='__main__':
-    print verify_opt('region_08')
+    import regions
+    for region in regions._db.db['noaa'].keys():
+        print region, 'verify:', verify_catalog(region)
+        print region, 'verify opt:', verify_opt(region)
