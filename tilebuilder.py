@@ -233,7 +233,6 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     #in memory dataset offset in tiled window
     tmp_offset = mem_driver.Create('', num_tiles_x * tilesystem.tile_size, num_tiles_y * tilesystem.tile_size, bands=bands)
     data = ds.ReadRaster(0, 0, ds.RasterXSize, ds.RasterYSize, ds.RasterXSize, ds.RasterYSize)
-    print 'writing to  offset dataset', offset_west, offset_north
     tmp_offset.WriteRaster(offset_west, offset_north, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
 
     del ds
