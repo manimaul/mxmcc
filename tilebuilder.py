@@ -242,20 +242,22 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     print 'producing map tiles'
 
     if tile_min_x > tile_max_x:  # dateline wrap
-        _cut_tiles_in_range(tmp_offset, bands, tile_min_x, tilesystem.map_size_tiles(zoom), tile_min_y, tile_max_y, out_dir, zoom)
-        _cut_tiles_in_range(tmp_offset, bands, 0, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom)
+        cursor_pixel_x = _cut_tiles_in_range(tmp_offset, bands, tile_min_x, tilesystem.map_size_tiles(zoom),
+                                             tile_min_y, tile_max_y, out_dir, zoom)
+        _cut_tiles_in_range(tmp_offset, bands, 0, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom, cursor_pixel_x)
     else:  # standard
         _cut_tiles_in_range(tmp_offset, bands, tile_min_x, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom)
 
     del tmp_offset
 
 
-def _cut_tiles_in_range(dataset, bands, tile_min_x, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom):
+def _cut_tiles_in_range(dataset, bands, tile_min_x, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom, start_pixel=0):
     mem_driver = gdal.GetDriverByName('MEM')
     png_driver = gdal.GetDriverByName('PNG')
 
-    cursor_pixel_x = 0
+    cursor_pixel_x = start_pixel
     cursor_pixel_y = 0
+
     for x in range(tile_min_x, tile_max_x + 1, 1):
 
         tile_dir = os.path.join(out_dir, str(zoom), str(x))
@@ -264,8 +266,8 @@ def _cut_tiles_in_range(dataset, bands, tile_min_x, tile_max_x, tile_min_y, tile
 
         for y in range(tile_min_y, tile_max_y+1, 1):
             tile_path = os.path.join(tile_dir, str(y) + '.png')
-            data = dataset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size, tilesystem.tile_size,
-                                         tilesystem.tile_size, tilesystem.tile_size)
+            data = dataset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size,
+                                      tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size)
             tile_mem = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=bands)
             tile_mem.WriteRaster(0, 0, tilesystem.tile_size, tilesystem.tile_size, data, band_list=range(1, bands+1))
             #TODO: process png image data with http://pngquant.org/lib/ before saving to disk
@@ -278,6 +280,8 @@ def _cut_tiles_in_range(dataset, bands, tile_min_x, tile_max_x, tile_min_y, tile
 
         cursor_pixel_x += tilesystem.tile_size
         cursor_pixel_y = 0
+
+    return cursor_pixel_x - tilesystem.tile_size
 
 
 def build_tiles_for_map(map_path, zoom_level, cutline=None, out_dir=None):
@@ -314,8 +318,8 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
-# if __name__ == '__main__':
-#     import bsb
-#     test_map = '/Users/williamkamp/Desktop/test/mxmcc/charts/noaa/BSB_ROOT/530/530_1.KAP'
-#     test_bsb = bsb.BsbHeader(test_map)
-#     build_tiles_for_map(test_map, test_bsb.get_zoom(), test_bsb.get_outline())
+if __name__ == '__main__':
+    import bsb
+    test_map = '/Users/williamkamp/Desktop/test/mxmcc/charts/noaa/BSB_ROOT/530/530_1.KAP'
+    test_bsb = bsb.BsbHeader(test_map)
+    build_tiles_for_map(test_map, test_bsb.get_zoom(), test_bsb.get_outline())
