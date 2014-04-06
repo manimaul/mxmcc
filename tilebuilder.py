@@ -145,7 +145,7 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     # print 'offset_west:%d' % offset_west
     # print 'offset_north:%d' % offset_north
 
-    resampling = 'bilinear'
+    resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
 
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
