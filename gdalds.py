@@ -17,7 +17,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
     """return a cutline in WKT geometry with coordinates expressed in dataset source pixel/line coordinates.
 
        cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
-       : dilineated latitude/longitude WGS-84 coordinates (in decimal degrees)
+       : dilineated latitude,longitude WGS-84 coordinates (in decimal degrees)
     """
 
     #---- create coordinate transform from lat lng to data set coords
@@ -55,7 +55,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
     ##--- get extents
     #extents = [str(min(x_coords)), str(min(y_coords)), str(max(x_coords)), str(max(y_coords))]  # xmin ymin xmax ymax
 
-    return polygon_wkt #, extents
+    return polygon_wkt
 
 
 def dataset_get_projection_wkt(gdal_ds):
