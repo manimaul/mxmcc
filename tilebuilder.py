@@ -41,7 +41,7 @@ import tilesystem
 import gdalds
 import catalog
 import config
-
+import verify
 
 #http://www.gdal.org/formats_list.html
 geotiff = 'Gtiff'
@@ -52,6 +52,9 @@ supported_formats = {geotiff, bsb, png}
 #needed to set this to be able to process new 400dpi charts from NOAA
 #http://www.charts.noaa.gov/RNCs_400/
 os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
+gdal.AllRegister()
+mem_driver = gdal.GetDriverByName('MEM')
+png_driver = gdal.GetDriverByName('PNG')
 
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
@@ -145,6 +148,7 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     # print 'offset_west:%d' % offset_west
     # print 'offset_north:%d' % offset_north
 
+    # todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
     resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
 
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
@@ -173,14 +177,16 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
        if out_dir is None or not a directory, tiles placed in map_stack, map directory
     """
 
-    gdal.AllRegister()
-
     #---- render tiles in the same directory of the map if not specified
     if out_dir is None:
         out_dir = os.path.dirname(_stack_peek(map_stack))
         out_dir = os.path.join(out_dir, 'tiles')
     elif not os.path.isdir(out_dir):
         os.makedirs(out_dir)
+    elif verify.verify_tile_dir(out_dir):
+        print 'skipping: ' + out_dir
+        return
+
 
     #---- open the peek vrt / map in the map_stack
     ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
@@ -214,8 +220,8 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     # print 'offset_west:%d' % offset_west
     # print 'offset_north:%d' % offset_north
 
-    mem_driver = gdal.GetDriverByName('MEM')
-    #png_driver = gdal.GetDriverByName('PNG')
+    # mem_driver = gdal.GetDriverByName('MEM')
+    # png_driver = gdal.GetDriverByName('PNG')
 
     ##NOTE: This step skipped by re-scaling re-projected vrt in the map stack
     #print 'scaling map dataset to destination resolution for projection'
@@ -241,6 +247,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     print 'producing map tiles'
 
     if tile_min_x > tile_max_x:  # dateline wrap
+        print 'wrapping tiles to dateline'
         cursor_pixel_x = _cut_tiles_in_range(tmp_offset, bands, tile_min_x, tilesystem.map_size_tiles(zoom),
                                              tile_min_y, tile_max_y, out_dir, zoom)
         _cut_tiles_in_range(tmp_offset, bands, 0, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom, cursor_pixel_x)
@@ -251,29 +258,34 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
 
 
 def _cut_tiles_in_range(dataset, bands, tile_min_x, tile_max_x, tile_min_y, tile_max_y, out_dir, zoom, start_pixel=0):
-    mem_driver = gdal.GetDriverByName('MEM')
-    png_driver = gdal.GetDriverByName('PNG')
-
     cursor_pixel_x = start_pixel
     cursor_pixel_y = 0
 
     for x in range(tile_min_x, tile_max_x + 1, 1):
 
         tile_dir = os.path.join(out_dir, str(zoom), str(x))
-        if not os.path.isdir(tile_dir):
-            os.makedirs(tile_dir)
 
         for y in range(tile_min_y, tile_max_y+1, 1):
             tile_path = os.path.join(tile_dir, str(y) + '.png')
             data = dataset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size,
                                       tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size)
-            tile_mem = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=bands)
-            tile_mem.WriteRaster(0, 0, tilesystem.tile_size, tilesystem.tile_size, data, band_list=range(1, bands+1))
-            #TODO: process png image data with http://pngquant.org/lib/ before saving to disk
-            png_driver.CreateCopy(tile_path, tile_mem, strict=0)
+            transparent = True
+            for ea in data:
+                if ord(ea) != 0:
+                    transparent = False
 
-            del data
-            del tile_mem
+            #only create tiles that have data (not completely transparent)
+            if not transparent:
+                if not os.path.isdir(tile_dir):
+                    os.makedirs(tile_dir)
+                tile_mem = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=bands)
+                tile_mem.WriteRaster(0, 0, tilesystem.tile_size, tilesystem.tile_size, data, band_list=range(1, bands+1))
+                #TODO: process png image data with http://pngquant.org/lib/ before saving to disk
+                png_tile = png_driver.CreateCopy(tile_path, tile_mem, strict=0)
+
+                del data
+                del tile_mem
+                del png_tile
 
             cursor_pixel_y += tilesystem.tile_size
 
@@ -319,6 +331,6 @@ def build_tiles_for_catalog(catalog_name):
 
 # if __name__ == '__main__':
 #     import bsb
-#     test_map = '/Users/williamkamp/Desktop/test/mxmcc/charts/noaa/BSB_ROOT/530/530_1.KAP'
+#     test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/18445/18445_4.KAP'
 #     test_bsb = bsb.BsbHeader(test_map)
-#     build_tiles_for_map(test_map, test_bsb.get_zoom(), test_bsb.get_outline())
+#     build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/region_15/18445_4')

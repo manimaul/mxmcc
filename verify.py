@@ -63,6 +63,11 @@ def verify_catalog(catalog_name):
         return False
 
     region_tile_dir = os.path.join(config.unmerged_tile_dir, catalog_name)
+
+    if not os.path.isdir(region_tile_dir):
+        error_message = region_tile_dir + ' is not a directory'
+        return False
+
     tile_chart_dirs = set(os.listdir(region_tile_dir))
 
     for chart in reader:
@@ -73,45 +78,62 @@ def verify_catalog(catalog_name):
             return False
         else:
             tile_dir = os.path.join(region_tile_dir, name)
-            found_zoom_dirs = []
-
-            #look for a zoom directory
-            for z_dir in os.listdir(tile_dir):
-                if z_dir.isdigit():
-                    found_zoom_dirs.append(z_dir)
-
-            #we should have at least one zoom dir
-            if len(found_zoom_dirs) > 0:
-
-                #check for tiles
-                for z_dir in found_zoom_dirs:
-                    z_dir = os.path.join(tile_dir, z_dir)
-                    x_dirs = os.listdir(z_dir)
-
-                    #we should have at least one x dir
-                    if len(x_dirs) == 0:
-                        error_message = 'zero x directories found in path: ' + z_dir
-                        return False
-
-                    num_tiles = _x_dir_tile_count(os.listdir(os.path.join(z_dir, x_dirs[0])))
-                    if num_tiles == 0:
-                        error_message = 'zero tiles in directory path: ' + os.path.join(z_dir, x_dirs[0])
-                        return False
-
-                    for x_dir in x_dirs:
-                        x_dir = os.path.join(z_dir, x_dir)
-                        check_num = _x_dir_tile_count(os.listdir(x_dir))
-                        if check_num != num_tiles:
-                            error_message = 'wrong number of tiles found in directory: ' + x_dir
-                            return False
-
-            else:
+            if not (verify_tile_dir(tile_dir)):
                 return False
 
     return True
 
-if __name__=='__main__':
-    import regions
-    for region in regions._db.db['noaa'].keys():
-        print region, 'verify:', verify_catalog(region)
-        print region, 'verify opt:', verify_opt(region)
+
+def verify_tile_dir(tile_dir):
+    if not os.path.isdir(tile_dir):
+        return False
+
+    found_zoom_dirs = []
+
+    #look for a zoom directory
+    for z_dir in os.listdir(tile_dir):
+        if z_dir.isdigit():
+            found_zoom_dirs.append(z_dir)
+
+    global error_message
+    error_message = ''
+
+    #we should have at least one zoom dir
+    if len(found_zoom_dirs) > 0:
+
+        #check for tiles
+        for z_dir in found_zoom_dirs:
+            z_dir = os.path.join(tile_dir, z_dir)
+            x_dirs = os.listdir(z_dir)
+
+            #we should have at least one x dir
+            if len(x_dirs) == 0:
+                error_message = 'zero x directories found in path: ' + z_dir
+                return False
+
+            # num_tiles = _x_dir_tile_count(os.listdir(os.path.join(z_dir, x_dirs[0])))
+            # if num_tiles == 0:
+            #     error_message = 'zero tiles in directory path: ' + os.path.join(z_dir, x_dirs[0])
+            #     return False
+
+            for x_dir in x_dirs:
+                x_dir = os.path.join(z_dir, x_dir)
+                check_num = _x_dir_tile_count(os.listdir(x_dir))
+                if check_num == 0:
+                    error_message = 'zero tiles in directory path: ' + os.path.join(z_dir, x_dir)
+                    return False
+
+    else:
+        error_message = 'zero zoom directories found for ' + tile_dir
+        return False
+
+    return True
+
+
+if __name__ == '__main__':
+    print verify_catalog('region_15')
+    print error_message
+    # import regions
+    # for region in regions._db.db['noaa'].keys():
+    #     print region, 'verify:', verify_catalog(region)
+    #     print region, 'verify opt:', verify_opt(region)
