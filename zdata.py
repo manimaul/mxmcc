@@ -50,6 +50,7 @@ def generate_update():
     for p in gemf_lst:
         size = str(os.path.getsize(p))
         region = os.path.basename(p)[0:p.rfind(".")]
+        #todo: read the time from the region's zdat
         sqlf.write(sqlstr % (config.epoch, size, region)+'\n')
 
     sqlf.close()
