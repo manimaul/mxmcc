@@ -12,25 +12,43 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 import catalog
 import os.path
 import config
+from PIL import Image
 
 error_message = ''
 
 
-def _x_dir_tile_count(dir_lst):
+def _full_transparency(img):
+    """is image fully transparent"""
+    rgba = img.split()
+    if len(rgba) < 4:
+        return False
+
+    (r, g, b, a) = rgba
+    (a_min, a_max) = a.getextrema()  # get min/max values for alpha channel
+    return a_min == 0 and a_max == 0
+
+
+def _x_dir_has_tiles(x_dir):
     """
-    :param dir_lst: directory list
+    :param x_dir: zxy tile x directory
     :return: count of all the png tiles in the directory
     """
-    count = 0
+
+    dir_lst = os.listdir(x_dir)
     for d in dir_lst:
         ne = d.split('.')
         if len(ne) != 2:
             continue
         name, ext = ne
         if name.isdigit() and ext.lower() == 'png':
-            count += 1
+            img_path = os.path.join(x_dir, d)
+            img = Image.open(img_path)
+            if _full_transparency(img):
+                print img_path
+            else:
+                return True
 
-    return count
+    return False
 
 
 def verify_opt(catalog_name):
@@ -118,8 +136,7 @@ def verify_tile_dir(tile_dir):
 
             for x_dir in x_dirs:
                 x_dir = os.path.join(z_dir, x_dir)
-                check_num = _x_dir_tile_count(os.listdir(x_dir))
-                if check_num == 0:
+                if not _x_dir_has_tiles(x_dir):
                     error_message = 'zero tiles in directory path: ' + os.path.join(z_dir, x_dir)
                     return False
 
@@ -130,10 +147,21 @@ def verify_tile_dir(tile_dir):
     return True
 
 
+def verify(region_lst):
+    for region in region_lst:
+        region = region.upper()
+        v = verify_catalog(region)
+        print region, 'verify:', v
+        if not v:
+            print error_message
+        v = verify_opt(region)
+        print region, 'verify opt:', v
+        if not v:
+            print error_message
+        print '------------------------------'
+
+
 if __name__ == '__main__':
-    print verify_catalog('region_15')
-    print error_message
     # import regions
-    # for region in regions._db.db['noaa'].keys():
-    #     print region, 'verify:', verify_catalog(region)
-    #     print region, 'verify opt:', verify_opt(region)
+    # verify(regions._db.db['noaa'].keys())
+    verify(['REGION_03', 'REGION_30'])

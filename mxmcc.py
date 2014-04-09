@@ -25,6 +25,8 @@ import os
 
 
 def compile_region(region):
+    region = region.upper()
+
     print 'building catalog for:', region
     if not regions.is_valid_region(region):
         region_dir = regions.find_custom_region_path(region)

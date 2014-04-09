@@ -72,7 +72,7 @@ def _stack_peek(vrt_stack):
     return vrt_stack[-1]
 
 
-def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
+def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None, verbose=False):
     """builds a stack of temporary vrt files for an input path to a map file
        the peek of the stack is the target file to use to create tiles
        after use the temporary files should be deleted using cleanup_tmp_vrt_stack(the_stack)
@@ -94,7 +94,10 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
         raise Exception(map_type + ' is not a supported format')
 
     #log = open(os.devnull, 'w')
-    log = subprocess.PIPE
+    if verbose:
+        log = subprocess.PIPE
+    else:
+        log = open(os.devnull, 'w')
 
     #-----paths and file names
     base_dir = os.path.dirname(map_path)
@@ -149,7 +152,7 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None):
     # print 'offset_north:%d' % offset_north
 
     # todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
-    resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
+    resampling = 'bilinear'  # near bilinear cubic cubicspline lanczos average mode
 
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
@@ -184,7 +187,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     elif not os.path.isdir(out_dir):
         os.makedirs(out_dir)
     elif verify.verify_tile_dir(out_dir):
-        print 'skipping: ' + out_dir
+        # print 'skipping: ' + out_dir
         return
 
 
@@ -239,7 +242,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     #in memory dataset offset in tiled window
     tmp_offset = mem_driver.Create('', num_tiles_x * tilesystem.tile_size, num_tiles_y * tilesystem.tile_size, bands=bands)
     data = ds.ReadRaster(0, 0, ds.RasterXSize, ds.RasterYSize, ds.RasterXSize, ds.RasterYSize)
-    tmp_offset.WriteRaster(offset_west, offset_north, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
+    tmp_offset.WriteRaster(offset_west - 1, offset_north - 1, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
 
     del ds
     del data
@@ -270,9 +273,10 @@ def _cut_tiles_in_range(dataset, bands, tile_min_x, tile_max_x, tile_min_y, tile
             data = dataset.ReadRaster(cursor_pixel_x, cursor_pixel_y, tilesystem.tile_size,
                                       tilesystem.tile_size, tilesystem.tile_size, tilesystem.tile_size)
             transparent = True
-            for ea in data:
-                if ord(ea) != 0:
-                    transparent = False
+            if data is not None:
+                for ea in data:
+                    if ord(ea) != 0:
+                        transparent = False
 
             #only create tiles that have data (not completely transparent)
             if not transparent:
@@ -323,14 +327,16 @@ def build_tiles_for_catalog(catalog_name):
     """builds tiles for every map in a catalog
        tiles output to tile directory in config.py
     """
+    catalog_name = catalog_name.upper()
+
     reader = catalog.get_reader_for_region(catalog_name)
     pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     pool.map_async(partial(_build_tiles_for_map_helper, name=catalog_name), reader)
     pool.close()
     pool.join()  # wait for pool to empty
 
-# if __name__ == '__main__':
-#     import bsb
-#     test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/18445/18445_4.KAP'
-#     test_bsb = bsb.BsbHeader(test_map)
-#     build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/region_15/18445_4')
+if __name__ == '__main__':
+    import bsb
+    test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/17431/17431_1.KAP'
+    test_bsb = bsb.BsbHeader(test_map)
+    build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/REGION_30/17431_1')
