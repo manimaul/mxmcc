@@ -28,12 +28,25 @@ fmt1 = u'INSERT INTO [charts] ' \
        u'VALUES (\'%s\', \'%s\', \'%s\', \'%s\', %s, \'%s\', \'%s\', \'%s\');\n'
 
 
+def get_zdat_epoch(zdat_path):
+    """
+    :param zdat_path: path to the <region>.zdat file
+    :return: the installeddate value to be set
+    """
+    zdat_file = zipfile.ZipFile(zdat_path, 'r', zipfile.ZIP_DEFLATED)
+    line = zdat_file.open(zdat_file.namelist()[0], 'r').readlines()[1]
+    l = line.find('\'') + 1
+    r = line.find('\'', l)
+    return line[l:r]
+
+
 def generate_update():
     """generates and UPDATE.zdat file for all of the new (s)gemf regions rendered
     """
     sql_fname = 'UPDATE.sql'
     sql_path = os.path.join(config.compiled_dir, sql_fname)
-    zdat_path = os.path.join(config.compiled_dir, '/UPDATE.zdat')
+    zdat_path = os.path.join(config.compiled_dir, 'UPDATE.zdat')
+    print zdat_path
     zdat = zipfile.ZipFile(zdat_path, 'w', zipfile.ZIP_DEFLATED)
     sqlf = open(sql_path, 'w')
     gemf_lst = []
@@ -49,9 +62,10 @@ def generate_update():
     sqlf.write(u'--MXMARINER-DBVERSION:1\n')
     for p in gemf_lst:
         size = str(os.path.getsize(p))
-        region = os.path.basename(p)[0:p.rfind(".")]
-        #todo: read the time from the region's zdat
-        sqlf.write(sqlstr % (config.epoch, size, region)+'\n')
+        region = os.path.basename(p)
+        region = region[:region.rfind('.')]
+        z_path = os.path.join(config.compiled_dir, region + '.zdat')
+        sqlf.write(sqlstr % (get_zdat_epoch(z_path), size, region)+'\n')
 
     sqlf.close()
     zdat.write(sql_path, sql_fname)
@@ -95,4 +109,4 @@ def generate_zdat_for_catalog(catalog_name, description=None):
     zdat_file.close()
 
 if __name__ == '__main__':
-    generate_zdat_for_catalog('detroit')
+    generate_update()
