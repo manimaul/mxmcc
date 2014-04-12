@@ -27,7 +27,7 @@ import time
 #_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
 # _root_dir = os.path.join('/Volumes/USB-DATA', 'mxmcc')
 _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
-# _root_dir = os.path.join('/media/will/USB-DATA', 'mxmcc')
+# _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
 
 #UKHO specific meta data excel sheets that change every quarter
@@ -99,6 +99,8 @@ def check_dirs():
 
 def setup_dir_structure():
     print 'Setting up MXMCC directory structure'
+    if not os.path.isdir(_root_dir):
+        os.makedirs(_root_dir)
 
     if not os.path.isdir(_root_dir):
         raise Exception(_root_dir + ' does not exist!')
