@@ -240,9 +240,10 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
 
     print 'offsetting map dataset to destination tile set window'
     #in memory dataset offset in tiled window
-    tmp_offset = mem_driver.Create('', num_tiles_x * tilesystem.tile_size, num_tiles_y * tilesystem.tile_size, bands=bands)
+    tmp_offset = mem_driver.Create('', (num_tiles_x * tilesystem.tile_size) + 1,
+                                   (num_tiles_y * tilesystem.tile_size) + 1, bands=bands)
     data = ds.ReadRaster(0, 0, ds.RasterXSize, ds.RasterYSize, ds.RasterXSize, ds.RasterYSize)
-    tmp_offset.WriteRaster(offset_west - 1, offset_north - 1, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
+    tmp_offset.WriteRaster(offset_west, offset_north, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
 
     del ds
     del data
@@ -337,6 +338,6 @@ def build_tiles_for_catalog(catalog_name):
 
 if __name__ == '__main__':
     import bsb
-    test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/17431/17431_1.KAP'
+    test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/12348/12348_1.KAP'
     test_bsb = bsb.BsbHeader(test_map)
-    build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/REGION_30/17431_1')
+    build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/REGION_03/12348_1')
