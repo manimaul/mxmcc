@@ -336,7 +336,8 @@ def build_tiles_for_catalog(catalog_name):
     pool.join()  # wait for pool to empty
 
 if __name__ == '__main__':
-    import bsb
-    test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/17431/17431_1.KAP'
-    test_bsb = bsb.BsbHeader(test_map)
-    build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/REGION_30/17431_1')
+    build_tiles_for_catalog('REGION_15')
+    # import bsb
+    # test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/17431/17431_1.KAP'
+    # test_bsb = bsb.BsbHeader(test_map)
+    # build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/REGION_30/17431_1')
