@@ -124,5 +124,12 @@ def dataset_lat_lng_bounds(gdal_ds):
     east, south = transform.TransformPoint(east, south)[:2]
     west, north = transform.TransformPoint(west, north)[:2]
 
+    is_north_up = geotransform[2] == 0 and geotransform[4] == 0
+
     #min_lng, max_lat, max_lng, min_lat
-    return west, north, east, south
+    return (west, north, east, south), is_north_up
+
+# if __name__ == '__main__':
+#     dataset = gdal.Open('/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/50/50_2.KAP', gdal.GA_ReadOnly)
+#     print dataset_get_projection_wkt(dataset)
+#     print dataset_get_proj4_srs_declaration(dataset)

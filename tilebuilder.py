@@ -123,7 +123,7 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None, verbose=False):
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
 
-    lat_lng_bounds = gdalds.dataset_lat_lng_bounds(dataset)
+    lat_lng_bounds, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
     zoom = int(zoom_level)
     pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
         tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
@@ -152,7 +152,10 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None, verbose=False):
     # print 'offset_north:%d' % offset_north
 
     # todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
-    resampling = 'bilinear'  # near bilinear cubic cubicspline lanczos average mode
+    if is_north_up:
+        resampling = 'average'
+    else:
+        resampling = 'bilinear'  # near bilinear cubic cubicspline lanczos average mode
 
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
@@ -195,7 +198,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     ds = gdal.Open(_stack_peek(map_stack), gdal.GA_ReadOnly)
     bands = ds.RasterCount
 
-    lat_lng_bounds = gdalds.dataset_lat_lng_bounds(ds)
+    lat_lng_bounds, is_north_up = gdalds.dataset_lat_lng_bounds(ds)
     zoom = int(zoom_level)
 
     pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
