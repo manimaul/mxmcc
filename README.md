@@ -1,17 +1,27 @@
 MXMCC - MX Map/Chart Compiler
+===
 
-Copyright (C) 2014 by Will Kamp - manimaul@gmail.com
+*Copyright (C) 2014 Will Kamp - manimaul@gmail.com*
 
-This program creates chart (region) archives in the gemf** format with corresponding meta-data.
+*License: Your choice [Simplified BSD](http://opensource.org/licenses/BSD-3-Clause) or [MIT](http://opensource.org/licenses/mit-license.html)*
+
+This program creates chart (region) archives in the gemf (See note) format with corresponding meta-data.
 Charts in the BSB version 2 and 3 formats are supported as input as well as maps in the Geotiff format.
 
-**Generated gemf + meta data archives are compatible with MX Mariner (MXMariner.com).
+**Note: Generated gemf + meta data archives are compatible with [MX Mariner](http://mxmariner.com/).**
 
 requirements:
-python
-pyproj
-shapely
-gdal
-pillow
-numpy
-pycrypto
+
+* python
+
+* pyproj
+
+* shapely
+
+* gdal
+
+* pillow
+
+* numpy
+
+* pycrypto

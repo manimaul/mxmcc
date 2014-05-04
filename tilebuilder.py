@@ -56,6 +56,9 @@ gdal.AllRegister()
 mem_driver = gdal.GetDriverByName('MEM')
 png_driver = gdal.GetDriverByName('PNG')
 
+# todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
+resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
+
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
     """convenience method for removing temporary vrt files created with _build_tmp_vrt_stack_for_map()
@@ -118,44 +121,37 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None, verbose=False):
 
         map_stack.append(c_vrt_path)
 
-    #-----repoject map to tilesystem projection, scale map to enveloping tiles window, crop to cutline
+    #-----repoject map to tilesystem projection, crop to cutline
     w_vrt_path = os.path.join(base_dir, map_name + '_w.vrt')
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
 
-    lat_lng_bounds, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
-    zoom = int(zoom_level)
-    pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
-        tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
+    # lat_lng_bounds = gdalds.dataset_lat_lng_bounds(dataset)
+    # zoom = int(zoom_level)
+    # pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
+    #     tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
+    #
     # tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = \
     #     tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
     #
     # offset_west = pixel_min_x % tilesystem.tile_size
     # offset_north = pixel_min_y % tilesystem.tile_size
-
-    # print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
-    # print 'min tile x:%d' % tile_min_x
-    # print 'max tile x:%d' % tile_max_x
-    # print 'min tile y:%d' % tile_min_y
-    # print 'max tile y:%d' % tile_max_y
     #
+    # print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
+    # print 'west tile x:%d' % tile_min_x
+    # print 'east tile x:%d' % tile_max_x
+    # print 'south tile y:%d' % tile_min_y
+    # print 'north tile y:%d' % tile_max_y
+    # print 'west pixel x:%d' % pixel_min_x
+    # print 'east pixel x:%d' % pixel_max_x
     # print 'resolution x x:%d' % res_x
     # print 'resolution y:%d' % res_y
     # print 'num tiles x:%d' % num_tiles_x
     # print 'num tiles y:%d' % num_tiles_y
-    #
-    # print 'pixel min x:%d' % pixel_min_x
-    # print 'pixel max x:%d' % pixel_max_x
-    # print 'pixel min y:%d' % pixel_min_y
-    # print 'pixel max y:%d' % pixel_max_y
     # print 'offset_west:%d' % offset_west
     # print 'offset_north:%d' % offset_north
 
-    # todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
-    if is_north_up:
-        resampling = 'average'
-    else:
-        resampling = 'bilinear'  # near bilinear cubic cubicspline lanczos average mode
+
 
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
@@ -164,10 +160,8 @@ def _build_tile_vrt_for_map(map_path, zoom_level, cutline=None, verbose=False):
     if cutline is not None:
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
         command += ['-wo', 'CUTLINE=%s' % cut_poly]
-                    #'-te'] + extents # crop to cutline
 
-    command += ['-ts', str(res_x), str(res_y),  # scale to tile pixel window
-                _stack_peek(map_stack),  # gdal input source
+    command += [_stack_peek(map_stack),  # gdal input source
                 w_vrt_path]  # gdal output destination
 
     subprocess.Popen(command).wait()
@@ -207,18 +201,16 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = \
         tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
 
-    if pixel_max_x < pixel_min_x:  # dateline
-        offset_west = pixel_max_x % tilesystem.tile_size
-    else:  # standard
-        offset_west = pixel_min_x % tilesystem.tile_size
-
+    offset_west = pixel_min_x % tilesystem.tile_size
     offset_north = pixel_min_y % tilesystem.tile_size
 
     # print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
-    # print 'min tile x:%d' % tile_min_x
-    # print 'max tile x:%d' % tile_max_x
-    # print 'min tile y:%d' % tile_min_y
-    # print 'max tile y:%d' % tile_max_y
+    # print 'west tile x:%d' % tile_min_x
+    # print 'east tile x:%d' % tile_max_x
+    # print 'south tile y:%d' % tile_min_y
+    # print 'north tile y:%d' % tile_max_y
+    # print 'west pixel x:%d' % pixel_min_x
+    # print 'east pixel x:%d' % pixel_max_x
     # print 'resolution x x:%d' % res_x
     # print 'resolution y:%d' % res_y
     # print 'num tiles x:%d' % num_tiles_x
@@ -226,29 +218,31 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir):
     # print 'offset_west:%d' % offset_west
     # print 'offset_north:%d' % offset_north
 
-    # mem_driver = gdal.GetDriverByName('MEM')
-    # png_driver = gdal.GetDriverByName('PNG')
+    print 'scaling map dataset to destination resolution for projection'
+    tmp = mem_driver.Create('', int(res_x), int(res_y), bands=bands)
+    for i in range(1, bands+1):
+        gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), resampling)
 
-    ##NOTE: This step skipped by re-scaling re-projected vrt in the map stack
-    #print 'scaling map dataset to destination resolution for projection'
-    ##in memory dataset scaled to destination resolution (num_pixels_x X num_pixels_y)
-    #tmp = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
-    #for i in range(1, bands+1):
-    #    gdal.RegenerateOverview(ds.GetRasterBand(i), tmp.GetRasterBand(i), 'average')
-    #
-    ##png_driver.CreateCopy('/Users/williamkamp/mxmcc/charts/noaa/BSB_ROOT/18453/rgo.png', tmp, strict=0)
-    ##return
-    #
-    #del ds
+    # png_driver.CreateCopy('/Users/williamkamp/Desktop/out/50_2.png', tmp, strict=0)
+    # return
+
+    del ds
+
+    num_pixels_x = (num_tiles_x * tilesystem.tile_size) + 1
+    num_pixels_y = (num_tiles_y * tilesystem.tile_size) + 1
+    print 'num_pixels_x', num_pixels_x
+    print 'num_pixels_y', num_pixels_y
 
     print 'offsetting map dataset to destination tile set window'
     #in memory dataset offset in tiled window
-    tmp_offset = mem_driver.Create('', (num_tiles_x * tilesystem.tile_size) + 1,
-                                   (num_tiles_y * tilesystem.tile_size) + 1, bands=bands)
-    data = ds.ReadRaster(0, 0, ds.RasterXSize, ds.RasterYSize, ds.RasterXSize, ds.RasterYSize)
-    tmp_offset.WriteRaster(offset_west, offset_north, ds.RasterXSize, ds.RasterYSize, data, band_list=range(1, bands+1))
+    tmp_offset = mem_driver.Create('', num_pixels_x, num_pixels_y, bands=bands)
+    data = tmp.ReadRaster(0, 0, tmp.RasterXSize, tmp.RasterYSize, tmp.RasterXSize, tmp.RasterYSize)
+    tmp_offset.WriteRaster(offset_west, offset_north, tmp.RasterXSize, tmp.RasterYSize, data, band_list=range(1, bands+1))
 
-    del ds
+    # png_driver.CreateCopy('/Users/williamkamp/Desktop/out/50_2.png', tmp_offset, strict=0)
+    # return
+
+    del tmp
     del data
 
     print 'producing map tiles'
@@ -340,7 +334,13 @@ def build_tiles_for_catalog(catalog_name):
     pool.join()  # wait for pool to empty
 
 if __name__ == '__main__':
+    #build_tiles_for_catalog('REGION_15')
     import bsb
-    test_map = '/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/12348/12348_1.KAP'
+    import time
+    t = time.time()
+    test_map = '/Users/williamkamp/Desktop/out/50_1.KAP'
     test_bsb = bsb.BsbHeader(test_map)
-    build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/mnt/auxdrive/mxmcc/tiles/unmerged/REGION_03/12348_1')
+    print 'zoom', test_bsb.get_zoom()
+    build_tiles_for_map(test_map, test_bsb.get_zoom(), cutline=test_bsb.get_outline(), out_dir='/Users/williamkamp/Desktop/out')
+    dt = time.time() - t
+    print 'elapsed: ', dt
