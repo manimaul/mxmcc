@@ -125,7 +125,7 @@ def dataset_lat_lng_bounds(gdal_ds):
     east, south = transform.TransformPoint(east, south)[:2]
     west, north = transform.TransformPoint(west, north)[:2]
 
-    is_north_up = geotransform[2] + geotransform[5] == 0
+    is_north_up = (get_rotation(gdal_ds.GetGeoTransform()) % 360) == 0
 
     #min_lng, max_lat, max_lng, min_lat
     return (west, north, east, south), is_north_up
@@ -250,10 +250,6 @@ def MapToPixel(mx,my,gt):
         px,py=ApplyGeoTransform(mx,my,InvGeoTransform(gt))
     #return int(px),int(py)
     return px,py
-
-if __name__ == '__main__':
-    ds = gdal.Open('/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/11411/11411_1.KAP', gdal.GA_ReadOnly)
-    print dataset_lat_lng_bounds(ds)
 
 # if __name__ == '__main__':
 #     import tilesystem as ts
