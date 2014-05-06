@@ -150,6 +150,13 @@ def level_of_detail_for_pixel_size(latitude, pixel_size):
 #Following methods adapted from http://www.klokan.cz/projects/gdal2tiles/gdal2tiles.py
 #and changed from TMS pyramid coordinate to ZXY coordinate outputs
 
+def pixels_to_meters(px, py, level_of_detail):
+    res = ground_resolution(0, level_of_detail)
+    mx = px * res - origin_shift
+    my = py * res - origin_shift
+    return mx, my
+
+
 def meters_to_pixels(meters_x, meters_y, level_of_detail):
     """converts XY point from Spherical Mercator EPSG:900913 to ZXY pixel coordinates
     """
@@ -192,7 +199,9 @@ def lat_lng_to_meters(lat, lng):
 #ZXY coordinates originate from the top left
 
 def tms_to_zxy_coord(px, py, zoom):
-    """Converts TMS pixel coordinates to ZXY pixel coordinates"""
+    """Converts TMS pixel coordinates to ZXY pixel coordinates
+       or vise versa
+    """
     return px, (2**zoom) * tile_size - py - 1
 
 
