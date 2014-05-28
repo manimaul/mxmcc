@@ -125,7 +125,48 @@ def dataset_lat_lng_bounds(gdal_ds):
     east, south = transform.TransformPoint(east, south)[:2]
     west, north = transform.TransformPoint(west, north)[:2]
 
-    is_north_up = (get_rotation(gdal_ds.GetGeoTransform()) % 360) == 0
+    rotation = get_rotation(gdal_ds.GetGeoTransform())
+    is_north_up = rotation < .5 or rotation > 359.5
+
+    #min_lng, max_lat, max_lng, min_lat
+    return (west, north, east, south), is_north_up
+
+
+def dataset_meters_bounds(gdal_ds):
+    """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
+       bounding box returned as: min_lng, min_lat, max_lng, max_lat
+    """
+
+    out_srs = osr.SpatialReference()
+    out_srs.ImportFromEPSG(900913)
+
+    ds_wkt = dataset_get_projection_wkt(gdal_ds)
+    ds_srs = osr.SpatialReference()
+    ds_srs.ImportFromWkt(ds_wkt)
+
+    #we need a north up dataset
+    ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
+    geotransform = ds.GetGeoTransform()
+    transform = osr.CoordinateTransformation(ds_srs, out_srs)
+
+    #useful information about geotransform
+    #geotransform[0] #top left X
+    #geotransform[1] #w-e pixel resolution
+    #geotransform[2] #rotation, 0 if image is "north up"
+    #geotransform[3] #top left Y
+    #geotransform[4] #rotation, 0 if image is "north up"
+    #geotransform[5] n-s pixel resolution
+
+    west = geotransform[0]
+    east = west + ds.RasterXSize * geotransform[1]
+    north = geotransform[3]
+    south = north - ds.RasterYSize * geotransform[1]
+
+    east, south = transform.TransformPoint(east, south)[:2]
+    west, north = transform.TransformPoint(west, north)[:2]
+
+    rotation = get_rotation(gdal_ds.GetGeoTransform())
+    is_north_up = rotation < .5 or rotation > 359.5
 
     #min_lng, max_lat, max_lng, min_lat
     return (west, north, east, south), is_north_up
@@ -138,102 +179,28 @@ def get_rotation(gt):
         @rtype: C{float}
         @return: rotation angle
     """
+    # noinspection PyBroadException
     try:
-        return math.degrees(math.tanh(gt[2]/gt[5]))
+        return math.degrees(math.tanh(gt[2]/gt[5])) % 360
     except:
         return 0
 
 
-def InvGeoTransform(gt_in):
-    '''
-     ************************************************************************
-     *                        InvGeoTransform(gt_in)
-     ************************************************************************
-
-     **
-     * Invert Geotransform.
-     *
-     * This function will invert a standard 3x2 set of GeoTransform coefficients.
-     *
-     * @param  gt_in  Input geotransform (six doubles - unaltered).
-     * @return gt_out Output geotransform (six doubles - updated) on success,
-     *                None if the equation is uninvertable.
-    '''
-    #    ******************************************************************************
-    #    * This code ported from GDALInvGeoTransform() in gdaltransformer.cpp
-    #    * as it isn't exposed in the python SWIG bindings until GDAL 1.7
-    #    * copyright & permission notices included below as per conditions.
-    #
-    #    ******************************************************************************
-    #    * $Id: gdaltransformer.cpp 15024 2008-07-24 19:25:06Z rouault $
-    #    *
-    #    * Project:  Mapinfo Image Warper
-    #    * Purpose:  Implementation of one or more GDALTrasformerFunc types, including
-    #    *           the GenImgProj (general image reprojector) transformer.
-    #    * Author:   Frank Warmerdam, warmerdam@pobox.com
-    #    *
-    #    ******************************************************************************
-    #    * Copyright (c) 2002, i3 - information integration and imaging
-    #    *                          Fort Collin, CO
-    #    *
-    #    * Permission is hereby granted, free of charge, to any person obtaining a
-    #    * copy of this software and associated documentation files (the "Software"),
-    #    * to deal in the Software without restriction, including without limitation
-    #    * the rights to use, copy, modify, merge, publish, distribute, sublicense,
-    #    * and/or sell copies of the Software, and to permit persons to whom the
-    #    * Software is furnished to do so, subject to the following conditions:
-    #    *
-    #    * The above copyright notice and this permission notice shall be included
-    #    * in all copies or substantial portions of the Software.
-    #    *
-    #    * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    #    * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    #    * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-    #    * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    #    * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-    #    * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-    #    * DEALINGS IN THE SOFTWARE.
-    #    ****************************************************************************
-
-    # we assume a 3rd row that is [1 0 0]
-
-    # Compute determinate
-    det = gt_in[1] * gt_in[5] - gt_in[2] * gt_in[4]
-
-    if( abs(det) < 0.000000000000001 ):
-        return
-
-    inv_det = 1.0 / det
-
-    # compute adjoint, and divide by determinate
-    gt_out = [0,0,0,0,0,0]
-    gt_out[1] =  gt_in[5] * inv_det
-    gt_out[4] = -gt_in[4] * inv_det
-
-    gt_out[2] = -gt_in[2] * inv_det
-    gt_out[5] =  gt_in[1] * inv_det
-
-    gt_out[0] = ( gt_in[2] * gt_in[3] - gt_in[0] * gt_in[5]) * inv_det
-    gt_out[3] = (-gt_in[1] * gt_in[3] + gt_in[0] * gt_in[4]) * inv_det
-
-    return gt_out
-
-
-def ApplyGeoTransform(inx,iny,gt):
-    ''' Apply a geotransform
+def apply_geo_transform(inx, iny, gt):
+    """ Apply a geotransform
         @param  inx:       Input x coordinate (double)
         @param  iny:       Input y coordinate (double)
         @param  gt:        Input geotransform (six doubles)
 
-        @return: outx,outy Output coordinates (two doubles)
-    '''
+        @return: outx, outy Output coordinates (two doubles)
+    """
     outx = gt[0] + inx*gt[1] + iny*gt[2]
     outy = gt[3] + inx*gt[4] + iny*gt[5]
-    return (outx,outy)
+    return outx, outy
 
 
-def MapToPixel(mx,my,gt):
-    ''' Convert map to pixel coordinates
+def map_to_pixels(mx, my, gt):
+    """Convert map to pixel coordinates
         @param  mx:    Input map x coordinate (double)
         @param  my:    Input map y coordinate (double)
         @param  gt:    Input geotransform (six doubles)
@@ -242,45 +209,17 @@ def MapToPixel(mx,my,gt):
         @change: changed int(p[x,y]+0.5) to int(p[x,y]) as per http://lists.osgeo.org/pipermail/gdal-dev/2010-June/024956.html
         @change: return floats
         @note:   0,0 is UL corner of UL pixel, 0.5,0.5 is centre of UL pixel
-    '''
-    if gt[2]+gt[4]==0: #Simple calc, no inversion required
+    """
+    if gt[2] + gt[4] == 0:  # Simple calc, no inversion required
         px = (mx - gt[0]) / gt[1]
         py = (my - gt[3]) / gt[5]
     else:
-        px,py=ApplyGeoTransform(mx,my,InvGeoTransform(gt))
-    #return int(px),int(py)
-    return px,py
+        px, py = apply_geo_transform(mx, my, gdal.InvGeoTransform(gt))
+    return int(px), int(py)
+
 
 # if __name__ == '__main__':
-#     import tilesystem as ts
-#     # Upper Left  ( -115365.105, 3231585.148) ( 83d 2'10.83"W, 27d51'43.17"N)
-#     # Lower Left  ( -115365.105, 3165502.094) ( 83d 2'10.83"W, 27d20' 9.27"N)
-#     # Upper Right (  -65697.559, 3231585.148) ( 82d35'24.62"W, 27d51'43.17"N)
-#     # Lower Right (  -65697.559, 3165502.094) ( 82d35'24.62"W, 27d20' 9.27"N)
-#     # Center      (  -90531.332, 3198543.621) ( 82d48'47.72"W, 27d35'57.36"N)
-#
-#     ds = gdal.Open('/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/11411/temp.vrt', gdal.GA_ReadOnly)
-#     bands = ds.RasterCount
-#
-#     wnes, is_north_up = dataset_lat_lng_bounds(ds)
-#     tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = ts.lat_lng_bounds_to_tile_bounds_count(wnes, 15)
-#     x = tile_min_x + (tile_max_x - tile_min_x) / 2
-#     y = tile_max_y + (tile_max_y - tile_min_y) / 2
-#     px, py = ts.tile_xy_to_pixel_xy(x, y)  # top left
-#     mx, my = ts.pixels_to_meters(px, py, 15)
-#
-#     gt = ds.GetGeoTransform()
-#     xoff, yoff =  MapToPixel(mx, my, gt)
-#     # #todo: convert meters to map pixels
-#     xoff = 5000
-#     yoff = 7000
-#     data = ds.ReadRaster(int(xoff), int(yoff), ts.tile_size, ts.tile_size, ts.tile_size, ts.tile_size)
-#
-#     gdal.AllRegister()
-#     mem_driver = gdal.GetDriverByName('MEM')
-#     png_driver = gdal.GetDriverByName('PNG')
-#
-#     tile_mem = mem_driver.Create('', ts.tile_size, ts.tile_size, bands=bands)
-#     tile_mem.WriteRaster(0, 0, ts.tile_size, ts.tile_size, data, band_list=range(1, bands+1))
-#     #TODO: process png image data with http://pngquant.org/lib/ before saving to disk
-#     png_tile = png_driver.CreateCopy('/mnt/auxdrive/mxmcc/charts/noaa/BSB_ROOT/11411/out.png', tile_mem, strict=0)
+#     import bsb
+#     m_path = '/Users/williamkamp/charts/BSB_ROOT/4148/4148_1.KAP'
+#     ds = gdal.Open(m_path, gdal.GA_ReadOnly)
+#     print dataset_get_cutline_geometry(ds, bsb.BsbHeader(m_path).get_outline())

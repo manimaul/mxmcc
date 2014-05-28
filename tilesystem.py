@@ -151,6 +151,12 @@ def level_of_detail_for_pixel_size(latitude, pixel_size):
 #and changed from TMS pyramid coordinate to ZXY coordinate outputs
 
 def pixels_to_meters(px, py, level_of_detail):
+    """
+        :param px: X tile system pixels
+        :param py: Y tile system pixels
+        :param level_of_detail: tile system zoom level
+        :return: EPSG:900913 map coordinates
+    """
     res = ground_resolution(0, level_of_detail)
     mx = px * res - origin_shift
     my = py * res - origin_shift
@@ -184,14 +190,14 @@ def meters_to_lat_lng(meters_x, meters_y):
     return lat, lng
 
 
-def lat_lng_to_meters(lat, lng):
-    """converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913
-    """
-    meters_x = lng * origin_shift / 180.0
-    meters_y = numpy.log(numpy.tan((90 + lat) * numpy.pi / 360.0)) / (numpy.pi / 180.0)
-
-    meters_y = meters_y * origin_shift / 180.0
-    return meters_x, meters_y
+# def lat_lng_to_meters(lat, lng):
+#     """converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913
+#     """
+#     meters_x = lng * origin_shift / 180.0
+#     meters_y = numpy.log(numpy.tan((90 + lat) * numpy.pi / 360.0)) / (numpy.pi / 180.0)
+#
+#     meters_y = meters_y * origin_shift / 180.0
+#     return meters_x, meters_y
 
 
 #conversions from TMS tile system coordinates
@@ -206,86 +212,45 @@ def tms_to_zxy_coord(px, py, zoom):
 
 
 def tms_tile_to_zxy_tile(tx, ty, zoom):
-    """Converts TMS tile coordinates to ZXY tile coordinates"""
+    """Converts TMS tile coordinates to ZXY tile coordinates
+       or vise versa
+    """
     return tx, (2**zoom - 1) - ty
 
 
-#bounds
-
 def lat_lng_bounds_to_pixel_bounds_res((min_lng, max_lat, max_lng, min_lat), level_of_detail):
+    """
+        Latitude longitude bounds to tile system pixel bounds
+        :param level_of_detail: tile system zoom level
+        :return: tile system pixel extents and resolution
+    """
     #this seems counter intuitive... tile / pixel 0,0 is top left where as lat long 0,0 is bottom left
-    pixel_min_x, pixel_max_y = lat_lng_to_pixel_xy(min_lat, min_lng, int(level_of_detail))
-    pixel_max_x, pixel_min_y = lat_lng_to_pixel_xy(max_lat, max_lng, int(level_of_detail))
-    res_x = pixel_max_x - pixel_min_x + 1
-    res_y = pixel_max_y - pixel_min_y + 1
+    pixel_west, pixel_north = lat_lng_to_pixel_xy(min_lat, min_lng, int(level_of_detail))
+    pixel_east, pixel_south = lat_lng_to_pixel_xy(max_lat, max_lng, int(level_of_detail))
+    res_x = pixel_east - pixel_west + 1
+    res_y = pixel_north - pixel_south + 1
 
     #dateline wrap
     if res_x < 0:
-        res_x = (map_size(level_of_detail) - pixel_min_x) + pixel_max_x + 2
+        res_x = (map_size(level_of_detail) - pixel_west) + pixel_east + 2
 
-    return pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y
+    return pixel_west, pixel_north, pixel_east, pixel_south, res_x, res_y
 
 
 def lat_lng_bounds_to_tile_bounds_count((min_lng, max_lat, max_lng, min_lat), level_of_detail):
+    """
+        Latitude longitude bounds to tile system bounds
+        :param level_of_detail: tile system zoom level
+        :return: tile bounding extents and count
+    """
     #this seems counter intuitive... tile / pixel 0,0 is top left where as lat long 0,0 is bottom left
-    tile_min_x, tile_max_y = lat_lng_to_tile_xy(min_lat, min_lng, level_of_detail)
-    tile_max_x, tile_min_y = lat_lng_to_tile_xy(max_lat, max_lng, level_of_detail)
-    num_tiles_x = tile_max_x - tile_min_x + 1
-    num_tiles_y = tile_max_y - tile_min_y + 1
+    tile_west, tile_north = lat_lng_to_tile_xy(min_lat, min_lng, level_of_detail)
+    tile_east, tile_south = lat_lng_to_tile_xy(max_lat, max_lng, level_of_detail)
+    num_tiles_west_east = tile_east - tile_west + 1
+    num_tiles_north_south = tile_north - tile_south + 1
 
     #dateline wrap
-    if num_tiles_x < 0:
-        num_tiles_x = (map_size_tiles(level_of_detail) - tile_min_x) + tile_max_x + 2
+    if num_tiles_west_east < 0:
+        num_tiles_west_east = (map_size_tiles(level_of_detail) - tile_west) + tile_east + 2
 
-    return tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y
-
-
-#if __name__ == '__main__':
-#    print lat_lng_bounds_to_pixel_bounds_res(-122.640380859375, 48.538431774050459,
-#                                             -122.59643554687499, 48.494767515307245, 15)
-#    print lat_lng_bounds_to_tile_bounds_count(-122.640380859375, 48.538431774050459,
-#                                              -122.59643554687499, 48.494767515307245, 15)
-#
-#    tms_coords = ((15, 5221, 21450), (15, 5225, 21444))
-#
-#    for tms in tms_coords:
-#        print '\n\n+++++++++++++++++++++++++'
-#        z = tms[0]  # tmx/zxy zoom
-#        tx = tms[1]  # tms/zxy x
-#        ty = tms[2]  # tms y
-#        xx, yy = tms_tile_to_zxy_tile(tx, ty, z)  # correct
-#        print 'expected z, x, y,', z, xx, yy
-#        px = xx*256
-#        py = yy*256
-#        print 'expected pixel x, y:', px, py
-#        lat, lng = pixel_xy_to_lat_lng(px, py, z)
-#        print 'lat:', lat, 'lng:', lng
-#        print 'lat_lng_to_pixel_xy pixel x, y:', lat_lng_to_pixel_xy(lat, lng, z)
-#        print 'lat_lng_to_tile_xy', lat_lng_to_tile_xy(lat, lng, z)  # correct
-#        mx, my = lat_lng_to_meters(lat, lng)  # correct
-#        print 'meters_to_pixels', meters_to_pixels(mx, my, z)  # correct
-#        print 'meteres_to_tile', meters_to_tile(mx, my, z)  # correct
-#        print 'meters_to_lat', meters_to_lat_lng(mx, my)  # correct
-#
-#
-#    #+++++++++++++++++++++++++
-#    #expected z, x, y, 15 5221 11317
-#    #expected pixel x, y: 1336576 2897152
-#    #lat: 48.5384317741 lng: -122.640380859
-#    #lat_lng_to_pixel_xy pixel x, y: (1336576, 2897152)
-#    #lat_lng_to_tile_xy (5221, 11317)
-#    #meters_to_pixels (1336576, 2897151)
-#    #meteres_to_tile (5221, 11316)
-#    #meters_to_lat (48.538431774050459, -122.640380859375)
-#    #
-#    #
-#    #+++++++++++++++++++++++++
-#    #expected z, x, y, 15 5225 11323
-#    #expected pixel x, y: 1337600 2898688
-#    #lat: 48.4947675153 lng: -122.596435547
-#    #lat_lng_to_pixel_xy pixel x, y: (1337600, 2898688)
-#    #lat_lng_to_tile_xy (5225, 11323)
-#    #meters_to_pixels (1337600, 2898688)
-#    #meteres_to_tile (5225, 11323)
-#    #meters_to_lat (48.494767515307245, -122.59643554687499)
-
+    return tile_west, tile_north, tile_east, tile_south, num_tiles_west_east, num_tiles_north_south
