@@ -177,7 +177,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
     return map_stack
 
 
-def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir=None):
+def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
     """renders a stack of vrts built with _build_tmp_vrt_stack_for_map()
        into tiles for specified zoom level
        rendered tiles placed in out_dir directory
@@ -194,7 +194,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir=None):
         print 'skipping: ' + out_dir
         return
 
-    print 'tile out dir:', out_dir
+    # print 'tile out dir:', out_dir
 
     map_path = _stack_peek(map_stack)
 
@@ -203,6 +203,8 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir=None):
     if ds is None:
         print 'unable to open', map_path
         return
+
+    zoom_level = int(zoom)
 
     ### fetch vrt data-set extends as tile bounds
     lat_lng_bounds_wnes, is_north_up = gdalds.dataset_lat_lng_bounds(ds)
@@ -229,10 +231,10 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir=None):
 
     _success, inv_transform = gdal.InvGeoTransform(geotransform)
 
-    print 'west east', tile_west, tile_east
+    # print 'west east', tile_west, tile_east
 
     if tile_west > tile_east:  # dateline wrap
-        print 'wrapping tile to dateline'
+        # print 'wrapping tile to dateline'
         _cut_tiles_in_range(0, tile_west, tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
         _cut_tiles_in_range(tile_east, tilesystem.map_size_tiles(zoom_level), tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
     else:
@@ -353,10 +355,10 @@ def build_tiles_for_catalog(catalog_name):
 
 # if __name__ == '__main__':
 #     import bsb
-#     test_map = '/Volumes/USB_DATA/out/18432_1.KAP'
+#     test_map = '/Volumes/USB_DATA/out/6375.KAP'
 #     h = bsb.BsbHeader(test_map)
 #     z = h.get_zoom()
 #     c = h.get_outline()
 #     s = _build_tile_vrt_for_map(test_map, c)
 #     print s
-#     _render_tmp_vrt_stack_for_map(s, z)
+#     _render_tmp_vrt_stack_for_map(s, z, None)
