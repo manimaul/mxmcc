@@ -58,7 +58,7 @@ mem_driver = gdal.GetDriverByName('MEM')
 png_driver = gdal.GetDriverByName('PNG')
 
 # todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
-target_resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
+resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
 
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
@@ -127,7 +127,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
 
-    lat_lng_bounds, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
+    # lat_lng_bounds, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
     # zoom = int(zoom_level)
     # pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
     #     tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
@@ -155,12 +155,12 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
     #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
 
-    if is_north_up:
-        resampling = 'average'
-    else:
-        resampling = 'bilinear'
-
-    print 'using resampling', resampling
+    # if is_north_up:
+    #     resampling = 'average'
+    # else:
+    #     resampling = 'bilinear'
+    #
+    # print 'using resampling', resampling
 
     command = ['gdalwarp', '-of', 'vrt', '-r', '%s' % resampling, '-t_srs', epsg_900913]
 
@@ -232,7 +232,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom_level, out_dir=None):
     print 'west east', tile_west, tile_east
 
     if tile_west > tile_east:  # dateline wrap
-        print 'wrapping tile to dateling'
+        print 'wrapping tile to dateline'
         _cut_tiles_in_range(0, tile_west, tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
         _cut_tiles_in_range(tile_east, tilesystem.map_size_tiles(zoom_level), tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
     else:
@@ -259,39 +259,27 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             ds_pxx = int(inv_transform[0] + inv_transform[1] * geo_x + inv_transform[2] * geo_y)
             ds_pyy = int(inv_transform[3] + inv_transform[4] * geo_x + inv_transform[5] * geo_y)
 
-
-            # target = zoom_level is 6 and tile_x is 0 and (tile_y is 16 or tile_y is 17)
-            # print zoom_level, tile_x, tile_y, target
-
-            # if not target:
-            #     return
-
+            # print 'ds_px', ds_px, 'ds_py', ds_py
+            # print 'ds_pxx', ds_pxx, 'ds_pyy', ds_pyy
             # print 'lat lng', lat, lng
             # print 'geo', geo_x, geo_y
+            # print 'raster size x y', ds.RasterXSize, ds.RasterYSize
 
-            x = tilesystem.clip(ds_px, 0, ds.RasterXSize)
-            x_off = abs(ds_px) - x
-            ds_px = x
+            ds_px_clip = tilesystem.clip(ds_px, 0, ds.RasterXSize)
+            ds_pxx_clip = tilesystem.clip(ds_pxx, 0, ds.RasterXSize)
+            x_size_clip = ds_pxx_clip - ds_px_clip
 
-            ds_pxx = tilesystem.clip(ds_pxx, 0, ds.RasterXSize)
+            ds_py_clip = tilesystem.clip(ds_py, 0, ds.RasterYSize)
+            ds_pyy_clip = tilesystem.clip(ds_pyy, 0, ds.RasterYSize)
+            y_size_clip = ds_pyy_clip - ds_py_clip
 
-            y = tilesystem.clip(ds_py, 0, ds.RasterYSize)
-            y_off = abs(ds_py) - y
-            ds_py = y
-
-            ds_pyy = tilesystem.clip(ds_pyy, 0, ds.RasterYSize)
-
-            x_size = ds_pxx - ds_px
-            y_size = ds_pyy - ds_py
-
-            # print 'dataset px', ds_px, ds_py
-            # print 'x_off', x_off
-            # print 'y_off', y_off
-            # print 'x_size', x_size
-            # print 'y_size', y_size
+            # print 'ds_px_clip', ds_px_clip
+            # print 'ds_py_clip', ds_py_clip
+            # print 'x_size_clip', x_size_clip
+            # print 'y_size_clip', y_size_clip
             #
             # print 'reading'
-            data = ds.ReadRaster(ds_px, ds_py, x_size, y_size)
+            data = ds.ReadRaster(ds_px_clip, ds_py_clip, x_size_clip, y_size_clip)
 
             transparent = True
             if data is not None:
@@ -302,20 +290,25 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
 
             #only create tiles that have data (not completely transparent)
             if not transparent:
+                x_size = ds_pxx - ds_px
+                y_size = ds_pyy - ds_py
+                # print 'x_size', x_size
+                # print 'y_size', y_size
+
                 if not os.path.isdir(tile_dir):
                     os.makedirs(tile_dir)
                 # print 'create mem window'
                 tmp = mem_driver.Create('', x_size, y_size, bands=ds.RasterCount)
 
                 # print 'write mem window'
-                tmp.WriteRaster(x_off, y_off, x_size-x_off, y_size-y_off, data, band_list=range(1, ds.RasterCount+1))
+                tmp.WriteRaster(x_size - x_size_clip, y_size - y_size_clip, x_size_clip, y_size_clip, data, band_list=range(1, ds.RasterCount+1))
 
                 # print 'create mem tile'
                 tile = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=ds.RasterCount)
 
                 # print 'scale mem window to mem tile'
                 for i in range(1, ds.RasterCount+1):
-                    gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), target_resampling)
+                    gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), resampling)
 
                 # print 'write to file'
                 png_driver.CreateCopy(tile_path, tile, strict=0)
@@ -360,7 +353,7 @@ def build_tiles_for_catalog(catalog_name):
 
 # if __name__ == '__main__':
 #     import bsb
-#     test_map = '/Volumes/USB_DATA/out/50_2.KAP'
+#     test_map = '/Volumes/USB_DATA/out/18432_1.KAP'
 #     h = bsb.BsbHeader(test_map)
 #     z = h.get_zoom()
 #     c = h.get_outline()
