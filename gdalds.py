@@ -106,7 +106,7 @@ def dataset_lat_lng_bounds(gdal_ds):
 
     #we need a north up dataset
     ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
-    geotransform = ds.GetGeoTransform()
+    geotransform = get_geo_transform(ds)
     transform = osr.CoordinateTransformation(ds_srs, out_srs)
 
     #useful information about geotransform
@@ -125,8 +125,13 @@ def dataset_lat_lng_bounds(gdal_ds):
     east, south = transform.TransformPoint(east, south)[:2]
     west, north = transform.TransformPoint(west, north)[:2]
 
-    rotation = get_rotation(gdal_ds.GetGeoTransform())
-    is_north_up = rotation < .5 or rotation > 359.5
+    gt = get_geo_transform(gdal_ds)
+
+    if gt is None:
+        is_north_up = False
+    else:
+        rotation = get_rotation(gt)
+        is_north_up = rotation < .5 or rotation > 359.5
 
     #min_lng, max_lat, max_lng, min_lat
     return (west, north, east, south), is_north_up
@@ -146,7 +151,7 @@ def dataset_meters_bounds(gdal_ds):
 
     #we need a north up dataset
     ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
-    geotransform = ds.GetGeoTransform()
+    geotransform = get_geo_transform(ds)
     transform = osr.CoordinateTransformation(ds_srs, out_srs)
 
     #useful information about geotransform
@@ -165,11 +170,26 @@ def dataset_meters_bounds(gdal_ds):
     east, south = transform.TransformPoint(east, south)[:2]
     west, north = transform.TransformPoint(west, north)[:2]
 
-    rotation = get_rotation(gdal_ds.GetGeoTransform())
+    rotation = get_rotation(get_geo_transform(gdal_ds))
     is_north_up = rotation < .5 or rotation > 359.5
 
     #min_lng, max_lat, max_lng, min_lat
     return (west, north, east, south), is_north_up
+
+
+def get_geo_transform(gdal_ds):
+    """
+    :param gdal_ds: gdal dataset
+    :return: a geo transform from ground control points if possible
+    """
+    gcps = gdal_ds.GetGCPs()
+    if gcps is not None:
+        gt = gdal.GCPsToGeoTransform(gcps)
+
+    if gt is None:
+        gt = gdal_ds.GetGeoTransform()
+
+    return gt
 
 
 def get_rotation(gt):
@@ -220,6 +240,7 @@ def map_to_pixels(mx, my, gt):
 
 # if __name__ == '__main__':
 #     import bsb
-#     m_path = '/Users/williamkamp/charts/BSB_ROOT/4148/4148_1.KAP'
+#     m_path = '/Volumes/USB_DATA/out/11411_2.KAP'
 #     ds = gdal.Open(m_path, gdal.GA_ReadOnly)
+#     print dataset_lat_lng_bounds(ds)
 #     print dataset_get_cutline_geometry(ds, bsb.BsbHeader(m_path).get_outline())

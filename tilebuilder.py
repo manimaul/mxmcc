@@ -57,9 +57,6 @@ gdal.AllRegister()
 mem_driver = gdal.GetDriverByName('MEM')
 png_driver = gdal.GetDriverByName('PNG')
 
-# todo: average resampling fails on some linux builds (non - north up charts)... result is fully transparent
-resampling = 'average'  # near bilinear cubic cubicspline lanczos average mode
-
 
 def _cleanup_tmp_vrt_stack(vrt_stack, verbose=False):
     """convenience method for removing temporary vrt files created with _build_tmp_vrt_stack_for_map()
@@ -93,6 +90,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
         raise Exception('could not open map file: ' + map_path)
 
     map_type = dataset.GetDriver().ShortName
+    _, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
 
     if not map_type in supported_formats:
         raise Exception(map_type + ' is not a supported format')
@@ -127,42 +125,17 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
 
-    # lat_lng_bounds, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
-    # zoom = int(zoom_level)
-    # pixel_min_x, pixel_max_y, pixel_max_x, pixel_min_y, res_x, res_y = \
-    #     tilesystem.lat_lng_bounds_to_pixel_bounds_res(lat_lng_bounds, zoom)
-    #
-    # tile_min_x, tile_max_y, tile_max_x, tile_min_y, num_tiles_x, num_tiles_y = \
-    #     tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds, zoom)
-    #
-    # offset_west = pixel_min_x % tilesystem.tile_size
-    # offset_north = pixel_min_y % tilesystem.tile_size
-    #
-    # print 'min_lng, max_lat, max_lng, min_lat', lat_lng_bounds
-    # print 'west tile x:%d' % tile_min_x
-    # print 'east tile x:%d' % tile_max_x
-    # print 'south tile y:%d' % tile_min_y
-    # print 'north tile y:%d' % tile_max_y
-    # print 'west pixel x:%d' % pixel_min_x
-    # print 'east pixel x:%d' % pixel_max_x
-    # print 'resolution x x:%d' % res_x
-    # print 'resolution y:%d' % res_y
-    # print 'num tiles x:%d' % num_tiles_x
-    # print 'num tiles y:%d' % num_tiles_y
-    # print 'offset_west:%d' % offset_west
-    # print 'offset_north:%d' % offset_north
-
-    #command = 'gdalwarp -of vrt -r %s -t_srs EPSG:900913' % resampling
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
 
-    # if is_north_up:
-    #     resampling = 'average'
-    # else:
-    #     resampling = 'bilinear'
-    #
-    # print 'using resampling', resampling
+    # average resampling fails on some rotated maps... result is fully transparent or (interlaced transparent)
+    if is_north_up:
+        resampling = 'average'
+    else:
+        resampling = 'bilinear'
 
-    command = ['gdalwarp', '-of', 'vrt', '-r', '%s' % resampling, '-t_srs', epsg_900913]
+    print 'using resampling', resampling
+
+    command = ['gdalwarp', '-of', 'vrt', '-r', resampling, '-t_srs', epsg_900913]
 
     if cutline is not None:
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
@@ -235,13 +208,17 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
 
     if tile_west > tile_east:  # dateline wrap
         # print 'wrapping tile to dateline'
-        _cut_tiles_in_range(0, tile_west, tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
-        _cut_tiles_in_range(tile_east, tilesystem.map_size_tiles(zoom_level), tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
+        _cut_tiles_in_range(0, tile_west, tile_south, tile_north, transform,
+                            inv_transform, zoom_level, out_dir, ds)
+        _cut_tiles_in_range(tile_east, tilesystem.map_size_tiles(zoom_level),
+                            tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
     else:
-        _cut_tiles_in_range(tile_west, tile_east, tile_south, tile_north, transform, inv_transform, zoom_level, out_dir, ds)
+        _cut_tiles_in_range(tile_west, tile_east, tile_south, tile_north, transform,
+                            inv_transform, zoom_level, out_dir, ds)
 
 
-def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transform, inv_transform, zoom_level, out_dir, ds):
+def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transform,
+                        inv_transform, zoom_level, out_dir, ds):
 
     for tile_x in range(tile_min_x, tile_max_x + 1, 1):
         tile_dir = os.path.join(out_dir, str(zoom_level), str(tile_x))
@@ -274,6 +251,9 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             ds_py_clip = tilesystem.clip(ds_py, 0, ds.RasterYSize)
             ds_pyy_clip = tilesystem.clip(ds_pyy, 0, ds.RasterYSize)
             y_size_clip = ds_pyy_clip - ds_py_clip
+
+            if x_size_clip <= 0 or y_size_clip <= 0:
+                return
 
             # print 'ds_px_clip', ds_px_clip
             # print 'ds_py_clip', ds_py_clip
@@ -310,7 +290,7 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
 
                 # print 'scale mem window to mem tile'
                 for i in range(1, ds.RasterCount+1):
-                    gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), resampling)
+                    gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), 'average')
 
                 # print 'write to file'
                 png_driver.CreateCopy(tile_path, tile, strict=0)
@@ -353,12 +333,11 @@ def build_tiles_for_catalog(catalog_name):
     pool.join()  # wait for pool to empty
 
 
-# if __name__ == '__main__':
-#     import bsb
-#     test_map = '/Volumes/USB_DATA/out/6375.KAP'
-#     h = bsb.BsbHeader(test_map)
-#     z = h.get_zoom()
-#     c = h.get_outline()
-#     s = _build_tile_vrt_for_map(test_map, c)
-#     print s
-#     _render_tmp_vrt_stack_for_map(s, z, None)
+if __name__ == '__main__':
+    import bsb
+    test_map = '/Volumes/USB_DATA/out/11411_2.KAP'
+    h = bsb.BsbHeader(test_map)
+    z = h.get_zoom()
+    c = h.get_outline()
+    s = _build_tile_vrt_for_map(test_map, c)
+    _render_tmp_vrt_stack_for_map(s, z, None)
