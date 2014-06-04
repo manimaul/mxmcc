@@ -239,8 +239,24 @@ def map_to_pixels(mx, my, gt):
 
 
 # if __name__ == '__main__':
+#     import tilesystem as ts
 #     import bsb
-#     m_path = '/Volumes/USB_DATA/out/11411_2.KAP'
+#     m_path = '/Users/williamkamp/charts/BSB_ROOT/13297/13297_1.KAP'
 #     ds = gdal.Open(m_path, gdal.GA_ReadOnly)
-#     print dataset_lat_lng_bounds(ds)
+#     bounds, _ = dataset_lat_lng_bounds(ds)
+#     west, north, east, south = bounds
+#     print '---------------------'
+#     print 'lat north', north
+#     print 'lat south', south
+#     print 'lat east', east
+#     print 'lat west', west
+#
+#     west, north, east, south, _, _ = ts.lat_lng_bounds_to_tile_bounds_count(bounds, 16)
+#     print '---------------------'
+#     print 'tile north', north
+#     print 'tile south', south
+#     print 'tile east', east
+#     print 'tile west', west
+#
+#     print '---------------------'
 #     print dataset_get_cutline_geometry(ds, bsb.BsbHeader(m_path).get_outline())
