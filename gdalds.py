@@ -31,9 +31,8 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
 
     transform = osr.CoordinateTransformation(wgs84_srs, ds_srs)
 
-    #---- grab inverted geomatrix from ground control points
-    gcps = gdal_ds.GetGCPs()
-    geotransform = gdal.GCPsToGeoTransform(gcps)
+    #---- grab inverted geomatrix
+    geotransform = get_geo_transform(gdal_ds)
     _success, inv_geotransform = gdal.InvGeoTransform(geotransform)
 
     #---- transform lat long to dataset coordinates, then coordinates to pixel/lines
@@ -183,6 +182,8 @@ def get_geo_transform(gdal_ds):
     :return: a geo transform from ground control points if possible
     """
     gcps = gdal_ds.GetGCPs()
+    gt = None
+
     if gcps is not None:
         gt = gdal.GCPsToGeoTransform(gcps)
 

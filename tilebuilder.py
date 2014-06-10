@@ -167,7 +167,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
         print 'skipping: ' + out_dir
         return
 
-    # print 'tile out dir:', out_dir
+    print 'tile out dir:', out_dir
 
     map_path = _stack_peek(map_stack)
 
@@ -197,14 +197,11 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
     transform = osr.CoordinateTransformation(wgs84_srs, ds_srs)
 
     #---- grab inverted geomatrix from ground control points
-    gcps = ds.GetGCPs()
-    geotransform = gdal.GCPsToGeoTransform(gcps)
-    if geotransform is None:
-        geotransform = ds.GetGeoTransform()
-
+    geotransform = gdalds.get_geo_transform(ds)
     _success, inv_transform = gdal.InvGeoTransform(geotransform)
 
     # print 'west east', tile_west, tile_east
+    # print 'south north', tile_south, tile_north
 
     if tile_west > tile_east:  # dateline wrap
         # print 'wrapping tile to dateline'
@@ -253,12 +250,13 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             y_size_clip = ds_pyy_clip - ds_py_clip
 
             if x_size_clip <= 0 or y_size_clip <= 0:
-                return
+                continue
 
             # print 'ds_px_clip', ds_px_clip
             # print 'ds_py_clip', ds_py_clip
             # print 'x_size_clip', x_size_clip
             # print 'y_size_clip', y_size_clip
+            # print '-----------------------------'
             #
             # print 'reading'
             data = ds.ReadRaster(ds_px_clip, ds_py_clip, x_size_clip, y_size_clip)
@@ -333,11 +331,12 @@ def build_tiles_for_catalog(catalog_name):
     pool.join()  # wait for pool to empty
 
 
-if __name__ == '__main__':
-    import bsb
-    test_map = '/Volumes/USB_DATA/out/11411_2.KAP'
-    h = bsb.BsbHeader(test_map)
-    z = h.get_zoom()
-    c = h.get_outline()
-    s = _build_tile_vrt_for_map(test_map, c)
-    _render_tmp_vrt_stack_for_map(s, z, None)
+# if __name__ == '__main__':
+#     import bsb
+#     # test_map = '/Users/williamkamp/charts/BSB_ROOT/13297/13297_1.KAP'
+#     test_map = '/Users/williamkamp/mxmcc/charts/TEST/204203.KAP'
+#     h = bsb.BsbHeader(test_map)
+#     z = h.get_zoom()
+#     c = h.get_outline()
+#     s = _build_tile_vrt_for_map(test_map, c)
+#     _render_tmp_vrt_stack_for_map(s, z, None)
