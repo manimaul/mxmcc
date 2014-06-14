@@ -86,21 +86,21 @@ def build_catalog_for_bsb_directory(bsb_dir, name=None):
 
     build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
 
-if __name__ == '__main__':
-    # map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/'
-    # build_catalog_for_bsb_directory(map_path, 'Test')
-
-    region = 'region_nz'
-
-    print 'building catalog for:', region
-    if not regions.is_valid_region(region):
-        print 'custom region'
-        region_dir = regions.find_custom_region_path(region)
-        if region_dir is not None:
-            build_catalog_for_bsb_directory(region_dir, region)
-        else:
-            raise Exception('custom region: %s does not have a directory' % region)
-
-    else:
-        print 'known region'
-        build_catalog_for_region(region)
+# if __name__ == '__main__':
+#     # map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/'
+#     # build_catalog_for_bsb_directory(map_path, 'Test')
+#
+#     region = 'region_08'
+#
+#     print 'building catalog for:', region
+#     if not regions.is_valid_region(region):
+#         print 'custom region'
+#         region_dir = regions.find_custom_region_path(region)
+#         if region_dir is not None:
+#             build_catalog_for_bsb_directory(region_dir, region)
+#         else:
+#             raise Exception('custom region: %s does not have a directory' % region)
+#
+#     else:
+#         print 'known region'
+#         build_catalog_for_region(region)

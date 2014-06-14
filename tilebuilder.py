@@ -218,9 +218,17 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                         inv_transform, zoom_level, out_dir, ds):
 
     for tile_x in range(tile_min_x, tile_max_x + 1, 1):
+
+        # if tile_x != 9084:
+        #     continue
+
         tile_dir = os.path.join(out_dir, str(zoom_level), str(tile_x))
 
         for tile_y in range(tile_min_y, tile_max_y + 1, 1):
+
+            # if tile_y != 13815:
+            #     continue
+
             tile_path = os.path.join(tile_dir, str(tile_y) + '.png')
             # print tile_path
 
@@ -280,8 +288,20 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                 # print 'create mem window'
                 tmp = mem_driver.Create('', x_size, y_size, bands=ds.RasterCount)
 
+                if ds_pxx == ds_pxx_clip:
+                    xoff = x_size - x_size_clip
+                else:
+                    xoff = 0
+                if ds_pyy == ds_pyy_clip:
+                    yoff = y_size - y_size_clip
+                else:
+                    yoff = 0
+
+                # print 'xoff', xoff
+                # print 'yoff', yoff
+
                 # print 'write mem window'
-                tmp.WriteRaster(x_size - x_size_clip, y_size - y_size_clip, x_size_clip, y_size_clip, data, band_list=range(1, ds.RasterCount+1))
+                tmp.WriteRaster(xoff, yoff, x_size_clip, y_size_clip, data, band_list=range(1, ds.RasterCount+1))
 
                 # print 'create mem tile'
                 tile = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=ds.RasterCount)
@@ -334,7 +354,7 @@ def build_tiles_for_catalog(catalog_name):
 # if __name__ == '__main__':
 #     import bsb
 #     # test_map = '/Users/williamkamp/charts/BSB_ROOT/13297/13297_1.KAP'
-#     test_map = '/Users/williamkamp/mxmcc/charts/TEST/204203.KAP'
+#     test_map = '/Volumes/USB_DATA/mxmcc/charts/noaa/BSB_ROOT/11428/11428_3.KAP'
 #     h = bsb.BsbHeader(test_map)
 #     z = h.get_zoom()
 #     c = h.get_outline()
