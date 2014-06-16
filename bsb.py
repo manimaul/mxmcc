@@ -68,12 +68,25 @@ class BsbHeader():
                     self.name = line[li:ri]
 
                 elif line.find('PLY/') > -1:
-                    lat = line.split(',')[1].lstrip(',')
-                    lon = float(line.split(',')[2])
-                    ply = lat + ',' + str(lon)
-                    self.poly.append(ply.rstrip())
-        if self.poly.__len__() > 0:
+                    self._read_ply(line)
+
+        #look for overrides
+        or_path = os.path.join(os.path.dirname(__file__), 'ply_overrides', self.get_base_filename()[:-4])
+        if os.path.isfile(or_path):
+            self.poly = []
+            with open(or_path, 'rU') as override:
+                for line in override:
+                    if line.find('PLY/') > -1:
+                        self._read_ply(line)
+
+        if len(self.poly) > 0:
             self.poly.append(self.poly[0])  # add first coord to close polygon
+
+    def _read_ply(self, line):
+        lat = line.split(',')[1].lstrip(',')
+        lon = float(line.split(',')[2])
+        ply = lat + ',' + str(lon)
+        self.poly.append(ply.rstrip())
 
     def get_is_valid(self):
         if self.scale is None or 'Cover for Chart' in self.name:
@@ -131,7 +144,7 @@ class BsbHeader():
         if len(lngs) is 0:
             return False
 
-        return min(lngs) < 0 and max(lngs) > 0
+        return min(lngs) < 0 < max(lngs)
 
     def has_duplicate_refs(self):
         for ea in self.refs:
@@ -162,3 +175,9 @@ class BsbHeader():
     def print_header(self):
         for line in self.lines:
             print line.strip()
+
+# if __name__ == '__main__':
+#
+#     bh = BsbHeader('/Users/williamkamp/charts/BSB_ROOT/18453/18453_1.KAP')
+#     for p in bh.poly:
+#         print p
