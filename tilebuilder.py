@@ -125,7 +125,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
 
-    epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
+    # epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
 
     # average resampling fails on some rotated maps... result is fully transparent or (interlaced transparent)
     if is_north_up:
@@ -135,7 +135,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None, verbose=False):
 
     print 'using resampling', resampling
 
-    command = ['gdalwarp', '-of', 'vrt', '-r', resampling, '-t_srs', epsg_900913]
+    command = ['gdalwarp', '-of', 'vrt', '-r', resampling]  # , '-t_srs', epsg_900913]
 
     if cutline is not None:
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
@@ -354,7 +354,7 @@ def build_tiles_for_catalog(catalog_name):
 # if __name__ == '__main__':
 #     import bsb
 #     # test_map = '/Users/williamkamp/charts/BSB_ROOT/13297/13297_1.KAP'
-#     test_map = '/Volumes/USB_DATA/mxmcc/charts/noaa/BSB_ROOT/11428/11428_3.KAP'
+#     test_map = '/Users/williamkamp/charts/BSB_ROOT/530/530_1.KAP'
 #     h = bsb.BsbHeader(test_map)
 #     z = h.get_zoom()
 #     c = h.get_outline()
