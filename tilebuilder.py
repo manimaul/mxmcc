@@ -267,7 +267,7 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             # print '-----------------------------'
             #
             # print 'reading'
-            data = ds.ReadRaster(ds_px_clip, ds_py_clip, x_size_clip, y_size_clip)
+            data = ds.ReadRaster(int(ds_px_clip), int(ds_py_clip), int(x_size_clip), int(y_size_clip))
 
             transparent = True
             if data is not None:
@@ -286,7 +286,7 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                 if not os.path.isdir(tile_dir):
                     os.makedirs(tile_dir)
                 # print 'create mem window'
-                tmp = mem_driver.Create('', x_size, y_size, bands=ds.RasterCount)
+                tmp = mem_driver.Create('', int(x_size), int(y_size), bands=ds.RasterCount)
 
                 if ds_pxx == ds_pxx_clip:
                     xoff = x_size - x_size_clip
@@ -301,7 +301,7 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                 # print 'yoff', yoff
 
                 # print 'write mem window'
-                tmp.WriteRaster(xoff, yoff, x_size_clip, y_size_clip, data, band_list=range(1, ds.RasterCount+1))
+                tmp.WriteRaster(int(xoff), int(yoff), int(x_size_clip), int(y_size_clip), data, band_list=range(1, ds.RasterCount+1))
 
                 # print 'create mem tile'
                 tile = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=ds.RasterCount)
