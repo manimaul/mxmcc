@@ -74,7 +74,7 @@ def dataset_get_proj4_srs_declaration(gdal_ds):
 
 
 def dataset_get_as_epsg_900913(gdal_ds):
-    epsg_900913 = '+proj=merc %s +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+    epsg_900913 = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 %s +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs'
     srs = dataset_get_proj4_srs_declaration(gdal_ds)
     val = '0'
     for ea in srs.split(' '):
