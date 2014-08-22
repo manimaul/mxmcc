@@ -147,7 +147,7 @@ class MapTile:
         diff = abs(self.z - upper_zoom)
         m_tile_size = tile_size >> diff
         logger.log(logger.OFF, '_find_over_zoom_tile_img m_tile_size %d' % m_tile_size)
-        upper_tile = MapTile(upper_zoom, self.x >> diff, self.y >> diff)
+        upper_tile = MapTile(upper_zoom, self.x >> diff, self.y >> diff, self.tile_dir)
         if upper_tile.exists():
             img = upper_tile._get_image().copy()
             xx = (self.x % (1 << diff)) * m_tile_size
@@ -202,3 +202,8 @@ class MapTile:
                 i += 1
 
             return im
+
+if __name__ == '__main__':
+    # mt = MapTile(10, 152, 365, '/media/aux-drive 180G/mxmcc/tiles/merged/REGION_15/')
+    # _has_transparency(mt._get_image())
+    fill_all_in_region('region_15')
