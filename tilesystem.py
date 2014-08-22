@@ -6,8 +6,8 @@ __email__ = 'will@mxmariner.com'
 # most of the credit belongs to:
 __credits__ = ['http://msdn.microsoft.com/en-us/library/bb259689.aspx',
                'http://www.klokan.cz/projects/gdal2tiles/gdal2tiles.py']
-__copyright__ = 'Copyright (c) 2013, Matrix Mariner Inc.\n' +\
-                'Copyright (c) 2006-2009 Microsoft Corporation.  All rights reserved.\n' +\
+__copyright__ = 'Copyright (c) 2013, Matrix Mariner Inc.\n' + \
+                'Copyright (c) 2006-2009 Microsoft Corporation.  All rights reserved.\n' + \
                 'Copyright (c) 2008, Klokan Petr Pridal'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 __license__ = 'It\'s not too clear from the original source ?(Public domain)'

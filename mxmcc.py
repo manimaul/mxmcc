@@ -22,6 +22,7 @@ import zdata
 import verify
 import tiles_opt
 import os
+import filler
 
 
 def compile_region(region):
@@ -49,6 +50,10 @@ def compile_region(region):
     #merge
     print 'merging tiles for:', region
     tilesmerge.merge_catalog(region)
+
+    #fill
+    print 'filling tile \"holes\"', region
+    filler.fill_all_in_region(region)
 
     ##optimize
     tiles_opt.optimize_dir(os.path.join(config.merged_tile_dir, region))

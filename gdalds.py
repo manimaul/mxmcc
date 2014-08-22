@@ -6,9 +6,11 @@ __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
+import math
+
 from osgeo import gdal
 import osr
-import math
+
 
 '''some convenience methods for information about gdal data sets
 '''
@@ -95,9 +97,17 @@ def dataset_lat_lng_bounds(gdal_ds):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
+    #bounds (west, north, east, south)
+    return dataset_get_bounds(gdal_ds, 4326)
+
+
+def dataset_get_bounds(gdal_ds, epsg=4326):
+    """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
+       bounding box returned as: min_lng, min_lat, max_lng, max_lat
+    """
 
     out_srs = osr.SpatialReference()
-    out_srs.ImportFromEPSG(4326)
+    out_srs.ImportFromEPSG(epsg)
 
     ds_wkt = dataset_get_projection_wkt(gdal_ds)
     ds_srs = osr.SpatialReference()
@@ -140,40 +150,8 @@ def dataset_meters_bounds(gdal_ds):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
-
-    out_srs = osr.SpatialReference()
-    out_srs.ImportFromEPSG(900913)
-
-    ds_wkt = dataset_get_projection_wkt(gdal_ds)
-    ds_srs = osr.SpatialReference()
-    ds_srs.ImportFromWkt(ds_wkt)
-
-    #we need a north up dataset
-    ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
-    geotransform = get_geo_transform(ds)
-    transform = osr.CoordinateTransformation(ds_srs, out_srs)
-
-    #useful information about geotransform
-    #geotransform[0] #top left X
-    #geotransform[1] #w-e pixel resolution
-    #geotransform[2] #rotation, 0 if image is "north up"
-    #geotransform[3] #top left Y
-    #geotransform[4] #rotation, 0 if image is "north up"
-    #geotransform[5] n-s pixel resolution
-
-    west = geotransform[0]
-    east = west + ds.RasterXSize * geotransform[1]
-    north = geotransform[3]
-    south = north - ds.RasterYSize * geotransform[1]
-
-    east, south = transform.TransformPoint(east, south)[:2]
-    west, north = transform.TransformPoint(west, north)[:2]
-
-    rotation = get_rotation(get_geo_transform(gdal_ds))
-    is_north_up = rotation < .5 or rotation > 359.5
-
-    #min_lng, max_lat, max_lng, min_lat
-    return (west, north, east, south), is_north_up
+    #bounds (west, north, east, south)
+    return dataset_get_bounds(gdal_ds, 900913)
 
 
 def get_geo_transform(gdal_ds):
@@ -237,27 +215,3 @@ def map_to_pixels(mx, my, gt):
     else:
         px, py = apply_geo_transform(mx, my, gdal.InvGeoTransform(gt))
     return int(px), int(py)
-
-
-# if __name__ == '__main__':
-#     import tilesystem as ts
-#     import bsb
-#     m_path = '/Users/williamkamp/charts/BSB_ROOT/13297/13297_1.KAP'
-#     ds = gdal.Open(m_path, gdal.GA_ReadOnly)
-#     bounds, _ = dataset_lat_lng_bounds(ds)
-#     west, north, east, south = bounds
-#     print '---------------------'
-#     print 'lat north', north
-#     print 'lat south', south
-#     print 'lat east', east
-#     print 'lat west', west
-#
-#     west, north, east, south, _, _ = ts.lat_lng_bounds_to_tile_bounds_count(bounds, 16)
-#     print '---------------------'
-#     print 'tile north', north
-#     print 'tile south', south
-#     print 'tile east', east
-#     print 'tile west', west
-#
-#     print '---------------------'
-#     print dataset_get_cutline_geometry(ds, bsb.BsbHeader(m_path).get_outline())
