@@ -9,9 +9,10 @@
     <script>
         function init() {
             var metadata = read_metadata();
+            var bounds = metadata.bounds.split(',')
             var mapBounds = new google.maps.LatLngBounds(
-                    new google.maps.LatLng(metadata.bounds[1], metadata.bounds[0]), //south west
-                    new google.maps.LatLng(metadata.bounds[3], metadata.bounds[2])); //north east
+                    new google.maps.LatLng(bounds[1], bounds[0]), //south west
+                    new google.maps.LatLng(bounds[3], bounds[2])); //north east
             var mapMinZoom = metadata.minzoom;
             var mapMaxZoom = metadata.maxzoom;
             var opts = {

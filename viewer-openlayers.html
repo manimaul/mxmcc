@@ -10,8 +10,9 @@
     <script>
         var metadata = read_metadata();
         var map, layer;
-        var mapBounds = new OpenLayers.Bounds(metadata.bounds[0], metadata.bounds[1], //west, south, east, north
-                metadata.bounds[2], metadata.bounds[3]);
+        var bounds = metadata.bounds.split(',')
+        var mapBounds = new OpenLayers.Bounds(bounds[0], bounds[1], //west, south, east, north
+                                              bounds[2], bounds[3]);
         var mapMinZoom = metadata.minzoom;
         var mapMaxZoom = metadata.maxzoom;
 

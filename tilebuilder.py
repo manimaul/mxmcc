@@ -466,7 +466,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
             'format': 'png',
             'minzoom': start_zoom,
             'maxzoom': stop_zoom,
-            'bounds': [west, south, east, north],
+            'bounds':  '%s,%s,%s,%s' % (west, south, east, north),
             'profile': 'mercator',
             'basename': kap,
             'tilejson': '2.0.0',

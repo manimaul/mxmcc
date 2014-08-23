@@ -10,6 +10,12 @@ Charts in the BSB version 2 and 3 formats are supported as input as well as maps
 
 **Note: Generated gemf + meta data archives are compatible with [MX Mariner](http://mxmariner.com/).**
 
+submodules:
+
+https://github.com/mapbox/mbutil
+
+* run $git submodule init
+
 requirements:
 
 * python

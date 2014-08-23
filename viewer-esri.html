@@ -24,9 +24,10 @@
         require(['esri/map', 'esri/geometry/Extent', 'esri/layers/WebTiledLayer'],
 
                 function (Map, Extent, WebTiledLayer) {
+                    var bounds = metadata.bounds.split(',')
                     var mapBounds = new esri.geometry.Extent({
-                        xmin: metadata.bounds[0], ymin: metadata.bounds[1],
-                        xmax: metadata.bounds[2], ymax: metadata.bounds[3],
+                        xmin: bounds[0], ymin: bounds[1],
+                        xmax: bounds[2], ymax: bounds[3],
                         spatialReference: {wkid: 4326}
                     });
                     var mapMinZoom = metadata.minzoom;

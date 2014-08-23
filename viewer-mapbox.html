@@ -30,10 +30,10 @@
 
     // Initialization from the tilejson variable.
     // It is possible to use a link to this server ending with '13003_1.json' instead
-
+    var bounds = metadata.bounds.split(',')
     var map = L.mapbox.map('map').fitBounds([
-        [metadata.bounds[1], metadata.bounds[0]], //south west
-        [metadata.bounds[3], metadata.bounds[2]]  //north east
+        [bounds[1], bounds[0]], //south west
+        [bounds[3], bounds[2]]  //north east
     ]);
     L.mapbox.tileLayer('examples.map-zgrqqx0w').addTo(map);
     L.mapbox.tileLayer(metadata).addTo(map);
