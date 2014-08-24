@@ -109,7 +109,7 @@ if __name__ == "__main__":
             print_usage()
         else:
             rgn = args[1]
-            if len(args) < 3:
+            if len(args) >= 3:
                 prof = args[2]
             else:
                 prof = PROFILE_MX_R
