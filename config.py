@@ -29,6 +29,10 @@ import time
 _root_dir = os.path.join('/media/aux-drive 180G', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
+#when rendering a single zoom level, render the a down zoom layer first
+#then use anti-aliased image scale down for the final pass to render
+#the target single zoom
+use_single_zoom_over_zoom = False
 
 #UKHO specific meta data excel sheets that change every quarter
 ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Sep 2013.xls'

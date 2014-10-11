@@ -22,7 +22,7 @@ import zdata
 import verify
 import tiles_opt
 import os
-import filler
+# import filler
 import util as mb
 
 PROFILE_MX_R = 'MX_REGION'  # (default) renders standard MX Mariner gemf + zdat
@@ -59,8 +59,8 @@ def compile_region(region, profile=PROFILE_MX_R):
         tilesmerge.merge_catalog(region)
 
         #fill
-        print 'filling tile \"holes\"', region
-        filler.fill_all_in_region(region)
+        # print 'filling tile \"holes\"', region
+        # filler.fill_all_in_region(region)
 
         ##optimize
         tiles_opt.optimize_dir(os.path.join(config.merged_tile_dir, region))

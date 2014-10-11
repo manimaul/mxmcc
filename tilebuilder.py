@@ -428,7 +428,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
         os.makedirs(out_dir)
 
     #---- if we are only rendering 1 zoom level, over-shoot by one so we can scale down with anti-aliasing
-    single_z_mode = stop_zoom == start_zoom
+    single_z_mode = config.use_single_zoom_over_zoom and stop_zoom == start_zoom
     logger.log(logger.ON, 'single zoom mode', single_z_mode)
     if single_z_mode:
         stop_zoom += 1
