@@ -25,8 +25,8 @@ import time
 
 #InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-# _root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
-_root_dir = os.path.join('/media/aux-drive 180G', 'mxmcc')
+_root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
+# _root_dir = os.path.join('/media/aux-drive 180G', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
 #when rendering a single zoom level, render the a down zoom layer first
@@ -67,6 +67,7 @@ _meta_dir = os.path.join(_root_dir, 'metadata')
 catalog_dir = os.path.join(_meta_dir, 'catalogs')
 ukho_meta_dir = os.path.join(_meta_dir, 'ukho')
 noaa_meta_dir = os.path.join(_meta_dir, 'noaa')
+brazil_meta_dir = os.path.join(_meta_dir, 'brazil')
 
 
 #add corresponding absolute path to ukho meta data excel sheets
