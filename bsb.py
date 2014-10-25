@@ -35,7 +35,7 @@ class BsbHeader():
             for line in map_file:
                 if '\x1A' in line:
                     break
-                line = line.decode('cp1252', 'ignore')
+                line = line.decode('ascii', 'ignore')
                 self.lines.append(line)
                 if line.find('KNP/SC') > -1:
                     line = line.lstrip('KNP/')

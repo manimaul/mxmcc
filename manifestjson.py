@@ -31,9 +31,8 @@ def checksum(abs_path):
     return m.hexdigest()
 
 
-def generate(name):
-    os.makedirs(os.path.join(config.compiled_dir, name))
-    data = {'manifest_version': 1}
+def generate():
+    data = {'manifest_version': 1, 'regions': {}}
     for ea in os.listdir(config.compiled_dir):
         if ea.endswith('gemf'):
             region_ts = ea[:ea.find('.')]
@@ -46,35 +45,36 @@ def generate(name):
 
             gemf_name = ts + '_' + ea
             data_name = ts + '_' + region_ts + '.zdat'
-            abs_path_gemf = os.path.join(config.compiled_dir, name, gemf_name)
-            abs_path_data = os.path.join(config.compiled_dir, name, data_name)
+            abs_path_gemf = os.path.join(config.compiled_dir, gemf_name)
+            abs_path_data = os.path.join(config.compiled_dir, data_name)
 
             os.rename(abs_path_gemf_org, abs_path_gemf)
             os.rename(abs_path_data_org, abs_path_data)
             print region
-            data[region] = {'gemf_url': BASE_URL + '/' + name + '/' + gemf_name,
-                            'data_url': BASE_URL + '/' + name + '/' + data_name,
-                            'gemf_checksum': checksum(abs_path_gemf),
-                            'data_checksum': checksum(abs_path_data),
-                            'size_bytes': os.path.getsize(abs_path_gemf),
-                            'epoch': epoch}
+            data['regions'][region] = {'gemf_url': BASE_URL + '/' + gemf_name,
+                                       'data_url': BASE_URL + '/' + data_name,
+                                       'gemf_checksum': checksum(abs_path_gemf),
+                                       'data_checksum': checksum(abs_path_data),
+                                       'size_bytes': os.path.getsize(abs_path_gemf),
+                                       'epoch': epoch}
     print data
-    abs_path_json = os.path.join(config.compiled_dir, name, 'manifest.json')
+    abs_path_json = os.path.join(config.compiled_dir, 'manifest.json')
     if os.path.exists(abs_path_json):
         os.remove(abs_path_json)
     with open(abs_path_json, 'w') as f:
         json.dump(data, f, indent=2)
 
 
-def revert(name):
-    for ea in os.listdir(os.path.join(config.compiled_dir, name)):
-        if ea.endswith('gemf') or ea.endswith('zdat'):
+def revert():
+    for ea in os.listdir(os.path.join(config.compiled_dir)):
+        if 'TS_' in ea and ea.endswith('gemf') or ea.endswith('zdat'):
             region_ts = ea[:ea.find('.')]
             region = region_ts[region_ts.find('REGION'):]
             ext = ea[ea.find('.'):]
             print ext, region, ea
-            os.rename(os.path.join(config.compiled_dir, name, ea), os.path.join(config.compiled_dir, name, region + ext))
+            os.rename(os.path.join(config.compiled_dir, ea), os.path.join(config.compiled_dir, region + ext))
 
 
 if __name__ == '__main__':
-    generate('noaa')
+    # revert()
+    generate()
