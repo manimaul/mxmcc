@@ -14,6 +14,7 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import os
 import csv
 from operator import itemgetter
+
 import regions
 import config
 import lookups
@@ -69,7 +70,7 @@ def build_catalog(region, list_of_map_paths, lookup):
                    lookup.get_outline(map_path)]
             rows.append(row)
 
-    #sort row items by scale descending and write to catalog
+    # sort row items by scale descending and write to catalog
     for i in sorted(rows, key=itemgetter(3), reverse=True):
         catalog.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (tuple(s for s in i)))
 

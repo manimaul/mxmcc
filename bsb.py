@@ -35,7 +35,7 @@ class BsbHeader():
             for line in map_file:
                 if '\x1A' in line:
                     break
-                line = line.decode('cp1252', 'ignore')
+                line = line.decode('ascii', 'ignore')
                 self.lines.append(line)
                 if line.find('KNP/SC') > -1:
                     line = line.lstrip('KNP/')
@@ -70,7 +70,7 @@ class BsbHeader():
                 elif line.find('PLY/') > -1:
                     self._read_ply(line)
 
-        #look for overrides
+        # look for overrides
         or_path = os.path.join(os.path.dirname(__file__), 'ply_overrides', self.get_base_filename()[:-4])
         if os.path.isfile(or_path):
             self.poly = []

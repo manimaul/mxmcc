@@ -9,10 +9,13 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 '''This verifies tiles were created for every chart in a catalog
 '''
 
-import catalog
 import os.path
-import config
+
 from PIL import Image
+
+import catalog
+import config
+
 
 error_message = ''
 
@@ -71,20 +74,21 @@ def verify_catalog(catalog_name):
     :param catalog_name: region name
     :return: if all tiles have been created for every chart in the catalog
     """
+    result = True
     global error_message
-    error_message = ''
 
     # noinspection PyBroadException
     try:
         reader = catalog.get_reader_for_region(catalog_name)
     except:
+        error_message = 'error reading catalog'
         return False
 
     region_tile_dir = os.path.join(config.unmerged_tile_dir, catalog_name)
 
     if not os.path.isdir(region_tile_dir):
-        error_message = region_tile_dir + ' is not a directory'
-        return False
+        error_message += region_tile_dir + ' is not a directory\n'
+        result = False
 
     tile_chart_dirs = set(os.listdir(region_tile_dir))
 
@@ -92,14 +96,14 @@ def verify_catalog(catalog_name):
         name = os.path.basename(chart['path'])
         name = name[:name.rfind('.')]
         if name not in tile_chart_dirs:
-            error_message = name + ' not found in chart directories'
-            return False
+            error_message = name + ' not found in chart directories\n'
+            result = False
         else:
             tile_dir = os.path.join(region_tile_dir, name)
             if not (verify_tile_dir(tile_dir)):
-                return False
+                result = False
 
-    return True
+    return result
 
 
 def verify_tile_dir(tile_dir):
@@ -108,25 +112,24 @@ def verify_tile_dir(tile_dir):
 
     found_zoom_dirs = []
 
-    #look for a zoom directory
+    # look for a zoom directory
     for z_dir in os.listdir(tile_dir):
         if z_dir.isdigit():
             found_zoom_dirs.append(z_dir)
 
     global error_message
-    error_message = ''
 
-    #we should have at least one zoom dir
+    # we should have at least one zoom dir
     if len(found_zoom_dirs) > 0:
 
-        #check for tiles
+        # check for tiles
         for z_dir in found_zoom_dirs:
             z_dir = os.path.join(tile_dir, z_dir)
             x_dirs = os.listdir(z_dir)
 
-            #we should have at least one x dir
+            # we should have at least one x dir
             if len(x_dirs) == 0:
-                error_message = 'zero x directories found in path: ' + z_dir
+                error_message += 'zero x directories found in path: ' + z_dir + '\n'
                 return False
 
             # num_tiles = _x_dir_tile_count(os.listdir(os.path.join(z_dir, x_dirs[0])))
@@ -137,11 +140,11 @@ def verify_tile_dir(tile_dir):
             for x_dir in x_dirs:
                 x_dir = os.path.join(z_dir, x_dir)
                 if not _x_dir_has_tiles(x_dir):
-                    error_message = 'zero tiles in directory path: ' + os.path.join(z_dir, x_dir)
+                    error_message += 'zero tiles in directory path: ' + os.path.join(z_dir, x_dir) + '\n'
                     return False
 
     else:
-        error_message = 'zero zoom directories found for ' + tile_dir
+        error_message += 'zero zoom directories found for ' + tile_dir + '\n'
         return False
 
     return True
