@@ -20,32 +20,33 @@ import os
 import time
 
 ######################################################################
-#EDIT THIS SECTION ONLY###############################################
+# EDIT THIS SECTION ONLY##############################################
 ######################################################################
 
-#InputOutput directory
+# InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-_root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
+# _root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
+_root_dir = '/Users/will/mxmcc'
 # _root_dir = os.path.join('/media/aux-drive 180G', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
-#when rendering a single zoom level, render the a down zoom layer first
-#then use anti-aliased image scale down for the final pass to render
-#the target single zoom
+# when rendering a single zoom level, render the a down zoom layer first
+# then use anti-aliased image scale down for the final pass to render
+# the target single zoom
 use_single_zoom_over_zoom = False
 
-#UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Sep 2013.xls'
-ukho_source_breakdown = 'Source Breakdown for Raster Charts Q4 2013.xls'
-ukho_chart_data = 'Titles,Scale,Edition,Codes,Projection,Vertices,Shifts,Sep 2013.xls'
+# UKHO specific meta data excel sheets that change every quarter
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Dec2014.xls'
+ukho_source_breakdown = 'Source Breakdown for Raster Charts Q1 2015 (Standard Version).xls'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Dec2014.xls'
 
 ######################################################################
-#END EDITABLE SECTION#################################################
+# END EDITABLE SECTION################################################
 ######################################################################
-#YOU DON'T NEED TO EDIT ANYTHING ELSE#################################
+# YOU DON'T NEED TO EDIT ANYTHING ELSE################################
 ######################################################################
 
-#chart directories
+# chart directories
 map_dir = os.path.join(_root_dir, 'charts')
 brazil_bsb_dir = os.path.join(map_dir, 'brazil')
 linz_bsb_dir = os.path.join(map_dir, 'linz')
@@ -54,15 +55,15 @@ ukho_geotiff_dir = os.path.join(map_dir, 'ukho/geotiff')
 ukho_png_dir = os.path.join(map_dir, 'ukho/png')
 wavey_line_geotiff_dir = os.path.join(map_dir, 'wavey-lines/geotiff')
 
-#finished directory
+# finished directory
 compiled_dir = os.path.join(_root_dir, 'compiled')
 
-#tile directories
+# tile directories
 _tile_dir = os.path.join(_root_dir, 'tiles')
 merged_tile_dir = os.path.join(_tile_dir, 'merged')
 unmerged_tile_dir = os.path.join(_tile_dir, 'unmerged')
 
-#meta data and catalogs
+# meta data and catalogs
 _meta_dir = os.path.join(_root_dir, 'metadata')
 catalog_dir = os.path.join(_meta_dir, 'catalogs')
 ukho_meta_dir = os.path.join(_meta_dir, 'ukho')
@@ -70,10 +71,10 @@ noaa_meta_dir = os.path.join(_meta_dir, 'noaa')
 brazil_meta_dir = os.path.join(_meta_dir, 'brazil')
 
 
-#add corresponding absolute path to ukho meta data excel sheets
+# add corresponding absolute path to ukho meta data excel sheets
 ukho_quarterly_extract = os.path.join(ukho_meta_dir, ukho_quarterly_extract)
 ukho_source_breakdown = os.path.join(ukho_meta_dir, ukho_source_breakdown)
-ukho_quarterly_extract = os.path.join(ukho_meta_dir, ukho_quarterly_extract)
+ukho_chart_data = os.path.join(ukho_meta_dir, ukho_chart_data)
 
 epoch = int(time.time())
 

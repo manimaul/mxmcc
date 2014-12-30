@@ -87,10 +87,12 @@ def build_catalog_for_bsb_directory(bsb_dir, name=None):
 
     build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
 
-# if __name__ == '__main__':
-#     # map_path = '/Volumes/USB-DATA/mxmcc/charts/noaa/Test/'
-#     # build_catalog_for_bsb_directory(map_path, 'Test')
-#
+if __name__ == '__main__':
+    # map_path = '/Users/will/mxmcc/charts/noaa/BSB_ROOT'
+    # build_catalog_for_bsb_directory(map_path, 'Test')
+
+    build_catalog_for_region('region_uk1')
+
 #     region = 'region_08'
 #
 #     print 'building catalog for:', region

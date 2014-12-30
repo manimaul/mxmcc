@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<gpx version="1.1" creator="MTCW" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns:MTCW="http://www.mxmariner.com">
+    <rte>
+        <name>override</name>
+        <rtept lat="55.8166666667" lon="-5.45361666667"></rtept>
+<rtept lat="56.0411166667" lon="-5.45365"></rtept>
+<rtept lat="56.0411666667" lon="-5.28141666667"></rtept>
+<rtept lat="55.9243666667" lon="-5.28146666667"></rtept>
+<rtept lat="55.9244166667" lon="-5.31121666667"></rtept>
+<rtept lat="55.8816666667" lon="-5.31146666667"></rtept>
+<rtept lat="55.8816" lon="-5.23333333333"></rtept>
+<rtept lat="55.8166666667" lon="-5.21378333333"></rtept>
+
+    </rte>
+</gpx>

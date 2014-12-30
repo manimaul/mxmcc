@@ -179,9 +179,16 @@ def map_list_for_region(region):
         # elif provider is provider_wavey_lines: #todo
         #     mps = MapPathSearch(config.wavey_line_geotiff_dir, [map_type_for_region(region)])
         #     return mps.file_paths
-        # elif provider is provider_ukho: #todo
-        #     mps = MapPathSearch(config.ukho_geotiff_dir, [map_type_for_region(region)])
-        #     return mps.file_paths
+        elif provider is provider_ukho:
+            region_txt = os.path.join(config.ukho_meta_dir, region.upper() + '.txt')
+            paths = []
+            with open(region_txt, 'r') as manifest:
+                for ea in manifest.readlines():
+                    if ea.endswith('png'):
+                        paths.append(os.path.join(config.ukho_png_dir, ea.strip()))
+                    else:
+                        paths.append(os.path.join(config.ukho_geotiff_dir, ea.strip()))
+            return paths
         else:
             raise Exception('unknown region')
 

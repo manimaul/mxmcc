@@ -12,8 +12,9 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 '''
 
 import bsb
+import ukho_xlrd_lookup
 
-#coordinates need to be longitude,latitude,altitude
+# coordinates need to be longitude,latitude,altitude
 cutline_kml = '''<?xml version='1.0' encoding='UTF-8'?>
 <kml xmlns='http://www.opengis.net/kml/2.2'>
   <Placemark>
@@ -43,15 +44,12 @@ def get_cutline_kml(poly_string):
     return _get_cutline_kml(poly)
 
 
-class BsbLookup:
+class Lookup(object):
     """Lookup information using the bsb header"""
     def __init__(self):
         self.lookup_db = {}
 
     def _get(self, map_path):
-        if not map_path in self.lookup_db:
-            self.lookup_db[map_path] = bsb.BsbHeader(map_path)
-
         return self.lookup_db[map_path]
 
     def get_name(self, map_path):
@@ -76,55 +74,27 @@ class BsbLookup:
         return self._get(map_path).get_is_valid()
 
 
-class UKHOLookup:
+class BsbLookup(Lookup):
+
+    def _get(self, map_path):
+        if map_path not in self.lookup_db:
+            self.lookup_db[map_path] = bsb.BsbHeader(map_path)
+
+        # noinspection PyProtectedMember
+        return super(BsbLookup, self)._get(map_path)
+
+
+class UKHOLookup(Lookup):
     """Lookup information using the ukho excel meta data files"""
     def __init__(self):
-        pass  # TODO:
+        super(UKHOLookup, self).__init__()
+        self.meta_lookup = ukho_xlrd_lookup.MetaLookup()
 
-    def get_name(self, map_path):
-        pass
-
-    def get_zoom(self, map_path):
-        pass
-
-    def get_scale(self, map_path):
-        pass
-
-    def get_updated(self, map_path):
-        pass
-
-    def get_depth_units(self, map_path):
-        pass
-
-    def get_outline(self, map_path):
-        pass
-
-    def get_is_valid(self, map_path):
-        pass
+    def _get(self, map_path):
+        return self.meta_lookup.get_data(map_path)
 
 
-class WaveylinesLookup:
+class WaveylinesLookup(Lookup):
     """Lookup information using information coded in file names"""
-    def __init__(self):
+    def _get(self, map_path):
         pass  # TODO:
-
-    def get_name(self, map_path):
-        pass
-
-    def get_zoom(self, map_path):
-        pass
-
-    def get_scale(self, map_path):
-        pass
-
-    def get_updated(self, map_path):
-        pass
-
-    def get_depth_units(self, map_path):
-        pass
-
-    def get_outline(self, map_path):
-        pass
-
-    def get_is_valid(self, map_path):
-        pass
