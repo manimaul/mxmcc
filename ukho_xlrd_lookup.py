@@ -6,19 +6,19 @@ __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
-import config
-import xlrd
 import os
 import re
-import findzoom
+
+import xlrd
+
+import config
 
 
 def file_name_decoder(file_name):
     """returns tuple(chart_number, suffix, panel_number)"""
-    ""
     file_name = file_name[:file_name.rfind('.')]
     fn = os.path.basename(file_name)
-    non_digit = re.search("\D", fn).start()
+    non_digit = re.search('\D', fn).start()
     chart_number = fn[0:non_digit].lstrip('0')
     hyphen = fn.find('-')
     suffix = fn[non_digit:hyphen]
@@ -55,8 +55,8 @@ def _lat_lng_dmm_to_ddd(lat_dmm, lng_dmm):
     ex. latDmm, lngDmm = ('-28 59.803', '048 06.998')
         latDmm, lngDmm = ('28.204', -000 34.086') """
 
-    lat_deg, lat_min = lat_dmm.split(" ")
-    lng_deg, lng_min = lng_dmm.split(" ")
+    lat_deg, lat_min = lat_dmm.split(' ')
+    lng_deg, lng_min = lng_dmm.split(' ')
 
     if lat_deg.startswith('-'):
         lat = float(lat_deg) - (float(lat_min) / 60)
@@ -71,6 +71,7 @@ def _lat_lng_dmm_to_ddd(lat_dmm, lng_dmm):
     return lat, lng
 
 
+# noinspection PyMethodMayBeStatic
 class Data:
     def __init__(self, chart_number, suffix, panel_number, name, scale, depth_units):
         self.chart_number = chart_number
@@ -122,10 +123,14 @@ class Data:
         return self.name
 
     def get_zoom(self):
-        if self.scale is None:
-            return 0
+        # we don't know the path to the data set at this point to be able to calculate the zoom from true scale
+        raise NotImplementedError('handle get_zoom in lookups.UKHOLookup')
 
-        return findzoom.get_zoom(int(self.scale), self.get_center()[1])
+    # def get_zoom(self):
+    # if self.scale is None:
+    #         return 0
+    #
+    #     return findzoom.get_zoom(int(self.scale), self.get_center()[1])
 
     def get_scale(self):
         return self.scale
@@ -146,12 +151,13 @@ class Data:
         return True
 
 
+# noinspection PyBroadException
 class MetaLookup:
     def __init__(self):
         xls_path = config.ukho_quarterly_extract
         self.xls = xlrd.open_workbook(xls_path)
         self.charts = {}
-        self.depthCodes = self._read_depth_codes()
+        self.depth_codes = self._read_depth_codes()
         self._read_charts()
         self._read_panels()
         self._read_editions()
@@ -159,7 +165,7 @@ class MetaLookup:
 
     def _read_depth_codes(self):
         dcodes = []
-        sheet = self.xls.sheet_by_name("Depth Units")
+        sheet = self.xls.sheet_by_name('Depth Units')
         for n in range(sheet.nrows):
             try:
                 code = str(int(sheet.row(n)[0].value))
@@ -170,17 +176,17 @@ class MetaLookup:
         return dict(dcodes)
 
     def _read_charts(self):
-        sheet = self.xls.sheet_by_name("Charts & Titles")
+        sheet = self.xls.sheet_by_name('Charts & Titles')
         for n in range(sheet.nrows):
             if n > 0:
                 chart_number = str(int(sheet.row(n)[1].value))
                 suffix = sheet.row(n)[2].value
                 panel_number = '0'
-                name = re.sub(r'\s+', ' ', sheet.row(n)[4].value).replace('\"', '')
+                name = re.sub(r'\s+', ' ', sheet.row(n)[4].value).replace('\'', '')
                 scale = str(int(sheet.row(n)[6].value))
                 depth_code = str(int(sheet.row(n)[8].value))
                 try:
-                    depth_unit = self.depthCodes[depth_code].upper().replace('/', ' AND ')
+                    depth_unit = self.depth_codes[depth_code].upper().replace('/', ' AND ')
                 except:
                     # print 'error finding depth unit for', chart_number, depth_code
                     depth_unit = 'UNKNOWN'
@@ -189,17 +195,17 @@ class MetaLookup:
                 self.charts[s] = d
 
     def _read_panels(self):
-        sheet = self.xls.sheet_by_name("Panels")
+        sheet = self.xls.sheet_by_name('Panels')
         for n in range(sheet.nrows):
             if n > 0:
                 chart_number = str(int(sheet.row(n)[1].value))
                 suffix = sheet.row(n)[2].value
                 panel_number = str(int(sheet.row(n)[3].value))
-                name = re.sub(r'\s+', ' ', sheet.row(n)[4].value).replace('\"', '')
+                name = re.sub(r'\s+', ' ', sheet.row(n)[4].value).replace('\'', '')
                 scale = str(int(sheet.row(n)[5].value))
                 depth_code = str(int(sheet.row(n)[7].value))
                 try:
-                    depth_unit = self.depthCodes[depth_code].upper().replace('/', ' AND ')
+                    depth_unit = self.depth_codes[depth_code].upper().replace('/', ' AND ')
                 except:
                     # print 'error finding depth unit for', chart_number, depth_code
                     depth_unit = 'UNKNOWN'
@@ -208,14 +214,14 @@ class MetaLookup:
                 self.charts[s] = d
 
     def _read_editions(self):
-        sheet = self.xls.sheet_by_name("Edition date & latest NM")
+        sheet = self.xls.sheet_by_name('Edition date & latest NM')
         for n in range(sheet.nrows):
             if n > 0:
                 chart_number = str(int(sheet.row(n)[1].value))
                 try:
                     year, month, day, _, __, ___ = xlrd.xldate_as_tuple(sheet.row(n)[3].value, self.xls.datemode)
                     # edition = datetime.datetime(*xlrd.xldate_as_tuple(edi, self.xls.datemode))
-                    edition = "%s/%s/%s" %(month, day, year)
+                    edition = '%s/%s/%s' % (month, day, year)
                     for data in self.charts.values():
                         if data.chart_number == chart_number:
                             data.set_updated(edition)
@@ -225,7 +231,7 @@ class MetaLookup:
     def _read_coords(self):
         xls_path = config.ukho_chart_data
         xls = xlrd.open_workbook(xls_path)
-        sheet = xls.sheet_by_name("Chart Vertices")
+        sheet = xls.sheet_by_name('Chart Vertices')
 
         for n in range(sheet.nrows):
             if n > 0:
@@ -235,22 +241,22 @@ class MetaLookup:
                     panel_number = str(int(sheet.row(n)[3].value))
 
                     lat_cell = str(sheet.row(n)[5].value)
-                    i = max(0, lat_cell.find(".")-2)
+                    i = max(0, lat_cell.find('.') - 2)
                     lat_deg = lat_cell[:i]
-                    if lat_deg == "-" or lat_deg == "":
-                        lat_deg += "0"
+                    if lat_deg == '-' or lat_deg == '':
+                        lat_deg += '0'
                     lat_min = lat_cell[i:]
 
                     lng_cell = str(sheet.row(n)[6].value)
-                    i = max(0, lng_cell.find(".")-2)
+                    i = max(0, lng_cell.find('.') - 2)
                     lng_deg = lng_cell[:i]
-                    if lng_deg == "-" or lng_deg == "":
-                        lng_deg += "0"
+                    if lng_deg == '-' or lng_deg == '':
+                        lng_deg += '0'
 
                     lng_min = lng_cell[i:]
 
-                    lat_dmm = lat_deg + " " + lat_min
-                    lng_dmm = lng_deg + " " + lng_min
+                    lat_dmm = lat_deg + ' ' + lat_min
+                    lng_dmm = lng_deg + ' ' + lng_min
 
                     s = stamp_from_detail(chart_number, suffix, panel_number)
                     self.charts[s].coords.append(_lat_lng_dmm_to_ddd(lat_dmm, lng_dmm))
@@ -262,8 +268,8 @@ class MetaLookup:
         return self.charts[s]
 
 
-# if __name__ == "__main__":
-#     ml = MetaLookup()
+# if __name__ == '__main__':
+        #     ml = MetaLookup()
 #     tp = os.path.join(config.ukho_geotiff_dir, '2182A-0.png')
 #     print file_name_decoder(tp)
 #     print stamp(tp)
@@ -275,7 +281,6 @@ class MetaLookup:
 #     print 'scale:', data.scale
 #     print 'depths:', data.depth_units
 #     print 'updated:', data.updated
-#     print 'zoom', data.get_zoom()
-#     print 'outline', data.get_outline()
+#     # print 'zoom', data.get_zoom()
+        #     print 'outline', data.get_outline()
 #     print 'coords', data.coords
-

@@ -13,6 +13,9 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 import bsb
 import ukho_xlrd_lookup
+import findzoom
+import gdalds
+import config
 
 # coordinates need to be longitude,latitude,altitude
 cutline_kml = '''<?xml version='1.0' encoding='UTF-8'?>
@@ -92,6 +95,11 @@ class UKHOLookup(Lookup):
 
     def _get(self, map_path):
         return self.meta_lookup.get_data(map_path)
+
+    def get_zoom(self, map_path):
+        data_set = gdalds.get_ro_dataset(map_path)
+        true_scale = gdalds.get_true_scale(data_set, config.ukho_chart_dpi)
+        return findzoom.get_zoom_from_true_scale(true_scale)
 
 
 class WaveylinesLookup(Lookup):

@@ -11,6 +11,7 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 '''
 
 import math
+
 from shapely.geometry import Point
 from pyproj import Proj
 
@@ -48,11 +49,15 @@ def latitude_distortion(latitude):
 
 
 def get_zoom(scale, latitude):
-    #tweakPercent = .87
-    tweak_percent = .70
     true_scale = scale * latitude_distortion(latitude)
-    tweak_scale = true_scale * tweak_percent
+    return get_zoom_from_true_scale(true_scale)
+
+
+def get_zoom_from_true_scale(true_scale):
     t = 30
+    # tweak_percent = .87
+    tweak_percent = .70
+    tweak_scale = true_scale * tweak_percent
     while tweak_scale > 1:
         tweak_scale /= 2
         t -= 1

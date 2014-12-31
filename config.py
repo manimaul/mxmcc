@@ -26,7 +26,8 @@ import time
 # InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
 # _root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
-_root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
+# _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
+_root_dir = '/Users/will/mxmcc'
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
 # when rendering a single zoom level, render the a down zoom layer first
@@ -38,6 +39,7 @@ use_single_zoom_over_zoom = False
 ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Dec2014.xls'
 ukho_source_breakdown = 'Source Breakdown for Raster Charts Q1 2015 (Standard Version).xls'
 ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Dec2014.xls'
+ukho_chart_dpi = 127
 
 ######################################################################
 # END EDITABLE SECTION################################################

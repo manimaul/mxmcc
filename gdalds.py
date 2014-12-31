@@ -16,6 +16,10 @@ import osr
 '''
 
 
+def get_ro_dataset(map_path):
+    return gdal.Open(map_path, gdal.GA_ReadOnly)
+
+
 def dataset_get_cutline_geometry(gdal_ds, cutline):
     """return a cutline in WKT geometry with coordinates expressed in dataset source pixel/line coordinates.
 
@@ -23,7 +27,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
        : dilineated latitude,longitude WGS-84 coordinates (in decimal degrees)
     """
 
-    #---- create coordinate transform from lat lng to data set coords
+    # ---- create coordinate transform from lat lng to data set coords
     ds_wkt = dataset_get_projection_wkt(gdal_ds)
     ds_srs = osr.SpatialReference()
     ds_srs.ImportFromWkt(ds_wkt)
@@ -33,29 +37,29 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
 
     transform = osr.CoordinateTransformation(wgs84_srs, ds_srs)
 
-    #---- grab inverted geomatrix
+    # ---- grab inverted geomatrix
     geotransform = get_geo_transform(gdal_ds)
     _success, inv_geotransform = gdal.InvGeoTransform(geotransform)
 
-    #---- transform lat long to dataset coordinates, then coordinates to pixel/lines
+    # ---- transform lat long to dataset coordinates, then coordinates to pixel/lines
     polygon_wkt = 'POLYGON (('
 
-    #x_coords = []
-    #y_coords = []
+    # x_coords = []
+    # y_coords = []
 
     for latlng in cutline.split(':'):
         lat, lng = latlng.split(',')
         geo_x, geo_y = transform.TransformPoint(float(lng), float(lat))[:2]
         px = int(inv_geotransform[0] + inv_geotransform[1] * geo_x + inv_geotransform[2] * geo_y)
         py = int(inv_geotransform[3] + inv_geotransform[4] * geo_x + inv_geotransform[5] * geo_y)
-        #x_coords.append(geo_x)
-        #y_coords.append(geo_y)
+        # x_coords.append(geo_x)
+        # y_coords.append(geo_y)
         polygon_wkt += '%d %d,' % (px, py)
 
     polygon_wkt = polygon_wkt[:-1] + '))'
 
-    ##--- get extents
-    #extents = [str(min(x_coords)), str(min(y_coords)), str(max(x_coords)), str(max(y_coords))]  # xmin ymin xmax ymax
+    # --- get extents
+    # extents = [str(min(x_coords)), str(min(y_coords)), str(max(x_coords)), str(max(y_coords))]  # xmin ymin xmax ymax
 
     return polygon_wkt
 
@@ -76,7 +80,8 @@ def dataset_get_proj4_srs_declaration(gdal_ds):
 
 
 def dataset_get_as_epsg_900913(gdal_ds):
-    epsg_900913 = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 %s +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs'
+    epsg_900913 = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 %s +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null ' \
+                  '+no_defs'
     srs = dataset_get_proj4_srs_declaration(gdal_ds)
     val = '0'
     for ea in srs.split(' '):
@@ -97,7 +102,7 @@ def dataset_lat_lng_bounds(gdal_ds):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
-    #bounds (west, north, east, south)
+    # bounds (west, north, east, south)
     return dataset_get_bounds(gdal_ds, 4326)
 
 
@@ -113,18 +118,18 @@ def dataset_get_bounds(gdal_ds, epsg=4326):
     ds_srs = osr.SpatialReference()
     ds_srs.ImportFromWkt(ds_wkt)
 
-    #we need a north up dataset
+    # we need a north up dataset
     ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
     geotransform = get_geo_transform(ds)
     transform = osr.CoordinateTransformation(ds_srs, out_srs)
 
-    #useful information about geotransform
-    #geotransform[0] #top left X
-    #geotransform[1] #w-e pixel resolution
-    #geotransform[2] #rotation, 0 if image is "north up"
-    #geotransform[3] #top left Y
-    #geotransform[4] #rotation, 0 if image is "north up"
-    #geotransform[5] n-s pixel resolution
+    # useful information about geotransform
+    # geotransform[0] #top left X
+    # geotransform[1] #w-e pixel resolution
+    # geotransform[2] #rotation, 0 if image is "north up"
+    # geotransform[3] #top left Y
+    # geotransform[4] #rotation, 0 if image is "north up"
+    # geotransform[5] n-s pixel resolution
 
     west = geotransform[0]
     east = west + ds.RasterXSize * geotransform[1]
@@ -142,15 +147,34 @@ def dataset_get_bounds(gdal_ds, epsg=4326):
         rotation = get_rotation(gt)
         is_north_up = rotation < .5 or rotation > 359.5
 
-    #min_lng, max_lat, max_lng, min_lat
+    # min_lng, max_lat, max_lng, min_lat
     return (west, north, east, south), is_north_up
+
+
+# def get_true_scale(gdal_ds, dpi):
+# wnes, is_north_up = dataset_get_bounds(gdal_ds)
+#     west, north, east, south = wnes
+#     inches = gdal_ds.RasterXSize / dpi
+#     meters = inches / 39.3701
+#     center_x = west + ((east - west) / 2)
+#     true_scale = cartesian_distance((west, center_x), (east, center_x)) / meters
+#     return true_scale
+
+
+def get_true_scale(gdal_ds, dpi):
+    wnes, is_north_up = dataset_meters_bounds(gdal_ds)
+    west, north, east, south = wnes
+    inches = gdal_ds.RasterXSize / dpi
+    meters = inches / 39.3701
+    true_scale = (east - west) / meters
+    return true_scale
 
 
 def dataset_meters_bounds(gdal_ds):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
-    #bounds (west, north, east, south)
+    # bounds (west, north, east, south)
     return dataset_get_bounds(gdal_ds, 900913)
 
 
@@ -205,7 +229,8 @@ def map_to_pixels(mx, my, gt):
         @param  gt:    Input geotransform (six doubles)
         @return: px,py Output coordinates (two ints)
 
-        @change: changed int(p[x,y]+0.5) to int(p[x,y]) as per http://lists.osgeo.org/pipermail/gdal-dev/2010-June/024956.html
+        @change: changed int(p[x,y]+0.5) to int(p[x,y])
+                 as per http://lists.osgeo.org/pipermail/gdal-dev/2010-June/024956.html
         @change: return floats
         @note:   0,0 is UL corner of UL pixel, 0.5,0.5 is centre of UL pixel
     """
@@ -215,3 +240,11 @@ def map_to_pixels(mx, my, gt):
     else:
         px, py = apply_geo_transform(mx, my, gdal.InvGeoTransform(gt))
     return int(px), int(py)
+
+if __name__ == '__main__':
+    import os
+    import config
+
+    p = os.path.join(config.ukho_geotiff_dir, '2182A-0.tif')
+    d = get_ro_dataset(p)
+    print get_true_scale(d, 127)
