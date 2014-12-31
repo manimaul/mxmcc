@@ -184,10 +184,16 @@ def map_list_for_region(region):
             paths = []
             with open(region_txt, 'r') as manifest:
                 for ea in manifest.readlines():
-                    if ea.endswith('png'):
-                        paths.append(os.path.join(config.ukho_png_dir, ea.strip()))
+                    p = os.path.join(config.ukho_png_dir, ea.strip() + '.png')
+                    if os.path.isfile(p):
+                        paths.append(p)
                     else:
-                        paths.append(os.path.join(config.ukho_geotiff_dir, ea.strip()))
+                        p = os.path.join(config.ukho_geotiff_dir, ea.strip() + '.tif')
+                        if os.path.isfile(p):
+                            paths.append(p)
+                        else:
+                            raise Exception('path not found for chart: ' + p)
+
             return paths
         else:
             raise Exception('unknown region')

@@ -170,6 +170,14 @@ def get_true_scale(gdal_ds, dpi):
     return true_scale
 
 
+# def get_lat_lng_center(gdal_ds):
+# wnes, is_north_up = dataset_lat_lng_bounds(gdal_ds)
+#     west, north, east, south = wnes
+#     center_lng = west + ((east - west) / 2)
+#     center_lat = south + ((north - south) / 2)
+#     return center_lat, center_lng
+
+
 def dataset_meters_bounds(gdal_ds):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
        bounding box returned as: min_lng, min_lat, max_lng, max_lat

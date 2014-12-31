@@ -25,14 +25,13 @@ import time
 
 # InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-# _root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
+_root_dir = os.path.join('/Volumes/data', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
-_root_dir = '/Users/will/mxmcc'
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
-# when rendering a single zoom level, render the a down zoom layer first
-# then use anti-aliased image scale down for the final pass to render
-# the target single zoom
+# set to true when rendering a single zoom level and you want the following behavior:
+# - render a (down zoom) layer first
+# - then use anti-aliased image scale down for the final pass to render the target single zoom
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
@@ -53,6 +52,7 @@ brazil_bsb_dir = os.path.join(map_dir, 'brazil')
 linz_bsb_dir = os.path.join(map_dir, 'linz')
 noaa_bsb_dir = os.path.join(map_dir, 'noaa')
 ukho_geotiff_dir = os.path.join(map_dir, 'ukho/geotiff')
+ukho_dup_dir = os.path.join(map_dir, 'ukho/duplicates')
 ukho_png_dir = os.path.join(map_dir, 'ukho/png')
 wavey_line_geotiff_dir = os.path.join(map_dir, 'wavey-lines/geotiff')
 
@@ -92,6 +92,7 @@ _all_dirs = [_root_dir,
              linz_bsb_dir,
              brazil_bsb_dir,
              ukho_geotiff_dir,
+             ukho_dup_dir,
              ukho_png_dir,
              wavey_line_geotiff_dir,
              compiled_dir]

@@ -37,8 +37,8 @@ from functools import partial
 import traceback
 import json
 import shutil
-from PIL import Image
 
+from PIL import Image
 from osgeo import gdal
 import osr
 
@@ -49,14 +49,15 @@ import catalog
 import config
 
 
+
 # http://www.gdal.org/formats_list.html
-geotiff = 'Gtiff'
+geotiff = 'GTIFF'
 bsb = 'BSB'
 png = 'PNG'
 supported_formats = {geotiff, bsb, png}
 
-#needed to set this to be able to process new 400dpi charts from NOAA
-#http://www.charts.noaa.gov/RNCs_400/
+# needed to set this to be able to process new 400dpi charts from NOAA
+# http://www.charts.noaa.gov/RNCs_400/
 os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
 gdal.AllRegister()
 mem_driver = gdal.GetDriverByName('MEM')
@@ -96,18 +97,18 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
     map_type = dataset.GetDriver().ShortName
     _, is_north_up = gdalds.dataset_lat_lng_bounds(dataset)
 
-    if not map_type in supported_formats:
+    if map_type.upper() not in supported_formats:
         raise Exception(map_type + ' is not a supported format')
 
     # log = open(os.devnull, 'w')  # subprocess.PIPE
     log = subprocess.PIPE
 
-    #-----paths and file names
+    # -----paths and file names
     base_dir = os.path.dirname(map_path)
     map_fname = os.path.basename(map_path)
     map_name = map_fname[0:map_fname.find('.')]  # remove file extension
 
-    #-----if map has a palette create vrt with expanded rgba
+    # -----if map has a palette create vrt with expanded rgba
     if gdalds.dataset_has_color_palette(dataset):
         logger.log(logger.ON, 'dataset has color palette')
         c_vrt_path = os.path.join(base_dir, map_name + '_c.vrt')
@@ -129,7 +130,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
         # except BaseException as e:
         #     logger.log(logger.ON, e)
 
-    #-----repoject map to tilesystem projection, crop to cutline
+    # -----repoject map to tilesystem projection, crop to cutline
     w_vrt_path = os.path.join(base_dir, map_name + '.vrt')
     if os.path.isfile(w_vrt_path):
         os.remove(w_vrt_path)
@@ -184,14 +185,14 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
 
     zoom_level = int(zoom)
 
-    ### fetch vrt data-set extends as tile bounds
+    # fetch vrt data-set extends as tile bounds
     lat_lng_bounds_wnes, is_north_up = gdalds.dataset_lat_lng_bounds(ds)
 
     tile_bounds_wnes = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds_wnes, zoom_level)
 
     tile_west, tile_north, tile_east, tile_south, tile_count_x, tile_count_y = tile_bounds_wnes
 
-    #---- create coordinate transform from lat lng to data set coords
+    # ---- create coordinate transform from lat lng to data set coords
     ds_wkt = gdalds.dataset_get_projection_wkt(ds)
     ds_srs = osr.SpatialReference()
     ds_srs.ImportFromWkt(ds_wkt)
@@ -201,7 +202,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
 
     transform = osr.CoordinateTransformation(wgs84_srs, ds_srs)
 
-    #---- grab inverted geomatrix from ground control points
+    # ---- grab inverted geomatrix from ground control points
     geotransform = gdalds.get_geo_transform(ds)
     _success, inv_transform = gdal.InvGeoTransform(geotransform)
 
@@ -277,16 +278,16 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
 
             # logger.debug = True
 
-            #skip tile if exists
+            # skip tile if exists
             if os.path.isfile(tile_path):
                 logger.log(logger.OFF, 'skipping tile that exists', tile_path)
                 continue
 
-            #we can continue if the upper zoom exists even if _scale_tile returns false
-            #because all upper zoom tiles may not exist if they were all fully transparent
+            # we can continue if the upper zoom exists even if _scale_tile returns false
+            # because all upper zoom tiles may not exist if they were all fully transparent
             upper_zoom_exists = os.path.isdir(os.path.join(out_dir, str(zoom_level + 1)))
 
-            #attempt to create tile from existing lower zoom tile
+            # attempt to create tile from existing lower zoom tile
             if _scale_tile(out_dir, zoom_level, tile_x, tile_y) or upper_zoom_exists:
                 logger.log(logger.OFF, 'scaled tile', tile_path)
                 continue
@@ -342,7 +343,7 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                         transparent = False
                         break
 
-            #only create tiles that have data (not completely transparent)
+            # only create tiles that have data (not completely transparent)
             if not transparent:
                 x_size = ds_pxx - ds_px
                 y_size = ds_pyy - ds_py
@@ -386,14 +387,14 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
 
                 scaling_up = int(x_size) < tilesystem.tile_size or int(y_size) < tilesystem.tile_size
 
-                #check if we're scaling image up
+                # check if we're scaling image up
                 if scaling_up:
                     logger.log(logger.OFF, 'scaling up')
                     tmp.SetGeoTransform((0.0, tilesystem.tile_size / float(x_size), 0.0,
                                          0.0, 0.0, tilesystem.tile_size / float(y_size)))
                     tile.SetGeoTransform((0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
                     gdal.ReprojectImage(tmp, tile, None, None, gdal.GRA_Average)
-                #or scaling image down
+                # or scaling image down
                 else:
                     logger.log(logger.OFF, 'scaling down')
                     for i in range(1, ds.RasterCount + 1):
@@ -420,14 +421,14 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
     """
     map_stack = _build_tile_vrt_for_map(map_path, cutline=cutline)
 
-    #---- render tiles in the same directory of the map if not specified
+    # ---- render tiles in the same directory of the map if not specified
     if out_dir is None:
         out_dir = os.path.dirname(_stack_peek(map_stack))
         out_dir = os.path.join(out_dir, 'tiles')
     elif not os.path.isdir(out_dir):
         os.makedirs(out_dir)
 
-    #---- if we are only rendering 1 zoom level, over-shoot by one so we can scale down with anti-aliasing
+    # ---- if we are only rendering 1 zoom level, over-shoot by one so we can scale down with anti-aliasing
     single_z_mode = config.use_single_zoom_over_zoom and stop_zoom == start_zoom
     logger.log(logger.ON, 'single zoom mode', single_z_mode)
     if single_z_mode:

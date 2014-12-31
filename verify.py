@@ -18,6 +18,7 @@ import config
 
 
 error_message = ''
+IGNORED = {'.DS_Store'}
 
 
 def _full_transparency(img):
@@ -138,6 +139,8 @@ def verify_tile_dir(tile_dir):
             #     return False
 
             for x_dir in x_dirs:
+                if x_dir in IGNORED:
+                    continue
                 x_dir = os.path.join(z_dir, x_dir)
                 if not _x_dir_has_tiles(x_dir):
                     error_message += 'zero tiles in directory path: ' + os.path.join(z_dir, x_dir) + '\n'

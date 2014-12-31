@@ -11,6 +11,7 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 '''
 
 import sys
+import os
 
 import config
 import regions
@@ -21,7 +22,6 @@ import gemf
 import zdata
 import verify
 import tiles_opt
-import os
 # import filler
 import util as mb
 
@@ -41,45 +41,44 @@ def compile_region(region, profile=PROFILE_MX_R):
             catalog.build_catalog_for_bsb_directory(region_dir, region)
         else:
             raise Exception('custom region: %s does not have a directory' % region)
-
     else:
         catalog.build_catalog_for_region(region)
 
-    ##create tiles
+    # create tiles
     print 'building tiles for:', region
     tilebuilder.build_tiles_for_catalog(region)
 
-    ##verify
+    # verify
     if not verify.verify_catalog(region):
         raise Exception(region + ' was not verified... ' + verify.error_message)
 
     if 'REGION' in profile:
-        #merge
+        # merge
         print 'merging tiles for:', region
         tilesmerge.merge_catalog(region)
 
-        #fill
+        # fill
         # print 'filling tile \"holes\"', region
         # filler.fill_all_in_region(region)
 
-        ##optimize
+        # optimize
         tiles_opt.optimize_dir(os.path.join(config.merged_tile_dir, region))
 
-        ##verify all optimized tiles are there
+        # verify all optimized tiles are there
         if not verify.verify_opt(region):
             raise Exception(region + ' was not optimized fully')
 
         if 'MX_' in profile:
-            #gemf
+            # gemf
             print 'archiving gemf for region:', region
             gemf.generate_gemf(region + '.opt', add_uid=regions.provider_for_region(region) is regions.provider_ukho)
 
-            #zdat
+            # zdat
             print 'building zdat metadata archive for:', region
             zdata.generate_zdat_for_catalog(region)
 
         if 'MB_' in profile:
-            #mbtiles
+            # mbtiles
             print 'archiving mbtiles for region:', region
             region_dir = os.path.join(config.merged_tile_dir, region + '.opt')
             mbtiles_file = os.path.join(config.compiled_dir, region + '.mbtiles')
