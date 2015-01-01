@@ -11,20 +11,20 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import codecs
 import os.path
 import zipfile
+
 import config
 import catalog
 import regions
 
+
 upd_fmt = U'UPDATE regions SET installeddate=\'%s\' WHERE name=\'%s\';\n'
 
 custom_fmt0 = u'DELETE from regions WHERE name=\'%s\';\n'
-custom_fmt1 = u'INSERT into [regions] ' \
-             U'([name], [description], [image], [size], [installeddate] ) ' \
-             U'VALUES (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\');\n'
+custom_fmt1 = u'INSERT into [regions] ([name], [description], [image], [size], [installeddate] ) ' \
+              u'VALUES (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\');\n'
 
 fmt0 = u'DELETE from charts where region=\'%s\';\n'
-fmt1 = u'INSERT INTO [charts] ' \
-       u'([region], [file], [name], [updated], [scale], [outline], [depths], [zoom]) ' \
+fmt1 = u'INSERT INTO [charts] ([region], [file], [name], [updated], [scale], [outline], [depths], [zoom]) ' \
        u'VALUES (\'%s\', \'%s\', \'%s\', \'%s\', %s, \'%s\', \'%s\', \'%s\');\n'
 
 
@@ -92,10 +92,10 @@ def generate_zdat_for_catalog(catalog_name, description=None):
 
     if regions.is_valid_region(region):
         sql_file.write(upd_fmt % (config.epoch, region))
-        sql_file.write(fmt0 % (region))
+        sql_file.write(fmt0 % region)
     else:
         num_bytes = os.path.getsize(os.path.join(config.compiled_dir, region + '.gemf'))
-        sql_file.write(custom_fmt0 % (region))
+        sql_file.write(custom_fmt0 % region)
         sql_file.write(custom_fmt1 % (region, description, region.lower().replace('_', ''), num_bytes, config.epoch))
 
     for entry in reader:

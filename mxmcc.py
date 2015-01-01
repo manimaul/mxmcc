@@ -22,7 +22,9 @@ import gemf
 import zdata
 import verify
 import tiles_opt
+
 # import filler
+import encryption_shim
 import util as mb
 
 PROFILE_MX_R = 'MX_REGION'  # (default) renders standard MX Mariner gemf + zdat
@@ -71,7 +73,18 @@ def compile_region(region, profile=PROFILE_MX_R):
         if 'MX_' in profile:
             # gemf
             print 'archiving gemf for region:', region
-            gemf.generate_gemf(region + '.opt', add_uid=regions.provider_for_region(region) is regions.provider_ukho)
+            encrypt = regions.provider_for_region(region) is regions.provider_ukho
+            if encrypt:
+                if encryption_shim.encrypt_region(region):
+                    name = region + '.enc'
+                else:
+                    raise Exception('encryption failed!')
+            else:
+                name = region + '.opt'
+            gemf.generate_gemf(name, add_uid=encrypt)
+
+            if encrypt:
+                encryption_shim.generate_token(region)
 
             # zdat
             print 'building zdat metadata archive for:', region
