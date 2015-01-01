@@ -20,15 +20,13 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-###############################################################################
+#******************************************************************************
 
 import re
 import shutil
 import logging
-import os
 import itertools
-import sys
-import subprocess
+from subprocess import *
 
 from PIL import Image
 
@@ -36,15 +34,20 @@ from PIL import Image
 tick_rate = 50
 tick_count = 0
 
-# noinspection PyBroadException
 try:
     import multiprocessing  # available in python 2.6 and above
+
+    class KeyboardInterruptError(Exception):
+        pass
 except:
     multiprocessing = None
 
 
+def data_dir():
+    return sys.path[0]
+
+
 def set_nothreads():
-    # noinspection PyGlobalUndefined
     global multiprocessing
     multiprocessing = None
 
@@ -61,9 +64,12 @@ def parallel_map(func, iterable):
         mp_pool.join()
     return res
 
-
 def ld(*parms):
     logging.debug(' '.join(itertools.imap(repr, parms)))
+
+
+def ld_nothing(*parms):
+    return
 
 
 def pf(*parms, **kparms):
@@ -71,14 +77,22 @@ def pf(*parms, **kparms):
     sys.stdout.write(' '.join(itertools.imap(str, parms)) + end)
     sys.stdout.flush()
 
+def pf_nothing(*parms, **kparms):
+    return
+
 
 def flatten(two_level_list):
     return list(itertools.chain(*two_level_list))
 
+#try:
+# import win32pipe
+#except:
+#    win32pipe=None
+win32pipe = False
+
 
 def if_set(x, default=None):
     return x if x is not None else default
-
 
 def path2list(path):
     head, ext = os.path.splitext(path)
@@ -89,34 +103,39 @@ def path2list(path):
     split.reverse()
     return split
 
-
 def command(params, child_in=None):
     cmd_str = ' '.join(('"%s"' % i if ' ' in i else i for i in params))
     ld('>', cmd_str, child_in)
-    process = subprocess.Popen(params, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, universal_newlines=True)
-    (child_out, child_err) = process.communicate(child_in)
-    if process.returncode != 0:
-        raise Exception("*** External program failed: %s\n%s" % (cmd_str, child_err))
-
+    if win32pipe:
+        (stdin, stdout, stderr) = win32pipe.popen3(cmd_str, 't')
+        if child_in:
+            stdin.write(child_in)
+        stdin.close()
+        child_out = stdout.read()
+        child_err = stderr.read()
+        if child_err:
+            logging.warning(child_err)
+    else:
+        process = Popen(params, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        (child_out, child_err) = process.communicate(child_in)
+        if process.returncode != 0:
+            raise Exception("*** External program failed: %s\n%s" % (cmd_str, child_err))
     ld('<', child_out, child_err)
     return child_out
 
-
 def dest_path(src, dest_dir, ext='', template='%s'):
-    s_dir, src_file = os.path.split(src)
+    src_dir, src_file = os.path.split(src)
     base, sext = os.path.splitext(src_file)
     dest = (template % base) + ext
     if not dest_dir:
-        dest_dir = s_dir
+        dest_dir = src_dir
     if dest_dir:
         dest = '%s/%s' % (dest_dir, dest)
     ld(base, dest)
     return dest
 
-
 def re_sub_file(fname, subs_list):
-    """stream edit file using reg exp substitution list"""
+    'stream edit file using reg exp substitution list'
     new = fname + '.new'
     with open(new, 'w') as out:
         for l in open(fname, 'rU'):
@@ -135,21 +154,20 @@ def counter():
     else:
         return False
 
-
-def optimize_png(src, dpath):
-    """optimize png using pngnq utility"""
+def optimize_png(src, dst, dpath):
+    'optimize png using pngnq utility'
+    png_tile = os.path.basename(src)
     command(['pngnq', '-s1', '-g2.2', '-n', '256', '-e', '.png', '-d', dpath, src])
 
 
-def to_jpeg(src, dst):
-    """convert to jpeg"""
+def to_jpeg(src, dst, dpath):
+    'convert to jpeg'
     dst_jpg = os.path.splitext(dst)[0] + '.jpg'
     img = Image.open(src)
     img.save(dst_jpg, optimize=True, quality=75)
 
 
-class KeyboardInterruptError(Exception):
-    pass
+class KeyboardInterruptError(Exception): pass
 
 
 def proc_file(f):
@@ -160,14 +178,13 @@ def proc_file(f):
         if not os.path.exists(dpath):
             os.makedirs(dpath)
         if f.lower().endswith('.png'):
-            optimize_png(src, dst)
+            optimize_png(src, dst, dpath)
         else:
             shutil.copy(src, dpath)
         counter()
     except KeyboardInterrupt:  # http://jessenoller.com/2009/01/08/multiprocessingpool-and-keyboardinterrupt/
         pf('got KeyboardInterrupt')
         raise KeyboardInterruptError()
-
 
 def optimize_dir(directory):
     global src_dir
@@ -179,14 +196,17 @@ def optimize_dir(directory):
     if os.path.exists(dst_dir):
         raise Exception('Destination already exists: %s' % dst_dir)
 
-    cwd = os.getcwd()
-    os.chdir(src_dir)
-    src_lst = flatten([os.path.join(path, name) for name in files]
-                      for path, dirs, files in os.walk('.'))
-    os.chdir(cwd)
+    # find all source files
+    try:
+        cwd = os.getcwd()
+        os.chdir(src_dir)
+        src_lst = flatten([os.path.join(path, name) for name in files]
+                          for path, dirs, files in os.walk('.'))
+    finally:
+        os.chdir(cwd)
 
     parallel_map(proc_file, src_lst)
 
 
-    # if __name__ == '__main__':
-    # optimize_dir('/Volumes/USB-DATA/mxmcc/tiles/unmerged/region_08/4148_1')
+if __name__ == '__main__':
+    optimize_dir('/Volumes/USB-DATA/mxmcc/tiles/unmerged/region_08/4148_1')
