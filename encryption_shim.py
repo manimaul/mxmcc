@@ -16,6 +16,7 @@ import shlex
 import config
 
 
+
 # Java source for region encryption
 enc_src_dir = os.path.join(os.getenv('HOME'), 'code/mxmi/mx-mariner-encryption/src')
 enc_src_pkg = 'com/mxmariner/crypto'
@@ -58,7 +59,7 @@ def encrypt_region(region):
         p = subprocess.Popen(shlex.split(cmd), cwd=enc_src_dir)
         p.wait()
         print 'complete'
-        return True
+        return os.path.isdir(out_dir) and len(os.listdir(in_dir)) == len(os.listdir(out_dir))
     else:
         return False
 
@@ -75,6 +76,6 @@ def generate_token(region):
         return False
 
 
-if __name__ == '__main__':
-    # encrypt_region('REGION_UK1')
-    generate_token('REGION_UK1')
+        # if __name__ == '__main__':
+        # # encrypt_region('REGION_UK1')
+        #     generate_token('REGION_UK1')

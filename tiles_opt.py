@@ -64,6 +64,7 @@ def parallel_map(func, iterable):
         mp_pool.join()
     return res
 
+
 def ld(*parms):
     logging.debug(' '.join(itertools.imap(repr, parms)))
 
@@ -76,6 +77,7 @@ def pf(*parms, **kparms):
     end = kparms['end'] if 'end' in kparms else '\n'
     sys.stdout.write(' '.join(itertools.imap(str, parms)) + end)
     sys.stdout.flush()
+
 
 def pf_nothing(*parms, **kparms):
     return
@@ -94,6 +96,7 @@ win32pipe = False
 def if_set(x, default=None):
     return x if x is not None else default
 
+
 def path2list(path):
     head, ext = os.path.splitext(path)
     split = [ext]
@@ -102,6 +105,7 @@ def path2list(path):
         split.append(p)
     split.reverse()
     return split
+
 
 def command(params, child_in=None):
     cmd_str = ' '.join(('"%s"' % i if ' ' in i else i for i in params))
@@ -123,6 +127,7 @@ def command(params, child_in=None):
     ld('<', child_out, child_err)
     return child_out
 
+
 def dest_path(src, dest_dir, ext='', template='%s'):
     src_dir, src_file = os.path.split(src)
     base, sext = os.path.splitext(src_file)
@@ -133,6 +138,7 @@ def dest_path(src, dest_dir, ext='', template='%s'):
         dest = '%s/%s' % (dest_dir, dest)
     ld(base, dest)
     return dest
+
 
 def re_sub_file(fname, subs_list):
     'stream edit file using reg exp substitution list'
@@ -153,6 +159,7 @@ def counter():
         return True
     else:
         return False
+
 
 def optimize_png(src, dst, dpath):
     'optimize png using pngnq utility'
@@ -185,6 +192,7 @@ def proc_file(f):
     except KeyboardInterrupt:  # http://jessenoller.com/2009/01/08/multiprocessingpool-and-keyboardinterrupt/
         pf('got KeyboardInterrupt')
         raise KeyboardInterruptError()
+
 
 def optimize_dir(directory):
     global src_dir
