@@ -233,6 +233,8 @@ class MetaLookup:
         xls = xlrd.open_workbook(xls_path)
         sheet = xls.sheet_by_name('Chart Vertices')
 
+        data_to_close_coords = set()
+
         for n in range(sheet.nrows):
             if n > 0:
                 try:
@@ -260,8 +262,13 @@ class MetaLookup:
 
                     s = stamp_from_detail(chart_number, suffix, panel_number)
                     self.charts[s].coords.append(_lat_lng_dmm_to_ddd(lat_dmm, lng_dmm))
+                    data_to_close_coords.add(self.charts[s])
                 except:
                     pass
+
+        # close polygons
+        for ea in data_to_close_coords:
+            ea.coords.append(ea.coords[0])
 
     def get_data(self, tif_path):
         s = stamp(tif_path)
