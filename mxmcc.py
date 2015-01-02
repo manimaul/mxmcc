@@ -53,7 +53,7 @@ def compile_region(region, profile=PROFILE_MX_R):
         else:
             catalog.build_catalog_for_region(region)
 
-        checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+        checkpoint_store.clear_checkpoint(region, profile, point)
     else:
         print 'skipping checkpoint', point
     # ------------------------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ def compile_region(region, profile=PROFILE_MX_R):
         if not verify.verify_catalog(region):
             raise Exception(region + ' was not verified... ' + verify.error_message)
 
-        checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+        checkpoint_store.clear_checkpoint(region, profile, point)
     else:
         print 'skipping checkpoint', point
     # ------------------------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ def compile_region(region, profile=PROFILE_MX_R):
         if checkpoint_store.get_checkpoint(region, profile) < point:
             print 'merging tiles for:', region
             tilesmerge.merge_catalog(region)
-            checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+            checkpoint_store.clear_checkpoint(region, profile, point)
         else:
             print 'skipping checkpoint', point
         # --------------------------------------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ def compile_region(region, profile=PROFILE_MX_R):
             if not verify.verify_opt(region):
                 raise Exception(region + ' was not optimized fully')
 
-            checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+            checkpoint_store.clear_checkpoint(region, profile, point)
         else:
             print 'skipping checkpoint', point
         # --------------------------------------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ def compile_region(region, profile=PROFILE_MX_R):
                     if not encryption_shim.encrypt_region(region):
                         raise Exception('encryption failed!')
 
-                    checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+                    checkpoint_store.clear_checkpoint(region, profile, point)
                 else:
                     print 'skipping checkpoint', point
                 name = region + '.enc'
@@ -131,7 +131,7 @@ def compile_region(region, profile=PROFILE_MX_R):
                 if should_encrypt:
                     encryption_shim.generate_token(region)
 
-                checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+                checkpoint_store.clear_checkpoint(region, profile, point)
             else:
                 print 'skipping checkpoint', point
             # ----------------------------------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ def compile_region(region, profile=PROFILE_MX_R):
             if checkpoint_store.get_checkpoint(region, profile) < point:
                 print 'building zdat metadata archive for:', region
                 zdata.generate_zdat_for_catalog(region)
-                checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+                checkpoint_store.clear_checkpoint(region, profile, point)
             else:
                 print 'skipping checkpoint', point
                 # ----------------------------------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ def compile_region(region, profile=PROFILE_MX_R):
                     os.remove(mbtiles_file)
                 mb.disk_to_mbtiles(region_dir, mbtiles_file, format='png', scheme='xyz')
 
-                checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+                checkpoint_store.clear_checkpoint(region, profile, point)
             else:
                 print 'skipping checkpoint', point
                 # ----------------------------------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ def compile_region(region, profile=PROFILE_MX_R):
                 if os.path.isfile(mbtiles_file):
                     os.remove(mbtiles_file)
                 mb.disk_to_mbtiles(chart_dir, mbtiles_file, format='png', scheme='xyz')
-            checkpoint_store.clear_checkpoint(checkpoint_store, region, profile, point)
+            checkpoint_store.clear_checkpoint(region, profile, point)
         else:
             print 'skipping checkpoint', point
             # ----------------------------------------------------------------------------------------------------------

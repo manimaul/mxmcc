@@ -50,10 +50,10 @@ class CheckPoint(OrderedEnum):
 
 class CheckPointStore:
     def __init__(self):
-        os.path.join(config.catalog_dir, 'checkpoint.txt')
-        self.store = open(os.path.join(config.catalog_dir, 'checkpoint.txt'), 'r')
+        self._p_path = os.path.join(config.catalog_dir, 'checkpoint.txt')
+        store = open(self._p_path, 'r')
         self.checkpoints = {}
-        lines = self.store.readlines()
+        lines = store.readlines()
         if len(lines) > 0:
             for ea in lines:
                 values = ea.strip().split('\t')
@@ -61,8 +61,7 @@ class CheckPointStore:
                     r, p, c = values
                     self._set_checkpoint_internal(r, p, CheckPoint.from_string(c))
 
-        self.store.close()
-        self.store = open(os.path.join(config.catalog_dir, 'checkpoint.txt'), 'w+')
+        store.close()
         self._commit()
 
     def _set_checkpoint_internal(self, region, profile, checkpoint):
@@ -84,9 +83,11 @@ class CheckPointStore:
         return CheckPoint.CHECKPOINT_NOT_STARTED
 
     def _commit(self):
+        store = open(self._p_path, 'w+')
         for region in self.checkpoints:
             for profile in self.checkpoints[region]:
-                self.store.write('%s\t%s\t%s\n' % (region, profile, self.checkpoints[region][profile]))
+                store.write('%s\t%s\t%s\n' % (region, profile, self.checkpoints[region][profile]))
+        store.close()
 
 
 if __name__ == '__main__':
@@ -94,5 +95,7 @@ if __name__ == '__main__':
     region = 'REGION_UK1'
     profile = 'MX_REGION'
     print store.get_checkpoint(region, profile)
-    store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_MERGE)
+    store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_CATALOG)
+    print store.get_checkpoint(region, profile)
+    store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_ARCHIVE)
     print store.get_checkpoint(region, profile)
