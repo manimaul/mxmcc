@@ -26,6 +26,8 @@ import re
 import shutil
 import logging
 import itertools
+import sys
+import os
 from subprocess import *
 
 from PIL import Image
