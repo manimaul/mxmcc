@@ -49,7 +49,6 @@ import catalog
 import config
 
 
-
 # http://www.gdal.org/formats_list.html
 geotiff = 'GTIFF'
 bsb = 'BSB'
@@ -110,7 +109,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
 
     # -----if map has a palette create vrt with expanded rgba
     if gdalds.dataset_has_color_palette(dataset):
-        logger.log(logger.ON, 'dataset has color palette')
+        logger.log(logger.OFF, 'dataset has color palette')
         c_vrt_path = os.path.join(base_dir, map_name + '_c.vrt')
         if os.path.isfile(c_vrt_path):
             os.remove(c_vrt_path)
@@ -119,16 +118,16 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
         command = "gdal_translate -of vrt -expand rgba \'%s\' \'%s\'" % (map_path, c_vrt_path)
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
-        logger.log(logger.ON, 'creating c_vrt with command', command)
+        logger.log(logger.OFF, 'creating c_vrt with command', command)
 
         del dataset
         dataset = gdal.Open(c_vrt_path, gdal.GA_ReadOnly)
 
-        logger.log(logger.ON, 'openning dataset')
+        logger.log(logger.OFF, 'openning dataset')
 
         map_stack.append(c_vrt_path)
         # except BaseException as e:
-        #     logger.log(logger.ON, e)
+        #     logger.log(logger.OFF, e)
 
     # -----repoject map to tilesystem projection, crop to cutline
     w_vrt_path = os.path.join(base_dir, map_name + '.vrt')
@@ -141,7 +140,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
 
     command = ['gdalwarp', '-of', 'vrt', '-r', resampling, '-t_srs', epsg_900913]
 
-    # logger.log(logger.ON, 'using ply overrides', use_ply_overrides)
+    # logger.log(logger.OFF, 'using ply overrides', use_ply_overrides)
     # if use_ply_overrides:
     #     override = overrides.get_poly_override(map_path)
     #     if override is not None:
@@ -167,20 +166,20 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
        if out_dir is None or not a directory, tiles placed in map_stack, map directory
     """
 
-    logger.log(logger.ON, '_render_tmp_vrt_stack_for_map: out_dir = ' + out_dir + ', zoom = ' + zoom)
+    logger.log(logger.OFF, '_render_tmp_vrt_stack_for_map: out_dir = ' + out_dir + ', zoom = ' + zoom)
 
     # elif verify.verify_tile_dir(out_dir):
-    #    logger.log(logger.ON, 'skipping: ' + out_dir
+    #    logger.log(logger.OFF, 'skipping: ' + out_dir
     #    return
 
-    logger.log(logger.ON, 'tile out dir:', out_dir)
+    logger.log(logger.OFF, 'tile out dir:', out_dir)
 
     map_path = _stack_peek(map_stack)
 
     ds = gdal.Open(map_path, gdal.GA_ReadOnly)
 
     if ds is None:
-        logger.log(logger.ON, 'unable to open', map_path)
+        logger.log(logger.OFF, 'unable to open', map_path)
         return
 
     zoom_level = int(zoom)
@@ -243,6 +242,7 @@ def _scale_tile(tile_dir, z, x, y):
                 in_tile_paths.append(None)
 
     if have_scale_tile:
+        # todo: check
         im = Image.new("RGBA", (tile_size, tile_size), (0, 0, 0, 0))
         i = 0
         xoff = 0
@@ -430,7 +430,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
 
     # ---- if we are only rendering 1 zoom level, over-shoot by one so we can scale down with anti-aliasing
     single_z_mode = config.use_single_zoom_over_zoom and stop_zoom == start_zoom
-    logger.log(logger.ON, 'single zoom mode', single_z_mode)
+    logger.log(logger.OFF, 'single zoom mode', single_z_mode)
     if single_z_mode:
         stop_zoom += 1
 
@@ -439,19 +439,19 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
     if single_z_mode:
         stop_zoom -= 1
 
-    logger.log(logger.ON, 'zoom range', zoom_range)
+    logger.log(logger.OFF, 'zoom range', zoom_range)
 
-    logger.log(logger.ON, 'out_dir', out_dir)
+    logger.log(logger.OFF, 'out_dir', out_dir)
 
     try:
         # Mxmcc tiler
         for z in zoom_range:
-            logger.log(logger.ON, 'rendering map_stack peek')
+            logger.log(logger.OFF, 'rendering map_stack peek')
             _render_tmp_vrt_stack_for_map(map_stack, str(z), out_dir)
 
         if single_z_mode:
             oz_dir = os.path.join(out_dir, str(stop_zoom + 1))
-            logger.log(logger.ON, 'removing overzoom dir: ', oz_dir)
+            logger.log(logger.OFF, 'removing overzoom dir: ', oz_dir)
             shutil.rmtree(oz_dir)
 
         ds = gdal.Open(map_path, gdal.GA_ReadOnly)
@@ -474,7 +474,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
             'scheme': 'xyz'
         }
 
-        logger.log(logger.ON, 'writing tile json', tilejson_tilemap)
+        logger.log(logger.OFF, 'writing tile json', tilejson_tilemap)
 
         write_tilejson_tilemap(out_dir, tilejson_tilemap)
 
@@ -482,7 +482,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
 
     except BaseException as e:
         traceback.print_exc()
-        logger.log(logger.ON, str(e))
+        logger.log(logger.OFF, str(e))
 
     _cleanup_tmp_vrt_stack(map_stack)
 
@@ -516,7 +516,7 @@ def _build_tiles_for_map_helper(entry, name):
 
     except BaseException as e:
         traceback.print_exc()
-        logger.log(logger.ON, e)
+        logger.log(logger.OFF, e)
 
 
 def build_tiles_for_catalog(catalog_name):
