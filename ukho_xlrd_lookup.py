@@ -10,7 +10,7 @@ import os
 import re
 
 import xlrd
-
+import findzoom
 import config
 
 
@@ -127,8 +127,8 @@ class Data:
         raise NotImplementedError('handle get_zoom in lookups.UKHOLookup')
 
     # def get_zoom(self):
-    # if self.scale is None:
-    #         return 0
+    #     if self.scale is None:
+    #             return 0
     #
     #     return findzoom.get_zoom(int(self.scale), self.get_center()[1])
 

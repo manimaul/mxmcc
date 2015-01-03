@@ -51,8 +51,14 @@ class CheckPoint(OrderedEnum):
 class CheckPointStore:
     def __init__(self):
         self._p_path = os.path.join(config.catalog_dir, 'checkpoint.txt')
-        store = open(self._p_path, 'r')
         self.checkpoints = {}
+        self._read()
+
+    def _read(self):
+        if not os.path.exists(self._p_path):
+            return
+
+        store = open(self._p_path, 'r')
         lines = store.readlines()
         if len(lines) > 0:
             for ea in lines:
@@ -90,12 +96,12 @@ class CheckPointStore:
         store.close()
 
 
-if __name__ == '__main__':
-    store = CheckPointStore()
-    region = 'REGION_UK1'
-    profile = 'MX_REGION'
-    print store.get_checkpoint(region, profile)
-    store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_CATALOG)
-    print store.get_checkpoint(region, profile)
-    store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_ARCHIVE)
-    print store.get_checkpoint(region, profile)
+# if __name__ == '__main__':
+#     store = CheckPointStore()
+#     region = 'REGION_UK1'
+#     profile = 'MX_REGION'
+#     print store.get_checkpoint(region, profile)
+#     store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_CATALOG)
+#     print store.get_checkpoint(region, profile)
+#     store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_ARCHIVE)
+#     print store.get_checkpoint(region, profile)
