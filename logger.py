@@ -1,8 +1,7 @@
 # !/usr/bin/env python
 
 __author__ = "Will Kamp"
-__copyright__ = "Copyright 2014, Matrix Mariner Inc."
-#google and openlayers view code taken from tilers-tools by Vadim Shlyakhov
+__copyright__ = "Copyright 2015, Matrix Mariner Inc."
 __credits__ = "http://code.google.com/p/tilers-tools/"
 __license__ = "BSD"
 __email__ = "will@mxmariner.com"

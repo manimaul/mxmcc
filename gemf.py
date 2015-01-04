@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-__author__ = "Will Kamp"
-__email__ = "will@mxmariner.com"
+__author__ = 'Will Kamp'
+__email__ = 'will@mxmariner.com'
 __license__ = 'BSD'
 # most of the credit belongs to:
 __credits__ = ['http://www.cgtk.co.uk/gemf',
                'A. Budden']
-__copyright__ = 'Copyright (c) 2013, Matrix Mariner Inc.\n' + \
+__copyright__ = 'Copyright (c) 2015, Matrix Mariner Inc.\n' + \
                 'A. Budden'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
@@ -57,48 +57,27 @@ def generate_gemf(name, add_uid=False):
     else:
         ext = '.gemf'
 
-    name = name[:name.rfind('.')].upper()  # remove .enc or .opt
-    output_file = os.path.join(config.compiled_dir, name + ext)
+    base_name = name[:name.rfind('.')].upper()  # remove .enc or .opt
+    output_file = os.path.join(config.compiled_dir, base_name + ext)
     tilesize = 256
 
-    extensions = (".png.tile", ".jpg.tile", ".png", ".jpg")
+    extensions = ('.png.tile', '.jpg.tile', '.png', '.jpg')
 
     all_sources = {}
     source_order = []
     source_index = 0
     source_indices = {}
     count = {}
-
-    #try:
-    #    from map_priority import priority
-    #except ImportError:
-    #    print "No priority file found"
-    #    priority = []
     
     mapdir = config.merged_tile_dir
     
-    #unsorted_source_list = os.listdir(mapdir)
     source_list = [name]
-
-    # If the maps are in the imported priority
-    # list, these should be added first
-    order = 0
-    #for s in priority:
-    #    if s in unsorted_source_list:
-    #        print "Source %d: %s" % (order, s)
-    #        order += 1
-    #        source_list.append(s)
-    #for s in unsorted_source_list:
-    #    if s not in priority and name in unsorted_source_list:
-    #        source_list.append(s)
-    #        print "Source %d: %s" % (order, s)
-    #        order += 1
 
     for source in source_list:
         results = {}
         source_mapdir = os.path.join(mapdir, source)
         if not os.path.isdir(source_mapdir):
-            print "Skipping " + source_mapdir
+            print 'Skipping ' + source_mapdir
             continue
 
         source_indices[source] = source_index
@@ -110,7 +89,7 @@ def generate_gemf(name, add_uid=False):
 
             zoom_dir = os.path.join(source_mapdir, zoom_level_str)
             if not os.path.isdir(zoom_dir):
-                print "Skipping " + zoom_dir
+                print 'Skipping ' + zoom_dir
                 continue
 
             for x_str in os.listdir(zoom_dir):
@@ -119,7 +98,7 @@ def generate_gemf(name, add_uid=False):
 
                 x_dir = os.path.join(zoom_dir, x_str)
                 if not os.path.isdir(x_dir):
-                    print "Skipping " + x_dir
+                    print 'Skipping ' + x_dir
                     continue
 
                 for y_str in os.listdir(x_dir):
@@ -139,30 +118,25 @@ def generate_gemf(name, add_uid=False):
                     y_vals += results[zoom_level][x_val]
                 ymax = max(y_vals)
                 ymin = min(y_vals)
-                full_sets[zoom_level].append(
-                        {'xmin': xmin, 'xmax': xmax,
-                            'ymin': ymin, 'ymax': ymax,
-                            'source_index': source_index})
+                full_sets[zoom_level].append({'xmin': xmin, 'xmax': xmax,
+                                              'ymin': ymin, 'ymax': ymax,
+                                              'source_index': source_index})
 
         else:
-            #print "no allow"
-            #return
-            # Build a list of tile rectangles that may have missing slices, but have square corners.
-
             # A record representing a square of 1-5 tiles at zoom 10
             # unique_sets[zoom][Y values key] = [X values array]
-            # unique_sets[10]["1-2-3-4-5"] = [1,2,3,4,5]
+            # unique_sets[10]['1-2-3-4-5'] = [1,2,3,4,5]
             unique_sets = {}
             for zoom_level in results.keys():
                 unique_sets[zoom_level] = {}
                 for x_val in results[zoom_level].keys():
 
-                    # strkey: Sorted list of Y values for a zoom/X, eg: "1-2-3-4"
-                    strkey = "-".join(["%d" % i for i in sorted(results[zoom_level][x_val])])
+                    # strkey: Sorted list of Y values for a zoom/X, eg: '1-2-3-4'
+                    strkey = '-'.join(['%d' % i for i in sorted(results[zoom_level][x_val])])
                     if strkey in unique_sets[zoom_level].keys():
                         unique_sets[zoom_level][strkey].append(x_val)
                     else:
-                        unique_sets[zoom_level][strkey] = [x_val,]
+                        unique_sets[zoom_level][strkey] = [x_val, ]
 
             # Find missing X rows in each unique_set record
             split_xsets = {}
@@ -179,8 +153,6 @@ def generate_gemf(name, add_uid=False):
                         elif xv in xset and last_valid is None:
                             last_valid = xv
 
-            #pprint.pprint(split_xsets)
-
             # Find missing Y rows in each unique_set chunk, create full_sets records for each complete chunk
 
             full_sets = {}
@@ -194,13 +166,11 @@ def generate_gemf(name, add_uid=False):
                     for yv in xrange(setymin, setymax+2):
                         if yv not in yset and last_valid is not None:
                             full_sets[zoom_level].append({'xmin': xr['xmin'], 'xmax': xr['xmax'],
-                                'ymin': last_valid, 'ymax': yv-1,
-                                'source_index': source_index})
+                                                          'ymin': last_valid, 'ymax': yv-1,
+                                                          'source_index': source_index})
                             last_valid = None
                         elif yv in yset and last_valid is None:
                             last_valid = yv
-
-            #pprint.pprint(full_sets)
 
         count[source] = {}
         for zoom_level in full_sets.keys():
@@ -215,7 +185,7 @@ def generate_gemf(name, add_uid=False):
                                 found = True
                                 break
                         if not found and 'allow-empty' not in options:
-                            raise IOError("Could not find file (%s, %d, %d, %d)" % (source, zoom_level, xv, yv))
+                            raise IOError('Could not find file (%s, %d, %d, %d)' % (source, zoom_level, xv, yv))
 
                         count[source][zoom_level] += 1
             print source_mapdir, zoom_level, count[source][zoom_level]
@@ -224,10 +194,9 @@ def generate_gemf(name, add_uid=False):
         source_order.append(source)
         source_index += 1
 
-
     u32_size = 4
     u64_size = 8
-    range_size = (u32_size * 6) + (u64_size * 1) # xmin, xmax, ymin, ymax, zoom, source, offset
+    range_size = (u32_size * 6) + (u64_size * 1)  # xmin, xmax, ymin, ymax, zoom, source, offset
     file_info_size = u64_size + u32_size
     number_of_ranges = 0
     number_of_files = 0
@@ -248,29 +217,28 @@ def generate_gemf(name, add_uid=False):
 
     gemf_version = 4
 
-    uidSize = 0
+    uid_size = 0
     if 'add-uid' in options:
-        uidSize = 16
+        uid_size = 16
 
-    pre_info_size = (uidSize + #Random 16 byte uid
-            u32_size + # GEMF Version
-            u32_size + # Tile size
-            u32_size + # Number of ranges
-            u32_size + # Number of sources
-            source_list_size + # Size of source list
-            number_of_ranges * range_size) # Ranges
-    header_size = (pre_info_size +
-            (number_of_files * file_info_size)) # File header info
+    pre_info_size = (uid_size +  # Random 16 byte uid
+                     u32_size +  # GEMF Version
+                     u32_size +  # Tile size
+                     u32_size +  # Number of ranges
+                     u32_size +  # Number of sources
+                     source_list_size +  # Size of source list
+                     number_of_ranges * range_size)  # Ranges
+    header_size = (pre_info_size + (number_of_files * file_info_size))  # File header info
 
     image_offset = header_size
 
-    print "Source Count:", source_count
-    print "Source List Size:", source_list_size
-    print "Source List:", repr(source_list)
-    print "Pre Info Size:", pre_info_size
-    print "Number of Ranges:", number_of_ranges
-    print "Number of files:", number_of_files
-    print "Header Size (first image location): 0x%08X" % header_size
+    print 'Source Count:', source_count
+    print 'Source List Size:', source_list_size
+    print 'Source List:', repr(source_list)
+    print 'Pre Info Size:', pre_info_size
+    print 'Number of Ranges:', number_of_ranges
+    print 'Number of files:', number_of_files
+    print 'Header Size (first image location): 0x%08X' % header_size
 
     header = []
 
@@ -297,7 +265,7 @@ def generate_gemf(name, add_uid=False):
             for rangeset in full_source_set[zoom_level]:
                 if first_range:
                     h = len(header)
-                    print "First range at 0x%08X" % len(header)
+                    print 'First range at 0x%08X' % len(header)
                 header += _valto_4_bytes(zoom_level)
                 header += _valto_4_bytes(rangeset['xmin'])
                 header += _valto_4_bytes(rangeset['xmax'])
@@ -308,12 +276,12 @@ def generate_gemf(name, add_uid=False):
 
                 if first_range:
                     hb = header[h:]
-                    print "Range Data: [" + ",".join(["%02X" % i for i in hb]) + "]"
-                    print "First Data Location: 0x%08X" % (data_location_address + pre_info_size)
+                    print 'Range Data: [' + ','.join(['%02X' % i for i in hb]) + ']'
+                    print 'First Data Location: 0x%08X' % (data_location_address + pre_info_size)
                     first_range = False
 
-                for xv in xrange(rangeset['xmin'],rangeset['xmax']+1):
-                    for yv in xrange(rangeset['ymin'],rangeset['ymax']+1):
+                for xv in xrange(rangeset['xmin'], rangeset['xmax']+1):
+                    for yv in xrange(rangeset['ymin'], rangeset['ymax']+1):
                         found = False
                         for extension in extensions:
                             fpath = os.path.join(mapdir, '%s/%d/%d/%d%s' % (tile_source, zoom_level, xv, yv, extension))
@@ -325,7 +293,8 @@ def generate_gemf(name, add_uid=False):
                             if 'allow-empty' in options:
                                 file_size = 0
                             else:
-                                raise IOError("Could not find file (%s, %d, %d, %d)" % (tile_source, zoom_level, xv, yv))
+                                raise IOError('Could not find file (%s, %d, %d, %d)' 
+                                              % (tile_source, zoom_level, xv, yv))
                         else:
                             file_size = os.path.getsize(fpath)
                         file_list.append(fpath)
@@ -336,8 +305,8 @@ def generate_gemf(name, add_uid=False):
                         tile_count += 1
 
                         if first_tile:
-                            print "First Tile Info: [" + ",".join(["%02X" % i for i in data_locations]) + "]"
-                            print "(0x%016X, 0x%08X)" % (image_offset, file_size)
+                            print 'First Tile Info: [' + ','.join(['%02X' % i for i in data_locations]) + ']'
+                            print '(0x%016X, 0x%08X)' % (image_offset, file_size)
                             first_tile = False
 
                         data_location_address += u64_size + u32_size
@@ -345,15 +314,16 @@ def generate_gemf(name, add_uid=False):
                         # Update the image_offset
                         image_offset += file_size
 
-    print "Header Length is 0x%08X" % len(header)
-    print "First tile expected at 0x%08X" % (len(header) + len(data_locations))
-    print "Tile Count is %d (c.f. %d)" % (tile_count, number_of_files)
-    print ""
-    fhHeader = open(output_file, 'wb')
+    print 'Header Length is 0x%08X' % len(header)
+    print 'First tile expected at 0x%08X' % (len(header) + len(data_locations))
+    print 'Tile Count is %d (c.f. %d)' % (tile_count, number_of_files)
+    print ''
+
+    gemf_f = open(output_file, 'wb')
     if 'add-uid' in options:
-        fhHeader.write(Random.get_random_bytes(16))
-    fhHeader.write("".join([chr(i) for i in header]))
-    fhHeader.write("".join([chr(i) for i in data_locations]))
+        gemf_f.write(Random.get_random_bytes(16))
+    gemf_f.write(''.join([chr(i) for i in header]))
+    gemf_f.write(''.join([chr(i) for i in data_locations]))
 
     file_size = len(header) + len(data_locations)
     index = 0
@@ -364,20 +334,17 @@ def generate_gemf(name, add_uid=False):
             if 'allow-empty' in options:
                 this_file_size = 0
             else:
-                raise IOError("Could not find file %s" % fn)
+                raise IOError('Could not find file %s' % fn)
         if (file_size + this_file_size) > file_size_limit:
-            fhHeader.close()
+            gemf_f.close()
             index += 1
-            fhHeader = open(output_file + "-%d" % index, 'wb')
+            gemf_f = open(output_file + '-%d' % index, 'wb')
             file_size = 0L
 
         if os.path.exists(fn):
-            fhIn = open(fn, 'rb')
-            fhHeader.write(fhIn.read())
-            fhIn.close()
+            tile_f = open(fn, 'rb')
+            gemf_f.write(tile_f.read())
+            tile_f.close()
         file_size += this_file_size
 
-    fhHeader.close()
-
-    # if __name__ == '__main__':
-    # generate_gemf('REGION_UK1.enc', add_uid=True)
+    gemf_f.close()

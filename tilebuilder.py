@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "Will Kamp"
-__copyright__ = "Copyright 2013, Matrix Mariner Inc."
+__copyright__ = "Copyright 2015, Matrix Mariner Inc."
 __license__ = "BSD"
 __email__ = "will@mxmariner.com"
 __status__ = "Development"  # "Prototype", "Development", or "Production"
@@ -61,6 +61,31 @@ os.environ['BSB_IGNORE_LINENUMBERS'] = 'TRUE'
 gdal.AllRegister()
 mem_driver = gdal.GetDriverByName('MEM')
 png_driver = gdal.GetDriverByName('PNG')
+
+resampling = 'average'
+# near:
+# nearest neighbour resampling (default, fastest algorithm, worst interpolation quality).
+# bilinear:
+# bilinear resampling.
+# cubic:
+# cubic resampling.
+# cubicspline:
+# cubic spline resampling.
+# lanczos:
+# Lanczos windowed sinc resampling.
+# average:
+# average resampling, computes the average of all non-NODATA contributing pixels. (GDAL >= 1.10.0)
+# mode:
+# mode resampling, selects the value which appears most often of all the sampled points. (GDAL >= 1.10.0)
+
+gdal_resampling = gdal.GRA_NearestNeighbour
+# GRA_NearestNeighbour
+# GRA_Bilinear
+# GRA_Cubic
+# GRA_CubicSpline
+# GRA_Lanczos
+# GRA_Average
+# GRA_Mode
 
 
 def _cleanup_tmp_vrt_stack(vrt_stack):
@@ -135,8 +160,6 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
         os.remove(w_vrt_path)
 
     epsg_900913 = gdalds.dataset_get_as_epsg_900913(dataset)  # offset for crossing dateline
-
-    resampling = 'average'
 
     command = ['gdalwarp', '-of', 'vrt', '-r', resampling, '-t_srs', epsg_900913]
 
@@ -242,7 +265,6 @@ def _scale_tile(tile_dir, z, x, y):
                 in_tile_paths.append(None)
 
     if have_scale_tile:
-        # todo: check
         im = Image.new("RGBA", (tile_size, tile_size), (0, 0, 0, 0))
         i = 0
         xoff = 0
@@ -256,6 +278,7 @@ def _scale_tile(tile_dir, z, x, y):
             if i == 3:
                 yoff += m_tile_size
             if in_tile_path is not None:
+                logger.log(logger.OFF, 'using anti-alias scaled tile')
                 im.paste(Image.open(in_tile_path).resize((m_tile_size, m_tile_size), Image.ANTIALIAS), (xoff, yoff))
             i += 1
 
@@ -393,12 +416,12 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                     tmp.SetGeoTransform((0.0, tilesystem.tile_size / float(x_size), 0.0,
                                          0.0, 0.0, tilesystem.tile_size / float(y_size)))
                     tile.SetGeoTransform((0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
-                    gdal.ReprojectImage(tmp, tile, None, None, gdal.GRA_Average)
+                    gdal.ReprojectImage(tmp, tile, None, None, gdal_resampling)
                 # or scaling image down
                 else:
                     logger.log(logger.OFF, 'scaling down')
                     for i in range(1, ds.RasterCount + 1):
-                        gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), 'average')
+                        gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), resampling)
 
                 logger.log(logger.OFF, 'write to file')
                 png_driver.CreateCopy(tile_path, tile, strict=0)
@@ -531,10 +554,18 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
-if __name__ == '__main__':
-    import bsb
-    test_map = config.noaa_bsb_dir + '/BSB_ROOT/11303/11303_1.KAP'
-    test_bsb = bsb.BsbHeader(test_map)
-    build_tiles_for_map('11303_1.KAP', test_map, test_bsb.get_zoom(), test_bsb.get_zoom(), test_bsb.get_outline())
-    # build_tiles_for_map('11303_1.KAP', test_map, test_bsb.get_zoom(), test_bsb.get_zoom(), test_bsb.get_outline(),
-    #                     out_dir='/data/mxmcc/charts/noaa/BSB_ROOT/11303/no_ovrply', use_ply_overrides=False)
+# if __name__ == '__main__':
+#     # import bsb
+#     # test_map = config.noaa_bsb_dir + '/BSB_ROOT/11303/11303_1.KAP'
+#     # test_bsb = bsb.BsbHeader(test_map)
+#     # build_tiles_for_map('11303_1.KAP', test_map, test_bsb.get_zoom(), test_bsb.get_zoom(), test_bsb.get_outline())
+#     # build_tiles_for_map('11303_1.KAP', test_map, test_bsb.get_zoom(), test_bsb.get_zoom(), test_bsb.get_outline(),
+#     #                     out_dir='/data/mxmcc/charts/noaa/BSB_ROOT/11303/no_ovrply', use_ply_overrides=False)
+#
+#     import lookups
+#     m = '2182A-0.tif'
+#     p = os.path.join(config.ukho_geotiff_dir, m)
+#     l = lookups.UKHOLookup()
+#     z = l.get_zoom(p)
+#     o = l.get_outline(p)
+#     build_tiles_for_map(m, p, z, z, o)

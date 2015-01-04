@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = 'Will Kamp'
-__copyright__ = 'Copyright 2014, Matrix Mariner Inc.'
+__copyright__ = 'Copyright 2015, Matrix Mariner Inc.'
 __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
 __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
@@ -10,7 +10,6 @@ import os
 import re
 
 import xlrd
-import findzoom
 import config
 
 
@@ -276,7 +275,7 @@ class MetaLookup:
 
 
 # if __name__ == '__main__':
-        #     ml = MetaLookup()
+#     ml = MetaLookup()
 #     tp = os.path.join(config.ukho_geotiff_dir, '2182A-0.png')
 #     print file_name_decoder(tp)
 #     print stamp(tp)
@@ -289,5 +288,5 @@ class MetaLookup:
 #     print 'depths:', data.depth_units
 #     print 'updated:', data.updated
 #     # print 'zoom', data.get_zoom()
-        #     print 'outline', data.get_outline()
+#     print 'outline', data.get_outline()
 #     print 'coords', data.coords
