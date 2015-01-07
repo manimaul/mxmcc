@@ -520,10 +520,12 @@ def write_tilejson_tilemap(dst_dir, tilemap):
 
 
 def copy_viewer(dest):
-    for f in ['viewer.js', 'viewer-esri.html', 'viewer-google.html', 'viewer-mapbox.html', 'viewer-openlayers.html']:
-        src = os.path.join(os.path.dirname(os.path.realpath(__file__)), f)
-        dst = os.path.join(dest, f)
-        shutil.copy(src, dst)
+    pass
+    # todo: add viewers
+    # for f in ['viewer.js', 'viewer-esri.html', 'viewer-google.html', 'viewer-mapbox.html', 'viewer-openlayers.html']:
+    #     src = os.path.join(os.path.dirname(os.path.realpath(__file__)), f)
+    #     dst = os.path.join(dest, f)
+    #     shutil.copy(src, dst)
 
 
 def _build_tiles_for_map_helper(entry, name):
