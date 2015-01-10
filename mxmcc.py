@@ -26,6 +26,7 @@ from checkpoint import *
 # import filler
 import encryption_shim
 import util as mb
+import shutil
 
 PROFILE_MX_R = 'MX_REGION'  # (default) renders standard MX Mariner gemf + zdat
 PROFILE_MB_C = 'MB_CHARTS'  # renders each chart as mbtiles file
@@ -178,6 +179,19 @@ def compile_region(region, profile=PROFILE_MX_R):
         else:
             print 'skipping checkpoint', point
             # ----------------------------------------------------------------------------------------------------------
+
+    print 'final checkpoint', checkpoint_store.get_checkpoint(region, profile)
+    if checkpoint_store.get_checkpoint(region, profile) > CheckPoint.CHECKPOINT_ENCRYPTED:
+        cleanup(region, config.unmerged_tile_dir)
+        cleanup(region, config.merged_tile_dir)
+
+
+def cleanup(region, base_dir):
+    for ea in os.listdir(base_dir):
+        if region in ea:
+            abs_path = os.path.join(base_dir, ea)
+            print 'clean', abs_path
+            shutil.rmtree(abs_path)
 
 
 def print_usage():
