@@ -81,11 +81,12 @@ class Data:
         self.depth_units = depth_units
         self.updated = None
         self.coords = []
+        self.override_coords = []
         or_name = str(self.chart_number) + '-' + str(self.panel_number)
         override_path = os.path.join(os.path.dirname(__file__), 'ukho_overrides', or_name)
         if os.path.isfile(override_path):
-            # print 'using ply override coordinates'
-            self.coords = self._get_override_coords(override_path)
+            print 'using ply override coordinates', or_name
+            self.override_coords = self._get_override_coords(override_path)
 
     def _get_override_coords(self, path_to_override):
         coords = []
@@ -96,10 +97,16 @@ class Data:
         coords.append(coords[0])
         return coords
 
+    def _get_coords(self):
+        if len(self.override_coords) > 0:
+            return self.override_coords
+        else:
+            return self.coords
+
     def get_center(self):
         lats = []
         lngs = []
-        for lat, lng in self.coords:
+        for lat, lng in self._get_coords():
             lats.append(lat)
             lngs.append(lng)
 
@@ -142,7 +149,7 @@ class Data:
 
     def get_outline(self):
         outline = ''
-        for ea in self.coords:
+        for ea in self._get_coords():
             outline += str(ea[0]) + ',' + str(ea[1]) + ':'
         return outline.rstrip(':')
 
@@ -276,7 +283,7 @@ class MetaLookup:
 
 # if __name__ == '__main__':
 #     ml = MetaLookup()
-#     tp = os.path.join(config.ukho_geotiff_dir, '2182A-0.png')
+#     tp = os.path.join(config.ukho_geotiff_dir, '2552-0_W.tif')
 #     print file_name_decoder(tp)
 #     print stamp(tp)
 #     data = ml.get_data(tp)
@@ -289,4 +296,4 @@ class MetaLookup:
 #     print 'updated:', data.updated
 #     # print 'zoom', data.get_zoom()
 #     print 'outline', data.get_outline()
-#     print 'coords', data.coords
+#     print 'coords', len(data.coords)
