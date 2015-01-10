@@ -64,6 +64,8 @@ def generate():
     with open(abs_path_json, 'w') as f:
         json.dump(data, f, indent=2)
 
+    return data
+
 
 def revert():
     for ea in os.listdir(os.path.join(config.compiled_dir)):

@@ -77,6 +77,9 @@ ukho_quarterly_extract = os.path.join(ukho_meta_dir, ukho_quarterly_extract)
 ukho_source_breakdown = os.path.join(ukho_meta_dir, ukho_source_breakdown)
 ukho_chart_data = os.path.join(ukho_meta_dir, ukho_chart_data)
 
+# java encryption source in not publicly published (and not needed for most/unencrypted regions)
+java_encryption_src = os.path.join(os.path.dirname(__file__), '../mx-mariner-encryption/src')
+
 epoch = int(time.time())
 
 _all_dirs = [_root_dir,
