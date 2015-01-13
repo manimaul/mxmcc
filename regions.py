@@ -233,3 +233,6 @@ def find_custom_region_path(region):
             return os.path.join(root, region)
 
     return None
+
+if __name__ == '__main__':
+   print  _db.db[privider_noaa].keys()

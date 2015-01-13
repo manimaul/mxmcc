@@ -35,7 +35,7 @@ def _lat_lng_dmm_to_ddd(lat_dmm, lng_dmm):
     return lat, lng
 
 
-name = '2383-0'
+name = '2552-0'
 inner = ''
 
 with open(name, 'r') as ovr:

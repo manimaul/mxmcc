@@ -40,7 +40,7 @@ class OrderedEnum(Enum):
 
 class CheckPoint(OrderedEnum):
     CHECKPOINT_NOT_STARTED, CHECKPOINT_CATALOG, CHECKPOINT_TILE_VERIFY, CHECKPOINT_MERGE, CHECKPOINT_OPT, \
-    CHECKPOINT_ENCRYPTED, CHECKPOINT_ARCHIVE, CHECKPOINT_METADATA = range(8)
+    CHECKPOINT_ENCRYPTED, CHECKPOINT_ARCHIVE, CHECKPOINT_METADATA, CHECKPOINT_PUBLISHED = range(9)
 
     @classmethod
     def from_string(cls, str_value):
@@ -94,14 +94,3 @@ class CheckPointStore:
             for profile in self.checkpoints[region]:
                 store.write('%s\t%s\t%s\n' % (region, profile, self.checkpoints[region][profile]))
         store.close()
-
-
-# if __name__ == '__main__':
-#     store = CheckPointStore()
-#     region = 'REGION_UK1'
-#     profile = 'MX_REGION'
-#     print store.get_checkpoint(region, profile)
-#     store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_CATALOG)
-#     print store.get_checkpoint(region, profile)
-#     store.clear_checkpoint(region, profile, CheckPoint.CHECKPOINT_ARCHIVE)
-#     print store.get_checkpoint(region, profile)

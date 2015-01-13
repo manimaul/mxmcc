@@ -31,8 +31,12 @@ def checksum(abs_path):
     return m.hexdigest()
 
 
-def generate():
-    data = {'manifest_version': 1, 'regions': {}}
+def generate(data=None):
+    if data is None:
+        data = {'manifest_version': 1, 'regions': {}}
+    elif data['manifest_version'] is not 1:
+        raise Exception('Invalid data')
+
     for ea in os.listdir(config.compiled_dir):
         if ea.endswith('gemf'):
             region_ts = ea[:ea.find('.')]
@@ -57,7 +61,7 @@ def generate():
                                        'data_checksum': checksum(abs_path_data),
                                        'size_bytes': os.path.getsize(abs_path_gemf),
                                        'epoch': epoch}
-    print data
+    # print data
     abs_path_json = os.path.join(config.compiled_dir, 'manifest.json')
     if os.path.exists(abs_path_json):
         os.remove(abs_path_json)

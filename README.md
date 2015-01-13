@@ -31,3 +31,8 @@ requirements:
 * numpy
 
 * pycrypto
+
+* enum34
+
+* pngnq (binary)
+
