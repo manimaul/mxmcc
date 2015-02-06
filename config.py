@@ -25,7 +25,7 @@ import time
 
 # InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-_root_dir = os.path.join('/Volumes/sd_data', 'mxmcc')
+_root_dir = os.path.join('/Volumes/sddat', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 

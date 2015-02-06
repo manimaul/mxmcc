@@ -169,6 +169,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
     #     if override is not None:
     #         cutline = override
 
+    print cutline
     if cutline is not None:
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
         command += ['-wo', 'CUTLINE=%s' % cut_poly]
@@ -448,7 +449,8 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
     if out_dir is None:
         out_dir = os.path.dirname(_stack_peek(map_stack))
         out_dir = os.path.join(out_dir, 'tiles')
-    elif not os.path.isdir(out_dir):
+
+    if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
 
     # ---- if we are only rendering 1 zoom level, over-shoot by one so we can scale down with anti-aliasing
@@ -557,17 +559,14 @@ def build_tiles_for_catalog(catalog_name):
     pool.join()  # wait for pool to empty
 
 # if __name__ == '__main__':
-#     # import bsb
-#     # test_map = config.noaa_bsb_dir + '/BSB_ROOT/11303/11303_1.KAP'
-#     # test_bsb = bsb.BsbHeader(test_map)
-#     # build_tiles_for_map('11303_1.KAP', test_map, test_bsb.get_zoom(), test_bsb.get_zoom(), test_bsb.get_outline())
-#     # build_tiles_for_map('11303_1.KAP', test_map, test_bsb.get_zoom(), test_bsb.get_zoom(), test_bsb.get_outline(),
-#     #                     out_dir='/data/mxmcc/charts/noaa/BSB_ROOT/11303/no_ovrply', use_ply_overrides=False)
-#
 #     import lookups
-#     m = '2182A-0.tif'
-#     p = os.path.join(config.ukho_geotiff_dir, m)
-#     l = lookups.UKHOLookup()
+#     m = 'Abaco_GeoTiffs/1_6 600/Ab - Grand Cays Harbour Plan WL B31A.tif'
+#     p = os.path.join(config.wavey_line_geotiff_dir, m)
+#     l = lookups.WaveylinesLookup()
 #     z = l.get_zoom(p)
 #     o = l.get_outline(p)
+#     s = l.get_scale(p)
+#     print 'zoom', z
+#     print 'outline', o
+#     print 'scale', s
 #     build_tiles_for_map(m, p, z, z, o)

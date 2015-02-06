@@ -11,11 +11,15 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
    a region.
 '''
 
+import datetime
+import os
+
 import bsb
 import ukho_xlrd_lookup
 import findzoom
 import gdalds
 import config
+
 
 # coordinates need to be longitude,latitude,altitude
 cutline_kml = '''<?xml version='1.0' encoding='UTF-8'?>
@@ -104,5 +108,32 @@ class UKHOLookup(Lookup):
 
 class WaveylinesLookup(Lookup):
     """Lookup information using information coded in file names"""
-    def _get(self, map_path):
-        pass  # TODO:
+    def get_name(self, map_path):
+        return os.path.basename(map_path)[:-4]
+
+    def get_zoom(self, map_path):
+        return findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) + 1
+
+    def get_scale(self, map_path):
+        data_set = gdalds.get_ro_dataset(map_path)
+        return int(gdalds.get_true_scale(data_set, 400))
+
+    def get_updated(self, map_path):
+        return datetime.datetime.now().strftime('%b-%d-%G')
+
+    def get_depth_units(self, map_path):
+        return 'Meters'
+
+    def get_outline(self, map_path):
+        data_set = gdalds.get_ro_dataset(map_path)
+        wnes, is_north_up = gdalds.dataset_lat_lng_bounds(data_set)
+        west, north, east, south = wnes
+
+        return str(north) + ',' + str(west) + ':' + \
+               str(north) + ',' + str(east) + ':' + \
+               str(south) + ',' + str(east) + ':' + \
+               str(south) + ',' + str(west) + ':' + \
+               str(north) + ',' + str(west)
+
+    def get_is_valid(self, map_path):
+        return True

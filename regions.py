@@ -58,7 +58,7 @@ class _RegionDatabase:
         self.provider_dirs = {}
 
     def add_provider(self, provider, map_dir):
-        if not provider in self.db:
+        if provider not in self.db:
             self.db[provider] = {}
         self.provider_dirs[provider] = map_dir
 
@@ -92,21 +92,21 @@ class _RegionDatabase:
     def is_valid_region(self, region):
         return region in self.rdb.keys()
 
-#Chart format types
+# Chart format types
 map_type_bsb = 'kap'
 map_type_geotiff = 'tif'
 
-#Providers
+# Providers
 privider_noaa = 'noaa'
 provider_brazil = 'brazil'
 provider_linz = 'linz'
 provider_ukho = 'ukho'
 provider_wavey_lines = 'wavey-lines'
 
-#Build the database
+# Build the database
 _db = _RegionDatabase()
 
-#US - NOAA
+# US - NOAA
 _db.add_provider(privider_noaa, config.noaa_bsb_dir)
 _db.add_region(privider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
 _db.add_region(privider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
@@ -130,21 +130,25 @@ _db.add_region(privider_noaa, 'REGION_34', 'Alaska, The Aleutians and Bristol Ba
 _db.add_region(privider_noaa, 'REGION_36', 'Alaska, Norton Sound to Beaufort Sea', map_type_bsb)
 _db.add_region(privider_noaa, 'REGION_40', 'Hawaiian Islands and U.S. Territories', map_type_bsb)
 
-#BRAZIL NAVY
+# BRAZIL NAVY
 _db.add_provider(provider_brazil, config.brazil_bsb_dir)
 _db.add_region(provider_brazil, 'REGION_BR', 'Brazil: Guyana to Uruguay', map_type_bsb)
 
-#New Zealand - LINZ
+# New Zealand - LINZ
 _db.add_provider(provider_linz, config.linz_bsb_dir)
 _db.add_region(provider_linz, 'REGION_NZ', 'New Zealand and South Pacific: Samoa to Ross Sea', map_type_bsb)
 
-#United Kingdom - UKHO
+# United Kingdom - UKHO
 _db.add_provider(provider_ukho, config.ukho_geotiff_dir)
 _db.add_region(provider_ukho, 'REGION_UK1', 'United Kingdom North East Coast to Shetland Islands', map_type_geotiff)
 _db.add_region(provider_ukho, 'REGION_UK2', 'United Kingdom South East Coast and Channel Islands', map_type_geotiff)
 _db.add_region(provider_ukho, 'REGION_UK3', 'United Kingdom North West Coast and Ireland West Coast', map_type_geotiff)
 _db.add_region(provider_ukho, 'REGION_UK4', 'United Kingdom South West Coast and Ireland East Coast - Irish Sea',
                map_type_geotiff)
+
+# Wavey Lines
+_db.add_provider(provider_wavey_lines, config.wavey_line_geotiff_dir)
+_db.add_region(provider_wavey_lines, 'REGION_WL1', 'Bahamas Turks and Caicos Islands Hispaniola Caribbean', map_type_geotiff)
 
 
 def description_for_region(region):
@@ -176,9 +180,9 @@ def map_list_for_region(region):
         elif provider is provider_brazil:
             mps = MapPathSearch(config.brazil_bsb_dir, [map_type_for_region(region)])
             return mps.file_paths
-        # elif provider is provider_wavey_lines: #todo
-        #     mps = MapPathSearch(config.wavey_line_geotiff_dir, [map_type_for_region(region)])
-        #     return mps.file_paths
+        elif provider is provider_wavey_lines:
+            mps = MapPathSearch(config.wavey_line_geotiff_dir, [map_type_for_region(region)])
+            return mps.file_paths
         elif provider is provider_ukho:
             region_txt = os.path.join(config.ukho_meta_dir, region.upper() + '.txt')
             paths = []
@@ -206,6 +210,8 @@ def lookup_for_region(region):
     provider = _db.provider_for_region(region)
     if provider is provider_ukho:
         return lookups.UKHOLookup()
+    elif provider is provider_wavey_lines:
+        return lookups.WaveylinesLookup()
     else:
         return lookups.BsbLookup()
 
@@ -233,6 +239,3 @@ def find_custom_region_path(region):
             return os.path.join(root, region)
 
     return None
-
-if __name__ == '__main__':
-   print  _db.db[privider_noaa].keys()
