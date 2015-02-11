@@ -2,7 +2,8 @@ import os
 
 from shapely.geometry import Polygon
 
-import regions
+from search import MapPathSearch
+from region_constants import *
 import config
 import gdalds
 import ukho_remove_duplicates
@@ -16,11 +17,6 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 '''Creates (txt) manifests containing a list of charts for each region based on if they are in defined boundaries
 '''
-
-REGION_UK1 = 'REGION_UK1'
-REGION_UK2 = 'REGION_UK2'
-REGION_UK3 = 'REGION_UK3'
-REGION_UK4 = 'REGION_UK4'
 
 EXCLUDES = {REGION_UK1: {'4102-0.tif', '0245-0.tif', '1121-0.tif', '2724-0.tif', '0245-0.tif'},
 
@@ -87,7 +83,7 @@ def make_manifest():
 
     previous = {}
 
-    mps = regions.MapPathSearch(config.ukho_geotiff_dir, ['tif'])
+    mps = MapPathSearch(config.ukho_geotiff_dir, ['tif'])
     n = 1
     o = len(mps.file_paths)
     for abs_map_path in mps.file_paths:

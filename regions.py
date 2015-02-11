@@ -15,34 +15,10 @@ import os.path
 import config
 from noaaxml import NoaaXmlReader
 import lookups
-
-
-class MapPathSearch:
-    def __init__(self, directory, map_extensions=['kap', 'tif'], include_only=None):
-        """Searches for files ending with <map_extensions> in <directory> and all subdirectories
-
-           Optionally supply set of file names <include_only> to only return paths of files that
-           are contained in the set eg. {file1.kap, file2.tif}
-
-           file_paths is a list of all full paths found
-        """
-
-        for i in range(len(map_extensions)):
-            map_extensions[i] = map_extensions[i].upper()
-
-        self.file_paths = []
-
-        if os.path.isdir(directory):
-            os.path.walk(directory, self.__walker, (tuple(map_extensions), include_only))
-        else:
-            print directory, 'is not a directory.'
-
-    def __walker(self, args, p_dir, p_file):
-        map_extensions, include_only = args
-        for f in p_file:
-            if f.upper().endswith(map_extensions) and (include_only is None or f in include_only) and not f.startswith(
-                    "."):
-                self.file_paths.append(os.path.join(p_dir, f))
+import wl_filter_list_generator
+import file_name_sanitizer
+from region_constants import *
+from search import MapPathSearch
 
 
 class _RegionInfo:
@@ -148,7 +124,8 @@ _db.add_region(provider_ukho, 'REGION_UK4', 'United Kingdom South West Coast and
 
 # Wavey Lines
 _db.add_provider(provider_wavey_lines, config.wavey_line_geotiff_dir)
-_db.add_region(provider_wavey_lines, 'REGION_WL1', 'Bahamas Turks and Caicos Islands Hispaniola Caribbean', map_type_geotiff)
+_db.add_region(provider_wavey_lines, REGION_WL1, 'Caribbean West Florida and Bahamas to Long Island', map_type_geotiff)
+_db.add_region(provider_wavey_lines, REGION_WL2, 'Caribbean East Turks And Caicos Islands Crooked Island to Dominican Republic', map_type_geotiff)
 
 
 def description_for_region(region):
@@ -181,8 +158,8 @@ def map_list_for_region(region):
             mps = MapPathSearch(config.brazil_bsb_dir, [map_type_for_region(region)])
             return mps.file_paths
         elif provider is provider_wavey_lines:
-            mps = MapPathSearch(config.wavey_line_geotiff_dir, [map_type_for_region(region)])
-            return mps.file_paths
+            file_name_sanitizer.sanitize(config.wavey_line_geotiff_dir)
+            return wl_filter_list_generator.make_file_list_region_dictionary()[region]
         elif provider is provider_ukho:
             region_txt = os.path.join(config.ukho_meta_dir, region.upper() + '.txt')
             paths = []

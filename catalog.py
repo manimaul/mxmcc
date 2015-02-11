@@ -15,6 +15,7 @@ import os
 import csv
 from operator import itemgetter
 
+from search import MapPathSearch
 import regions
 import config
 import lookups
@@ -80,7 +81,7 @@ def build_catalog_for_region(region):
 
 
 def build_catalog_for_bsb_directory(bsb_dir, name=None):
-    map_search = regions.MapPathSearch(bsb_dir, ['kap'])
+    map_search = MapPathSearch(bsb_dir, ['kap'])
 
     if name is None:
         name = os.path.basename(bsb_dir).lower()

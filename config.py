@@ -68,6 +68,7 @@ unmerged_tile_dir = os.path.join(_tile_dir, 'unmerged')
 _meta_dir = os.path.join(_root_dir, 'metadata')
 catalog_dir = os.path.join(_meta_dir, 'catalogs')
 ukho_meta_dir = os.path.join(_meta_dir, 'ukho')
+wl_meta_dir = os.path.join(_meta_dir, "wl")
 noaa_meta_dir = os.path.join(_meta_dir, 'noaa')
 brazil_meta_dir = os.path.join(_meta_dir, 'brazil')
 
@@ -86,6 +87,7 @@ _all_dirs = [_root_dir,
              map_dir,
              _meta_dir,
              ukho_meta_dir,
+             wl_meta_dir,
              noaa_meta_dir,
              catalog_dir,
              _tile_dir,

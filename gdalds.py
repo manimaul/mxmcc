@@ -17,7 +17,12 @@ import osr
 
 
 def get_ro_dataset(map_path):
-    return gdal.Open(map_path, gdal.GA_ReadOnly)
+    if not os.path.isfile(map_path):
+        raise Exception(map_path + ' does not exist!')
+    ds = gdal.Open(map_path, gdal.GA_ReadOnly)
+    if ds is None:
+        raise Exception('dataset not openned')
+    return ds
 
 
 def dataset_get_cutline_geometry(gdal_ds, cutline):
@@ -251,8 +256,7 @@ def map_to_pixels(mx, my, gt):
 
 if __name__ == '__main__':
     import os
-    import config
 
-    p = os.path.join(config.ukho_geotiff_dir, '2182A-0.tif')
+    p = '/Volumes/sddat/mxmcc/charts/wavey-lines/geotiff/Bahamas_Overall/Bahamas_Overall_BAH019.tif' #os.path.join(config.ukho_geotiff_dir, '2182A-0.tif')
     d = get_ro_dataset(p)
     print get_true_scale(d, 127)

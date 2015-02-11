@@ -10,11 +10,15 @@ __status__ = "Prototype"  # "Prototype", "Development", or "Production"
 '''
 
 import os
+
 from PIL import Image
+
 from tilesystem import tile_size
-from regions import MapPathSearch, is_valid_region
+from regions import is_valid_region
+from search import MapPathSearch
 import logger
 import config
+
 
 MAX_ZOOM_TIMES = 8
 STD_ZOOM_TIMES = 6
