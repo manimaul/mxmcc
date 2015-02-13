@@ -1,4 +1,5 @@
 import os
+import json
 
 from shapely.geometry import Polygon
 
@@ -17,24 +18,37 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 '''
 
 BOUNDARIES = {REGION_WL1: Polygon(((20.653346, -75.816650),
-                                           (27.973699, -71.410607),
-                                           (27.973699, -81.793212),
-                                           (20.653346, -81.793212),
-                                           (20.653346, -75.816650))),
+                                   (27.973699, -71.410607),
+                                   (27.973699, -81.793212),
+                                   (20.653346, -81.793212),
+                                   (20.653346, -75.816650))),
 
               REGION_WL2: Polygon(((20.653346, -75.816661),
-                                           (16.445521, -75.816661),
-                                           (16.445521, -66.040652),
-                                           (28.030423, -66.040652),
-                                           (27.030423, -71.381531),
-                                           (20.653346, -75.816661)))}
+                                   (16.445521, -75.816661),
+                                   (16.445521, -66.040652),
+                                   (28.030423, -66.040652),
+                                   (27.030423, -71.381531),
+                                   (20.653346, -75.816661)))}
+
+JSON_PATH = os.path.join(config.wl_meta_dir, 'region_files.json')
 
 
 def _should_include(region, poly):
     return BOUNDARIES[region].intersects(poly)
 
 
-def make_file_list_region_dictionary():
+def get_file_list_region_dictionary(n=True):
+    if os.path.isfile(JSON_PATH):
+        with open(JSON_PATH, 'r') as json_file:
+            return json.loads(json_file.read())
+    elif n:
+        _make_file_list_region_dictionary()
+        return get_file_list_region_dictionary(n=False)
+    else:
+        raise Exception('failed to get or create json manifest')
+
+
+def _make_file_list_region_dictionary():
 
     matched = {REGION_WL1: [],
                REGION_WL2: []}
@@ -57,14 +71,15 @@ def make_file_list_region_dictionary():
 
         for region in BOUNDARIES.keys():
             if _should_include(region, poly):
-                matched[region].append(abs_map_path + '\n')
+                matched[region].append(abs_map_path)
                 num_matched += 1
 
     print 'num_matched : ', num_matched
     print 'skipped : ', max(0, o - num_matched)
 
-    return matched
+    with open(os.path.join(JSON_PATH), 'w') as f:
+        json.dump(matched, f, indent=2)
 
 
 if __name__ == '__main__':
-    print make_file_list_region_dictionary()
+    print get_file_list_region_dictionary()

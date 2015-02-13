@@ -49,6 +49,7 @@ import catalog
 import config
 
 
+
 # http://www.gdal.org/formats_list.html
 geotiff = 'GTIFF'
 bsb = 'BSB'
@@ -169,7 +170,6 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
     #     if override is not None:
     #         cutline = override
 
-    print cutline
     if cutline is not None:
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
         command += ['-wo', 'CUTLINE=%s' % cut_poly]

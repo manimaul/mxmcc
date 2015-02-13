@@ -54,7 +54,7 @@ noaa_bsb_dir = os.path.join(map_dir, 'noaa')
 ukho_geotiff_dir = os.path.join(map_dir, 'ukho/geotiff')
 ukho_dup_dir = os.path.join(map_dir, 'ukho/duplicates')
 ukho_png_dir = os.path.join(map_dir, 'ukho/png')
-wavey_line_geotiff_dir = os.path.join(map_dir, 'wavey-lines/geotiff')
+wavey_line_geotiff_dir = os.path.join(map_dir, 'wavey_lines/geotiff')
 
 # finished directory
 compiled_dir = os.path.join(_root_dir, 'compiled')
