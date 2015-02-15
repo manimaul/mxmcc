@@ -21,6 +21,7 @@ import gdalds
 import config
 
 
+
 # coordinates need to be longitude,latitude,altitude
 cutline_kml = '''<?xml version='1.0' encoding='UTF-8'?>
 <kml xmlns='http://www.opengis.net/kml/2.2'>
@@ -108,6 +109,19 @@ class UKHOLookup(Lookup):
 
 class WaveylinesLookup(Lookup):
     """Lookup information using information coded in file names"""
+    def __init__(self):
+        super(WaveylinesLookup, self).__init__()
+        ovr_dir = os.path.join(os.path.dirname(__file__), 'wl_overrides')
+        self.overrides = {}
+        for ea in os.listdir(ovr_dir):
+            with open(os.path.join(ovr_dir, ea), 'r') as f:
+                name = ea[:-4]
+                outline = ''
+                for ea_c in f.readlines():
+                    outline += ea_c.strip() + ':'
+                outline = outline[:-1]
+                self.overrides[name] = outline
+
     def get_name(self, map_path):
         return os.path.basename(map_path)[:-4]
 
@@ -125,6 +139,11 @@ class WaveylinesLookup(Lookup):
         return 'Meters'
 
     def get_outline(self, map_path):
+        base_name = os.path.basename(map_path)[:-4]
+        if base_name in self.overrides:
+            print 'using override outline'
+            return self.overrides[base_name]
+
         data_set = gdalds.get_ro_dataset(map_path)
         wnes, is_north_up = gdalds.dataset_lat_lng_bounds(data_set)
         west, north, east, south = wnes

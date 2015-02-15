@@ -49,7 +49,6 @@ import catalog
 import config
 
 
-
 # http://www.gdal.org/formats_list.html
 geotiff = 'GTIFF'
 bsb = 'BSB'
@@ -522,12 +521,10 @@ def write_tilejson_tilemap(dst_dir, tilemap):
 
 
 def copy_viewer(dest):
-    pass
-    # todo: add viewers
-    # for f in ['viewer.js', 'viewer-esri.html', 'viewer-google.html', 'viewer-mapbox.html', 'viewer-openlayers.html']:
-    #     src = os.path.join(os.path.dirname(os.path.realpath(__file__)), f)
-    #     dst = os.path.join(dest, f)
-    #     shutil.copy(src, dst)
+    for f in ['viewer.js', 'google.html']:
+        src = os.path.join(os.path.dirname(os.path.realpath(__file__)), f)
+        dst = os.path.join(dest, f)
+        shutil.copy(src, dst)
 
 
 def _build_tiles_for_map_helper(entry, name):
@@ -557,16 +554,3 @@ def build_tiles_for_catalog(catalog_name):
     pool.map_async(partial(_build_tiles_for_map_helper, name=catalog_name), reader)
     pool.close()
     pool.join()  # wait for pool to empty
-
-# if __name__ == '__main__':
-#     import lookups
-#     m = 'Abaco_GeoTiffs/1_6 600/Ab - Grand Cays Harbour Plan WL B31A.tif'
-#     p = os.path.join(config.wavey_line_geotiff_dir, m)
-#     l = lookups.WaveylinesLookup()
-#     z = l.get_zoom(p)
-#     o = l.get_outline(p)
-#     s = l.get_scale(p)
-#     print 'zoom', z
-#     print 'outline', o
-#     print 'scale', s
-#     build_tiles_for_map(m, p, z, z, o)
