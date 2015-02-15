@@ -10,6 +10,7 @@ import math
 
 from osgeo import gdal
 import osr
+import os
 
 
 '''some convenience methods for information about gdal data sets

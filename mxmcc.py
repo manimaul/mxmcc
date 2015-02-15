@@ -104,8 +104,8 @@ def compile_region(region, profile=PROFILE_MX_R):
         # --------------------------------------------------------------------------------------------------------------
 
         if 'MX_' in profile:
-
-            should_encrypt = regions.provider_for_region(region) is regions.provider_ukho
+            encrypted_providers = {regions.provider_wavey_lines, regions.provider_ukho}
+            should_encrypt = regions.provider_for_region(region) in encrypted_providers
             if should_encrypt:
                 print 'encrypting tiles for region:', region
                 # encryption
