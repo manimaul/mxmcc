@@ -555,35 +555,36 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
-if __name__ == '__main__':
-    import search
-    import lookups
-    cut_list = ['Abrahams_Bay_WLB26.tif',
-                'Strangers_Cay_to_Carters_Cay_B34.tif',
-                'Ambergris_to_South_Caicos_T6.tif',
-                'Dellis_Cut_to_Bellefield_Harbour_T13.tif',
-                'Sandbore_Channel_T2.tif',
-                'Grand_Turk_And_Turks_Islands_T21.tif',
-                'North_Caicos_T33.tif',
-                'Ex_Highbourne_Cay_WLB16.tif',
-                'GtI_Lantern_Head__WLB137.tif',
-                'Long_Island_to_Little_Exuma_WL_B106.tif',
-                'Long_Island__Stella_Maris_to_Salt_Pond_WL_B195.tif']
-    # 'Ragged_Island_B219.tif',
-    # 'Sail_Rocks_to_Finley_Cay_B273.tif',
-    # 'Sandbore_Channel_T2.tif',
-    # 'Sap_Bay_to_Bermudian_Hbr_T18.tif',
-    # 'Southeast_Bahamas.tif',
-    # 'Southern__Eleuthera__B229_rectified.tif',
-    # 'Strangers_Cay_to_Carters_Cay_B34.tif',
-    # 'Turtle_Cove_to_Leeward_T34.tif']
-    mps = search.MapPathSearch(config.wavey_line_geotiff_dir, include_only=cut_list)
-    l = lookups.WaveylinesLookup()
-    for p in mps.file_paths:
-        z = l.get_zoom(p)
-        o = l.get_outline(p)
-        s = l.get_scale(p)
-        print 'zoom', z
-        print 'outline', o
-        print 'scale', s
-        build_tiles_for_map(l.get_name(p), p, z, z, o)
+    # if __name__ == '__main__':
+    # import search
+    #     import lookups
+    #     # cut_list = ['Abrahams_Bay_WLB26.tif',
+    #     #             'Strangers_Cay_to_Carters_Cay_B34.tif',
+    #     #             'Ambergris_to_South_Caicos_T6.tif',
+    #     #             'Dellis_Cut_to_Bellefield_Harbour_T13.tif',
+    #     #             'Sandbore_Channel_T2.tif',
+    #     #             'Grand_Turk_And_Turks_Islands_T21.tif',
+    #     #             'North_Caicos_T33.tif',
+    #     #             'Ex_Highbourne_Cay_WLB16.tif',
+    #     #             'GtI_Lantern_Head__WLB137.tif',
+    #     #             'Long_Island_to_Little_Exuma_WL_B106.tif',
+    #     #             'Long_Island__Stella_Maris_to_Salt_Pond_WL_B195.tif',
+    #     #             'Ragged_Island_B219.tif',
+    #     #             'Sail_Rocks_to_Finley_Cay_B273.tif',
+    #     #             'Sandbore_Channel_T2.tif',
+    #     #             'Sap_Bay_to_Bermudian_Hbr_T18.tif',
+    #     #             'Southeast_Bahamas.tif',
+    #     #             'Southern__Eleuthera__B229_rectified.tif',
+    #     #             'Strangers_Cay_to_Carters_Cay_B34.tif',
+    #     #             'Turtle_Cove_to_Leeward_T34.tif']
+    #     cut_list = ['Long_Island__Stella_Maris_to_Salt_Pond_WL_B195.tif']
+    #     mps = search.MapPathSearch(config.wavey_line_geotiff_dir, include_only=cut_list)
+    #     l = lookups.WaveylinesLookup()
+    #     for p in mps.file_paths:
+    #         z = l.get_zoom(p)
+    #         o = l.get_outline(p)
+    #         s = l.get_scale(p)
+    #         print 'zoom', z
+    #         print 'outline', o
+    #         print 'scale', s
+    #         build_tiles_for_map(l.get_name(p), p, z-8, z-4, o)

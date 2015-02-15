@@ -1,12 +1,4 @@
-import os
-import json
-
-from shapely.geometry import Polygon
-
-import config
-import gdalds
-from region_constants import *
-from search import MapPathSearch
+#!/usr/bin/env python
 
 __author__ = 'Will Kamp'
 __copyright__ = 'Copyright 2015, Matrix Mariner Inc.'
@@ -16,6 +8,16 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 '''Creates dictionary containing a list of charts for each region based on if they are in defined boundaries
 '''
+
+import os
+import json
+
+from shapely.geometry import Polygon
+from noaaxml import NoaaXmlReader
+import config
+import gdalds
+from region_constants import *
+from search import MapPathSearch
 
 BOUNDARIES = {REGION_WL1: Polygon(((20.653346, -75.816650),
                                    (27.973699, -71.410607),
@@ -49,9 +51,11 @@ def get_file_list_region_dictionary(n=True):
 
 
 def _make_file_list_region_dictionary():
+    reader = NoaaXmlReader('REGION_10')
+    mps = MapPathSearch(config.noaa_bsb_dir, ['kap'], reader.get_map_files())
 
     matched = {REGION_WL1: [],
-               REGION_WL2: []}
+               REGION_WL2: mps.file_paths}
 
     num_matched = 0
 

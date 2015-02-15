@@ -120,28 +120,54 @@ class WaveylinesLookup(Lookup):
                 outline = outline[:-1]
                 self.overrides[name] = outline
 
+        self.bsb_lookup = BsbLookup()
+
+    def _is_bsb(self, map_path):
+        return map_path.upper().endswith('KAP')
+
     def get_name(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_name(map_path)
+
         return os.path.basename(map_path)[:-4]
 
     def get_zoom(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_zoom(map_path)
+
         return findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) + 1
 
     def get_scale(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_scale(map_path)
+
         data_set = gdalds.get_ro_dataset(map_path)
         return int(gdalds.get_true_scale(data_set, 400))
 
     def get_updated(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_updated(map_path)
+
         return datetime.datetime.now().strftime('%b-%d-%G')
 
     def get_depth_units(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_depth_units(map_path)
+
         return 'Meters'
 
     def get_outline(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_outline(map_path)
+
         base_name = os.path.basename(map_path)[:-4]
         if base_name in self.overrides:
             print 'using override outline'
             return self.overrides[base_name]
 
+        return self.get_outline_bounds(map_path)
+
+    def get_outline_bounds(self, map_path):
         data_set = gdalds.get_ro_dataset(map_path)
         wnes, is_north_up = gdalds.dataset_lat_lng_bounds(data_set)
         west, north, east, south = wnes
@@ -153,4 +179,17 @@ class WaveylinesLookup(Lookup):
                str(north) + ',' + str(west)
 
     def get_is_valid(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_is_valid(map_path)
+
         return True
+
+
+        # if __name__ == '__main__':
+        # p = '/Volumes/sddat/mxmcc/charts/wavey_lines/geotiff/Long_Island_Geo_Tiffs/Large_Scale/Long_Island__Stella_Maris_to_Salt_Pond_WL_B195.tif'
+        #     l = WaveylinesLookup()
+        #     print l.get_zoom(p)
+        #     ol_bounds = l.get_outline_bounds(p)
+        #     print ol_bounds
+        #     for ea in l.get_outline_bounds(p).split(':'):
+        #         print ea
