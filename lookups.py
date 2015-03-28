@@ -169,27 +169,10 @@ class WaveylinesLookup(Lookup):
 
     def get_outline_bounds(self, map_path):
         data_set = gdalds.get_ro_dataset(map_path)
-        wnes, is_north_up = gdalds.dataset_lat_lng_bounds(data_set)
-        west, north, east, south = wnes
-
-        return str(north) + ',' + str(west) + ':' + \
-               str(north) + ',' + str(east) + ':' + \
-               str(south) + ',' + str(east) + ':' + \
-               str(south) + ',' + str(west) + ':' + \
-               str(north) + ',' + str(west)
+        return gdalds.dataset_lat_lng_bounds_as_cutline(data_set)
 
     def get_is_valid(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_is_valid(map_path)
 
         return True
-
-
-        # if __name__ == '__main__':
-        # p = '/Volumes/sddat/mxmcc/charts/wavey_lines/geotiff/Long_Island_Geo_Tiffs/Large_Scale/Long_Island__Stella_Maris_to_Salt_Pond_WL_B195.tif'
-        #     l = WaveylinesLookup()
-        #     print l.get_zoom(p)
-        #     ol_bounds = l.get_outline_bounds(p)
-        #     print ol_bounds
-        #     for ea in l.get_outline_bounds(p).split(':'):
-        #         print ea

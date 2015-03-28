@@ -112,6 +112,17 @@ def dataset_lat_lng_bounds(gdal_ds):
     return dataset_get_bounds(gdal_ds, 4326)
 
 
+def dataset_lat_lng_bounds_as_cutline(gdal_ds):
+    wnes, is_north_up = dataset_lat_lng_bounds(gdal_ds)
+    west, north, east, south = wnes
+
+    return str(north) + ',' + str(west) + ':' + \
+           str(north) + ',' + str(east) + ':' + \
+           str(south) + ',' + str(east) + ':' + \
+           str(south) + ',' + str(west) + ':' + \
+           str(north) + ',' + str(west)
+
+
 def dataset_get_bounds(gdal_ds, epsg=4326):
     """returns the bounding box of a gdal dataset in latitude,longitude WGS-84 coordinates (in decimal degrees)
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
