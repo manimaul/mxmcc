@@ -13,7 +13,17 @@ import config
 import time
 from zdata import get_zdat_epoch
 
-BASE_URL = 'http://android.mxmariner.com/regions_raster_version5'
+BASE_URL = ''
+
+
+def merge_manifest(json_path_old, json_path_new, json_path_result):
+    json_old = json.load(file(json_path_old, 'r'))
+    json_new = json.load(file(json_path_new, 'r'))
+    for key in json_new['regions'].keys():
+        json_old['regions'][key] = json_new['regions'][key]
+
+    with open(json_path_result, 'w') as f:
+        json.dump(json_old, f, indent=2)
 
 
 def get_time_stamp(epoch=int(time.time()), local=False):
@@ -83,4 +93,8 @@ def revert():
 
 if __name__ == '__main__':
     # revert()
-    generate()
+    # generate()
+    o = os.path.join(config.compiled_dir, 'manifest_broke.json')
+    n = os.path.join(config.compiled_dir, 'manifest.json')
+    r = os.path.join(config.compiled_dir, 'manifest_result.json')
+    merge_manifest(o, n, r)
