@@ -23,7 +23,6 @@ from checkpoint import *
 import encryption_shim
 import platform
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'mbutil'))
 import mbutil as mb
 
 import shutil
