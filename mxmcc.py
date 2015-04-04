@@ -11,7 +11,6 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
 '''
 
 import sys
-
 import regions
 import catalog
 import tilebuilder
@@ -21,11 +20,12 @@ import zdata
 import verify
 import tiles_opt
 from checkpoint import *
-
-
-# import filler
 import encryption_shim
-import util as mb
+import platform
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'mbutil'))
+import mbutil as mb
+
 import shutil
 
 PROFILE_MX_R = 'MX_REGION'  # (default) renders standard MX Mariner gemf + zdat
@@ -92,6 +92,8 @@ def compile_region(region, profile=PROFILE_MX_R):
         # optimize
         point = CheckPoint.CHECKPOINT_OPT
         if checkpoint_store.get_checkpoint(region, profile) < point:
+            if platform.system() == 'Windows':
+                tiles_opt.set_nothreads()
             tiles_opt.optimize_dir(os.path.join(config.merged_tile_dir, region))
 
             # verify all optimized tiles are there

@@ -28,6 +28,7 @@ import logging
 import itertools
 import sys
 import os
+from config import png_nq_binary
 from subprocess import *
 
 from PIL import Image
@@ -112,20 +113,10 @@ def path2list(path):
 def command(params, child_in=None):
     cmd_str = ' '.join(('"%s"' % i if ' ' in i else i for i in params))
     ld('>', cmd_str, child_in)
-    if win32pipe:
-        (stdin, stdout, stderr) = win32pipe.popen3(cmd_str, 't')
-        if child_in:
-            stdin.write(child_in)
-        stdin.close()
-        child_out = stdout.read()
-        child_err = stderr.read()
-        if child_err:
-            logging.warning(child_err)
-    else:
-        process = Popen(params, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-        (child_out, child_err) = process.communicate(child_in)
-        if process.returncode != 0:
-            raise Exception("*** External program failed: %s\n%s" % (cmd_str, child_err))
+    process = Popen(params, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    (child_out, child_err) = process.communicate(child_in)
+    if process.returncode != 0:
+        raise Exception("*** External program failed: %s\n%s" % (cmd_str, child_err))
     ld('<', child_out, child_err)
     return child_out
 
@@ -166,7 +157,7 @@ def counter():
 def optimize_png(src, dst, dpath):
     'optimize png using pngnq utility'
     png_tile = os.path.basename(src)
-    command(['pngnq', '-s1', '-g2.2', '-n', '256', '-e', '.png', '-d', dpath, src])
+    command([png_nq_binary, '-s1', '-g2.2', '-n', '256', '-e', '.png', '-d', dpath, src])
 
 
 def to_jpeg(src, dst, dpath):
