@@ -36,7 +36,7 @@ def get_time_stamp(epoch=int(time.time()), local=False):
 
 def checksum(abs_path):
     m = hashlib.sha1()
-    with open(abs_path, 'r') as f:
+    with open(abs_path, 'rb') as f:
         m.update(f.read())
     return m.hexdigest()
 
