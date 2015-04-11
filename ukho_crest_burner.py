@@ -13,14 +13,15 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import os
 import shlex
 import subprocess
-
+from osgeo import gdal
 from PIL import Image
 
 import config
 
 
-match_f_name = "%s:%s:%s:%s:%s.png"  # chart:crest:score:xoff:yoff
-matched_crest_dir = os.path.join(config.ukho_meta_dir, "CRESTS/MATCHED")
+match_f_name = "%s#%s#%s#%s#%s.png"  # chart#crest#score#xoff#yoff
+matched_crest_dir = os.path.join(config.ukho_meta_dir, 'CRESTS', 'MATCHED')
+gdal.AllRegister()
 
 
 def burn(chart_f_name, burn_coord_list):
@@ -41,7 +42,8 @@ def burn(chart_f_name, burn_coord_list):
     if not os.path.isfile(png_path):
         print "creating png with gdal"
         # -----create a png
-        command = "gdal_translate -of PNG -expand rgba %s %s" % (tif_path, png_path)
+        command = "gdal_translate -of PNG -expand rgba \"%s\" \"%s\"" % (
+        os.path.normpath(tif_path), os.path.normpath(png_path))
         subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE).wait()
         # -----
 
@@ -76,7 +78,7 @@ def build_dictionary():
        tuples are (crest,x_offset,y_offset) """
     dictionary = {}
     for f in os.listdir(matched_crest_dir):
-        tif, crest, score, xoff, yoff = f.rstrip(".png").split(":")
+        tif, crest, score, xoff, yoff = f.rstrip(".png").split("#")
         if tif in dictionary:
             dictionary[tif].append((crest, score, xoff, yoff))
         else:
