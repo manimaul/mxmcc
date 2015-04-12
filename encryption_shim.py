@@ -51,7 +51,7 @@ def encrypt_region(region):
     if _make_java_if_needed():
         in_dir = os.path.join(config.merged_tile_dir, region + '.opt')
         out_dir = os.path.join(config.merged_tile_dir, region + '.enc')
-        cmd = 'java com.mxmariner.crypto.FileTreeEncryptor %s %s' % (in_dir, out_dir)
+        cmd = 'java com.mxmariner.crypto.FileTreeEncryptor \"%s\" \"%s\"' % (in_dir, out_dir)
         print 'running', cmd
         p = subprocess.Popen(shlex.split(cmd), cwd=config.java_encryption_src)
         p.wait()
@@ -63,7 +63,7 @@ def encrypt_region(region):
 
 def generate_token(region):
     if _make_java_if_needed():
-        cmd = 'java com.mxmariner.crypto.TokenFactory %s %s' % (config.compiled_dir, region)
+        cmd = 'java com.mxmariner.crypto.TokenFactory \"%s\" \"%s\"' % (config.compiled_dir, region)
         print 'running', cmd
         p = subprocess.Popen(shlex.split(cmd), cwd=config.java_encryption_src)
         p.wait()
