@@ -41,7 +41,7 @@ def checksum(abs_path):
     return m.hexdigest()
 
 
-def generate(data=None):
+def generate(data=None, base_url=BASE_URL):
     if data is None:
         data = {'manifest_version': 1, 'regions': {}}
     elif data['manifest_version'] is not 1:
@@ -65,8 +65,8 @@ def generate(data=None):
             os.rename(abs_path_gemf_org, abs_path_gemf)
             os.rename(abs_path_data_org, abs_path_data)
             print region
-            data['regions'][region] = {'gemf_url': BASE_URL + '/' + gemf_name,
-                                       'data_url': BASE_URL + '/' + data_name,
+            data['regions'][region] = {'gemf_url': base_url + '/' + gemf_name,
+                                       'data_url': base_url + '/' + data_name,
                                        'gemf_checksum': checksum(abs_path_gemf),
                                        'data_checksum': checksum(abs_path_data),
                                        'size_bytes': os.path.getsize(abs_path_gemf),
