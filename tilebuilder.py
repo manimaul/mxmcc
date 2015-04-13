@@ -96,13 +96,13 @@ def _cleanup_tmp_vrt_stack(vrt_stack):
         logger.log(logger.OFF, 'deleting temp file:', vrt_stack[i])
 
 
-def _stack_peek(vrt_stack):
+def stack_peek(vrt_stack):
     """the peek of a vrt stack
     """
     return vrt_stack[-1]
 
 
-def _build_tile_vrt_for_map(map_path, cutline=None):
+def build_tile_vrt_for_map(map_path, cutline=None):
     """builds a stack of temporary vrt files for an input path to a map file
        the peek of the stack is the target file to use to create tiles
        after use the temporary files should be deleted using cleanup_tmp_vrt_stack(the_stack)
@@ -173,7 +173,7 @@ def _build_tile_vrt_for_map(map_path, cutline=None):
         cut_poly = gdalds.dataset_get_cutline_geometry(dataset, cutline)
         command += ['-wo', 'CUTLINE=%s' % cut_poly]
 
-    command += [_stack_peek(map_stack),  # gdal input source
+    command += [stack_peek(map_stack),  # gdal input source
                 w_vrt_path]  # gdal output destination
 
     subprocess.Popen(command).wait()
@@ -197,7 +197,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
 
     logger.log(logger.OFF, 'tile out dir:', out_dir)
 
-    map_path = _stack_peek(map_stack)
+    map_path = stack_peek(map_stack)
 
     ds = gdal.Open(map_path, gdal.GA_ReadOnly)
 
@@ -442,11 +442,11 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
        cutline string format example: 48.3,-123.2:48.5,-123.2:48.5,-122.7:48.3,-122.7:48.3,-123.2
        : dilineated latitude/longitude WGS-84 coordinates (in decimal degrees)
     """
-    map_stack = _build_tile_vrt_for_map(map_path, cutline=cutline)
+    map_stack = build_tile_vrt_for_map(map_path, cutline=cutline)
 
     # ---- render tiles in the same directory of the map if not specified
     if out_dir is None:
-        out_dir = os.path.dirname(_stack_peek(map_stack))
+        out_dir = os.path.dirname(stack_peek(map_stack))
         out_dir = os.path.join(out_dir, 'tiles')
 
     if not os.path.isdir(out_dir):
@@ -555,15 +555,3 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
-# if __name__ == '__main__':
-#     import lookups
-#     import gdalds
-#     l = lookups.BsbLookup()
-#     p = os.path.join(config.brazil_bsb_dir, '23101.KAP')
-#     o = l.get_outline(p)
-#     z = l.get_zoom(p)
-#     print 'path', p
-#     print 'zoom', z
-#     print 'outline', o
-#     ds = gdalds.get_ro_dataset(p)
-#     print gdalds.dataset_lat_lng_bounds_as_cutline(ds)

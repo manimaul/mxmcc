@@ -175,9 +175,3 @@ class BsbHeader():
     def print_header(self):
         for line in self.lines:
             print line.strip()
-
-# if __name__ == '__main__':
-#
-#     bh = BsbHeader('/Users/williamkamp/charts/BSB_ROOT/18453/18453_1.KAP')
-#     for p in bh.poly:
-#         print p
