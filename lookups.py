@@ -105,21 +105,10 @@ class UKHOLookup(Lookup):
         return findzoom.get_zoom_from_true_scale(true_scale)
 
 
-class WaveylinesLookup(Lookup):
+class BsbGdalMixLookup(Lookup):
     """Lookup information using information coded in file names"""
     def __init__(self):
-        super(WaveylinesLookup, self).__init__()
-        ovr_dir = os.path.join(os.path.dirname(__file__), 'wl_overrides')
-        self.overrides = {}
-        for ea in os.listdir(ovr_dir):
-            with open(os.path.join(ovr_dir, ea), 'r') as f:
-                name = ea[:-4]
-                outline = ''
-                for ea_c in f.readlines():
-                    outline += ea_c.strip() + ':'
-                outline = outline[:-1]
-                self.overrides[name] = outline
-
+        super(BsbGdalMixLookup, self).__init__()
         self.bsb_lookup = BsbLookup()
 
     def _is_bsb(self, map_path):
@@ -148,22 +137,17 @@ class WaveylinesLookup(Lookup):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_updated(map_path)
 
-        return datetime.datetime.now().strftime('%b-%d-%G')
+        return datetime.datetime.now().strftime('%b-%d-%Y')
 
     def get_depth_units(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_depth_units(map_path)
 
-        return 'Meters'
+        return 'Unknown'
 
     def get_outline(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_outline(map_path)
-
-        base_name = os.path.basename(map_path)[:-4]
-        if base_name in self.overrides:
-            print 'using override outline'
-            return self.overrides[base_name]
 
         return self.get_outline_bounds(map_path)
 
@@ -176,3 +160,28 @@ class WaveylinesLookup(Lookup):
             return self.bsb_lookup.get_is_valid(map_path)
 
         return True
+
+
+class WaveylinesLookup(BsbGdalMixLookup):
+    """Lookup information using information coded in file names"""
+
+    def __init__(self):
+        super(WaveylinesLookup, self).__init__()
+        ovr_dir = os.path.join(os.path.dirname(__file__), 'wl_overrides')
+        self.overrides = {}
+        for ea in os.listdir(ovr_dir):
+            with open(os.path.join(ovr_dir, ea), 'r') as f:
+                name = ea[:-4]
+                outline = ''
+                for ea_c in f.readlines():
+                    outline += ea_c.strip() + ':'
+                outline = outline[:-1]
+                self.overrides[name] = outline
+
+        self.bsb_lookup = BsbLookup()
+
+    def get_depth_units(self, map_path):
+        if self._is_bsb(map_path):
+            return self.bsb_lookup.get_depth_units(map_path)
+
+        return 'Meters'

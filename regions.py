@@ -155,7 +155,7 @@ def map_list_for_region(region):
             mps = MapPathSearch(config.linz_bsb_dir, [map_type_for_region(region)])
             return mps.file_paths
         elif provider is provider_brazil:
-            mps = MapPathSearch(config.brazil_bsb_dir, [map_type_for_region(region)])
+            mps = MapPathSearch(config.brazil_bsb_dir, [map_type_geotiff, map_type_bsb])
             return mps.file_paths
         elif provider is provider_wavey_lines:
             file_name_sanitizer.sanitize(config.wavey_line_geotiff_dir)
@@ -189,6 +189,8 @@ def lookup_for_region(region):
         return lookups.UKHOLookup()
     elif provider is provider_wavey_lines:
         return lookups.WaveylinesLookup()
+    elif provider is provider_brazil:
+        return lookups.BsbGdalMixLookup()
     else:
         return lookups.BsbLookup()
 
