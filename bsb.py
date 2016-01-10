@@ -16,7 +16,7 @@ from re import sub
 import findzoom
 
 
-class BsbHeader():
+class BsbHeader:
     def __init__(self, map_path):
         self.map_path = map_path
         self.updated = None

@@ -62,6 +62,8 @@ gdal.AllRegister()
 mem_driver = gdal.GetDriverByName('MEM')
 png_driver = gdal.GetDriverByName('PNG')
 
+log_on = logger.OFF
+
 resampling = 'average'
 # near:
 # nearest neighbour resampling (default, fastest algorithm, worst interpolation quality).
@@ -93,7 +95,7 @@ def _cleanup_tmp_vrt_stack(vrt_stack):
     """
     for i in range(1, len(vrt_stack), 1):
         os.remove(vrt_stack[i])
-        logger.log(logger.OFF, 'deleting temp file:', vrt_stack[i])
+        logger.log(log_on, 'deleting temp file:', vrt_stack[i])
 
 
 def stack_peek(vrt_stack):
@@ -134,7 +136,7 @@ def build_tile_vrt_for_map(map_path, cutline=None):
 
     # -----if map has a palette create vrt with expanded rgba
     if gdalds.dataset_has_color_palette(dataset):
-        logger.log(logger.OFF, 'dataset has color palette')
+        logger.log(log_on, 'dataset has color palette')
         c_vrt_path = os.path.join(base_dir, map_name + '_c.vrt')
         if os.path.isfile(c_vrt_path):
             os.remove(c_vrt_path)
@@ -143,16 +145,16 @@ def build_tile_vrt_for_map(map_path, cutline=None):
         command = "gdal_translate -of vrt -expand rgba \'%s\' \'%s\'" % (map_path, c_vrt_path)
         subprocess.Popen(shlex.split(command), stdout=log).wait()
 
-        logger.log(logger.OFF, 'creating c_vrt with command', command)
+        logger.log(log_on, 'creating c_vrt with command', command)
 
         del dataset
         dataset = gdal.Open(c_vrt_path, gdal.GA_ReadOnly)
 
-        logger.log(logger.OFF, 'openning dataset')
+        logger.log(log_on, 'openning dataset')
 
         map_stack.append(c_vrt_path)
         # except BaseException as e:
-        #     logger.log(logger.OFF, e)
+        #     logger.log(log_on, e)
 
     # -----repoject map to tilesystem projection, crop to cutline
     w_vrt_path = os.path.join(base_dir, map_name + '.vrt')
@@ -163,7 +165,7 @@ def build_tile_vrt_for_map(map_path, cutline=None):
 
     command = ['gdalwarp', '-of', 'vrt', '-r', resampling, '-t_srs', epsg_900913]
 
-    # logger.log(logger.OFF, 'using ply overrides', use_ply_overrides)
+    # logger.log(log_on, 'using ply overrides', use_ply_overrides)
     # if use_ply_overrides:
     #     override = overrides.get_poly_override(map_path)
     #     if override is not None:
@@ -189,20 +191,20 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
        if out_dir is None or not a directory, tiles placed in map_stack, map directory
     """
 
-    logger.log(logger.OFF, '_render_tmp_vrt_stack_for_map: out_dir = ' + out_dir + ', zoom = ' + zoom)
+    logger.log(log_on, '_render_tmp_vrt_stack_for_map: out_dir = ' + out_dir + ', zoom = ' + zoom)
 
     # elif verify.verify_tile_dir(out_dir):
-    #    logger.log(logger.OFF, 'skipping: ' + out_dir
+    #    logger.log(log_on, 'skipping: ' + out_dir
     #    return
 
-    logger.log(logger.OFF, 'tile out dir:', out_dir)
+    logger.log(log_on, 'tile out dir:', out_dir)
 
     map_path = stack_peek(map_stack)
 
     ds = gdal.Open(map_path, gdal.GA_ReadOnly)
 
     if ds is None:
-        logger.log(logger.OFF, 'unable to open', map_path)
+        logger.log(log_on, 'unable to open', map_path)
         return
 
     zoom_level = int(zoom)
@@ -228,10 +230,10 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
     geotransform = gdalds.get_geo_transform(ds)
     _success, inv_transform = gdal.InvGeoTransform(geotransform)
 
-    logger.log(logger.OFF, 'west east', tile_west, tile_east)
+    logger.log(log_on, 'west east', tile_west, tile_east)
 
     if tile_west > tile_east:  # dateline wrap
-        logger.log(logger.OFF, 'wrapping tile to dateline')
+        logger.log(log_on, 'wrapping tile to dateline')
         _cut_tiles_in_range(0, tile_west, tile_south, tile_north, transform,
                             inv_transform, zoom_level, out_dir, ds)
         _cut_tiles_in_range(tile_east, tilesystem.map_size_tiles(zoom_level),
@@ -278,7 +280,7 @@ def _scale_tile(tile_dir, z, x, y):
             if i == 3:
                 yoff += m_tile_size
             if in_tile_path is not None:
-                logger.log(logger.OFF, 'using anti-alias scaled tile')
+                logger.log(log_on, 'using anti-alias scaled tile')
                 im.paste(Image.open(in_tile_path).resize((m_tile_size, m_tile_size), Image.ANTIALIAS), (xoff, yoff))
             i += 1
 
@@ -297,13 +299,13 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
 
         for tile_y in range(tile_min_y, tile_max_y + 1, 1):
             tile_path = os.path.join(tile_dir, '%s.png' % tile_y)
-            logger.log(logger.OFF, tile_path)
+            logger.log(log_on, tile_path)
 
             # logger.debug = True
 
             # skip tile if exists
             if os.path.isfile(tile_path):
-                logger.log(logger.OFF, 'skipping tile that exists', tile_path)
+                logger.log(log_on, 'skipping tile that exists', tile_path)
                 continue
 
             # we can continue if the upper zoom exists even if _scale_tile returns false
@@ -312,10 +314,10 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
 
             # attempt to create tile from existing lower zoom tile
             if _scale_tile(out_dir, zoom_level, tile_x, tile_y) or upper_zoom_exists:
-                logger.log(logger.OFF, 'scaled tile', tile_path)
+                logger.log(log_on, 'scaled tile', tile_path)
                 continue
 
-            logger.log(logger.OFF, 'creating tile', tile_path)
+            logger.log(log_on, 'creating tile', tile_path)
 
             # logger.debug = False
 
@@ -331,13 +333,13 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             ds_pxx = int(inv_transform[0] + inv_transform[1] * geo_x + inv_transform[2] * geo_y)
             ds_pyy = int(inv_transform[3] + inv_transform[4] * geo_x + inv_transform[5] * geo_y)
 
-            logger.log(logger.OFF, 'ds_px, ds_py is the datset coordinate of tile (upper left)')
-            logger.log(logger.OFF, 'ds_px', ds_px, 'ds_py', ds_py)
-            logger.log(logger.OFF, 'ds_pxx, ds_pyy is the datset coordinate of tile (lower right)')
-            logger.log(logger.OFF, 'ds_pxx', ds_pxx, 'ds_pyy', ds_pyy)
-            logger.log(logger.OFF, 'lat lng', lat, lng)
-            logger.log(logger.OFF, 'geo', geo_x, geo_y)
-            logger.log(logger.OFF, 'raster actual size x y', ds.RasterXSize, ds.RasterYSize)
+            logger.log(log_on, 'ds_px, ds_py is the datset coordinate of tile (upper left)')
+            logger.log(log_on, 'ds_px', ds_px, 'ds_py', ds_py)
+            logger.log(log_on, 'ds_pxx, ds_pyy is the datset coordinate of tile (lower right)')
+            logger.log(log_on, 'ds_pxx', ds_pxx, 'ds_pyy', ds_pyy)
+            logger.log(log_on, 'lat lng', lat, lng)
+            logger.log(log_on, 'geo', geo_x, geo_y)
+            logger.log(log_on, 'raster actual size x y', ds.RasterXSize, ds.RasterYSize)
 
             ds_px_clip = tilesystem.clip(ds_px, 0, ds.RasterXSize)
             ds_pxx_clip = tilesystem.clip(ds_pxx, 0, ds.RasterXSize)
@@ -350,13 +352,13 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             if x_size_clip <= 0 or y_size_clip <= 0:
                 continue
 
-            logger.log(logger.OFF, 'ds_px_clip', ds_px_clip)
-            logger.log(logger.OFF, 'ds_py_clip', ds_py_clip)
-            logger.log(logger.OFF, 'x_size_clip', x_size_clip)
-            logger.log(logger.OFF, 'y_size_clip', y_size_clip)
-            logger.log(logger.OFF, '-----------------------------')
+            logger.log(log_on, 'ds_px_clip', ds_px_clip)
+            logger.log(log_on, 'ds_py_clip', ds_py_clip)
+            logger.log(log_on, 'x_size_clip', x_size_clip)
+            logger.log(log_on, 'y_size_clip', y_size_clip)
+            logger.log(log_on, '-----------------------------')
 
-            logger.log(logger.OFF, 'reading dataset')
+            logger.log(log_on, 'reading dataset')
             data = ds.ReadRaster(int(ds_px_clip), int(ds_py_clip), int(x_size_clip), int(y_size_clip))
 
             transparent = True
@@ -370,16 +372,16 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             if not transparent:
                 x_size = ds_pxx - ds_px
                 y_size = ds_pyy - ds_py
-                logger.log(logger.OFF, 'x_size', x_size)
-                logger.log(logger.OFF, 'y_size', y_size)
+                logger.log(log_on, 'x_size', x_size)
+                logger.log(log_on, 'y_size', y_size)
 
                 if not os.path.isdir(tile_dir):
                     os.makedirs(tile_dir)
 
-                logger.log(logger.OFF, 'ds_pxx', ds_pxx)
-                logger.log(logger.OFF, 'ds_pxx_clip', ds_pxx_clip)
-                logger.log(logger.OFF, 'ds_pyy', ds_pyy)
-                logger.log(logger.OFF, 'ds_pyy_clip', ds_pyy_clip)
+                logger.log(log_on, 'ds_pxx', ds_pxx)
+                logger.log(log_on, 'ds_pxx_clip', ds_pxx_clip)
+                logger.log(log_on, 'ds_pyy', ds_pyy)
+                logger.log(log_on, 'ds_pyy_clip', ds_pyy_clip)
 
                 if ds_pxx == ds_pxx_clip:
                     xoff = x_size - x_size_clip
@@ -394,36 +396,36 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
                 else:
                     yoff = 0
 
-                logger.log(logger.OFF, 'xoff', xoff)
-                logger.log(logger.OFF, 'yoff', yoff)
+                logger.log(log_on, 'xoff', xoff)
+                logger.log(log_on, 'yoff', yoff)
                 tile_bands = ds.RasterCount + 1
 
-                logger.log(logger.OFF, 'create mem window')
+                logger.log(log_on, 'create mem window')
                 tmp = mem_driver.Create('', int(x_size), int(y_size), bands=ds.RasterCount)
 
-                logger.log(logger.OFF, 'write mem window')
+                logger.log(log_on, 'write mem window')
                 tmp.WriteRaster(int(xoff), int(yoff), int(x_size_clip), int(y_size_clip), data,
                                 band_list=range(1, tile_bands))
 
-                logger.log(logger.OFF, 'create mem tile')
+                logger.log(log_on, 'create mem tile')
                 tile = mem_driver.Create('', tilesystem.tile_size, tilesystem.tile_size, bands=ds.RasterCount)
 
                 scaling_up = int(x_size) < tilesystem.tile_size or int(y_size) < tilesystem.tile_size
 
                 # check if we're scaling image up
                 if scaling_up:
-                    logger.log(logger.OFF, 'scaling up')
+                    logger.log(log_on, 'scaling up')
                     tmp.SetGeoTransform((0.0, tilesystem.tile_size / float(x_size), 0.0,
                                          0.0, 0.0, tilesystem.tile_size / float(y_size)))
                     tile.SetGeoTransform((0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
                     gdal.ReprojectImage(tmp, tile, None, None, gdal_resampling)
                 # or scaling image down
                 else:
-                    logger.log(logger.OFF, 'scaling down')
+                    logger.log(log_on, 'scaling down')
                     for i in range(1, ds.RasterCount + 1):
                         gdal.RegenerateOverview(tmp.GetRasterBand(i), tile.GetRasterBand(i), resampling)
 
-                logger.log(logger.OFF, 'write to file')
+                logger.log(log_on, 'write to file')
                 png_driver.CreateCopy(tile_path, tile, strict=0)
 
                 del data
@@ -454,7 +456,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
 
     # ---- if we are only rendering 1 zoom level, over-shoot by one so we can scale down with anti-aliasing
     single_z_mode = config.use_single_zoom_over_zoom and stop_zoom == start_zoom
-    logger.log(logger.OFF, 'single zoom mode', single_z_mode)
+    logger.log(log_on, 'single zoom mode', single_z_mode)
     if single_z_mode:
         stop_zoom += 1
 
@@ -463,19 +465,19 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
     if single_z_mode:
         stop_zoom -= 1
 
-    logger.log(logger.OFF, 'zoom range', zoom_range)
+    logger.log(log_on, 'zoom range', zoom_range)
 
-    logger.log(logger.OFF, 'out_dir', out_dir)
+    logger.log(log_on, 'out_dir', out_dir)
 
     try:
         # Mxmcc tiler
         for z in zoom_range:
-            logger.log(logger.OFF, 'rendering map_stack peek')
+            logger.log(log_on, 'rendering map_stack peek')
             _render_tmp_vrt_stack_for_map(map_stack, str(z), out_dir)
 
         if single_z_mode:
             oz_dir = os.path.join(out_dir, str(stop_zoom + 1))
-            logger.log(logger.OFF, 'removing overzoom dir: ', oz_dir)
+            logger.log(log_on, 'removing overzoom dir: ', oz_dir)
             shutil.rmtree(oz_dir)
 
         ds = gdal.Open(map_path, gdal.GA_ReadOnly)
@@ -498,7 +500,7 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
             'scheme': 'xyz'
         }
 
-        logger.log(logger.OFF, 'writing tile json', tilejson_tilemap)
+        logger.log(log_on, 'writing tile json', tilejson_tilemap)
 
         write_tilejson_tilemap(out_dir, tilejson_tilemap)
 
@@ -506,14 +508,14 @@ def build_tiles_for_map(kap, map_path, start_zoom, stop_zoom, cutline=None, out_
 
     except BaseException as e:
         traceback.print_exc()
-        logger.log(logger.OFF, str(e))
+        logger.log(log_on, str(e))
 
     _cleanup_tmp_vrt_stack(map_stack)
 
 
 def write_tilejson_tilemap(dst_dir, tilemap):
     f = os.path.join(dst_dir, 'metadata.json')
-    logger.log(logger.OFF, "writing ", f)
+    logger.log(log_on, "writing ", f)
     if os.path.exists(f):
         os.remove(f)
     with open(f, 'w') as f:
@@ -540,7 +542,7 @@ def _build_tiles_for_map_helper(entry, name):
 
     except BaseException as e:
         traceback.print_exc()
-        logger.log(logger.OFF, e)
+        logger.log(log_on, e)
 
 
 def build_tiles_for_catalog(catalog_name):
@@ -555,3 +557,11 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
+# if __name__ == '__main__':
+#     out_dir = "D:/test"
+#     map_path = "D:/mxmcc/charts/linz/NZ4432/NZ443202.KAP"
+#     import bsb
+#     header = bsb.BsbHeader(map_path)
+#     print header.get_base_filename()
+#     build_tiles_for_map(kap=header.get_base_filename(), map_path=map_path, start_zoom=header.get_zoom(),
+#                         stop_zoom=header.get_zoom(), cutline=header.get_outline(), out_dir=out_dir)
