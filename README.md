@@ -22,9 +22,9 @@ requirements:
 
 * pyproj
 
-* shapely
+* shapely http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely
 
-* gdal
+* gdal http://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal
 
 * pillow
 
