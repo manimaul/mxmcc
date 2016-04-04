@@ -22,9 +22,11 @@ requirements:
 
 * pyproj
 
-* shapely http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely
+* [shapely](http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely)
+Windows: `pip install C:/some-dir/some-file.whl`
 
-* gdal http://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal
+* [gdal](http://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal)
+Version 1.x (2.x not currently compatible)
 
 * pillow
 

@@ -38,9 +38,9 @@ _root_dir = os.path.join('D:\\', 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Dec 2015.xls'
-ukho_source_breakdown = 'Raster Source Data Q1 2016 (Standard Version).xls'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Dec 2015.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts April 2016.xls'
+ukho_source_breakdown = 'Raster source information (Standard Version) Q2 2016.xls'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts April 2016.xls'
 ukho_chart_dpi = 127
 
 ######################################################################
