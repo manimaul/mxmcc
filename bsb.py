@@ -175,3 +175,10 @@ class BsbHeader:
     def print_header(self):
         for line in self.lines:
             print line.strip()
+
+            # if __name__ == '__main__':
+            #     import os
+            #
+            #     p = 'D:\\mxmcc\\charts\\linz\\BSB_ROOT\\NZ5312\NZ531201.KAP'
+            #     bsbHeader = BsbHeader(p)
+            #     bsbHeader.print_header()
