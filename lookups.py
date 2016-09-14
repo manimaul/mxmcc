@@ -105,7 +105,40 @@ class UKHOLookup(Lookup):
         return findzoom.get_zoom_from_true_scale(true_scale)
 
 
-class BsbGdalMixLookup(Lookup):
+class GdalGeoTiffLookup(Lookup):
+    """Lookup information using information coded in file names"""
+    def __init__(self):
+        super(GdalGeoTiffLookup, self).__init__()
+
+    def get_name(self, map_path):
+        return os.path.basename(map_path)[:-4]
+
+    def get_zoom(self, map_path):
+        return findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) + 1
+
+    def get_scale(self, map_path):
+        data_set = gdalds.get_ro_dataset(map_path)
+        return int(gdalds.get_true_scale(data_set, 400))
+
+    def get_updated(self, map_path):
+        return datetime.datetime.now().strftime('%b-%d-%Y')
+
+    def get_depth_units(self, map_path):
+        return 'None'
+
+    def get_outline(self, map_path):
+        return self.get_outline_bounds(map_path)
+
+    @staticmethod
+    def get_outline_bounds(map_path):
+        data_set = gdalds.get_ro_dataset(map_path)
+        return gdalds.dataset_lat_lng_bounds_as_cutline(data_set)
+
+    def get_is_valid(self, map_path):
+        return True
+
+
+class BsbGdalMixLookup(GdalGeoTiffLookup):
     """Lookup information using information coded in file names"""
     def __init__(self):
         super(BsbGdalMixLookup, self).__init__()
@@ -118,26 +151,25 @@ class BsbGdalMixLookup(Lookup):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_name(map_path)
 
-        return os.path.basename(map_path)[:-4]
+        return super(BsbGdalMixLookup, self).get_name(map_path)
 
     def get_zoom(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_zoom(map_path)
 
-        return findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) + 1
+        return super(BsbGdalMixLookup, self).get_zoom(map_path)
 
     def get_scale(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_scale(map_path)
 
-        data_set = gdalds.get_ro_dataset(map_path)
-        return int(gdalds.get_true_scale(data_set, 400))
+        return super(BsbGdalMixLookup, self).get_scale(map_path)
 
     def get_updated(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_updated(map_path)
 
-        return datetime.datetime.now().strftime('%b-%d-%Y')
+        return super(BsbGdalMixLookup, self).get_updated(map_path)
 
     def get_depth_units(self, map_path):
         if self._is_bsb(map_path):
@@ -149,17 +181,13 @@ class BsbGdalMixLookup(Lookup):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_outline(map_path)
 
-        return self.get_outline_bounds(map_path)
-
-    def get_outline_bounds(self, map_path):
-        data_set = gdalds.get_ro_dataset(map_path)
-        return gdalds.dataset_lat_lng_bounds_as_cutline(data_set)
+        return super(BsbGdalMixLookup, self).get_outline(map_path)
 
     def get_is_valid(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_is_valid(map_path)
 
-        return True
+        return super(BsbGdalMixLookup, self).get_is_valid(map_path)
 
 
 class WaveylinesLookup(BsbGdalMixLookup):

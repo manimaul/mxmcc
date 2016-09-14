@@ -23,12 +23,12 @@ import time
 # EDIT THIS SECTION ONLY##############################################
 ######################################################################
 
-# png_nq_binary = 'pngnq'
-png_nq_binary = 'C:\\pngnq\\pngnqi.exe'
+png_nq_binary = 'pngnq'
+# png_nq_binary = 'C:\\pngnq\\pngnqi.exe'
 
 # InputOutput directory
-# _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-_root_dir = os.path.join('D:\\', 'mxmcc')
+_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
+# _root_dir = os.path.join('D:\\', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
 
@@ -54,6 +54,7 @@ map_dir = os.path.join(_root_dir, 'charts')
 brazil_bsb_dir = os.path.join(map_dir, 'brazil')
 linz_bsb_dir = os.path.join(map_dir, 'linz')
 noaa_bsb_dir = os.path.join(map_dir, 'noaa')
+faa_geotiff_dir = os.path.join(map_dir, 'faa')
 ukho_geotiff_dir = os.path.join(map_dir, 'ukho/geotiff')
 ukho_dup_dir = os.path.join(map_dir, 'ukho/duplicates')
 ukho_png_dir = os.path.join(map_dir, 'ukho/png')
@@ -100,6 +101,7 @@ _all_dirs = [_root_dir,
              linz_bsb_dir,
              brazil_bsb_dir,
              ukho_geotiff_dir,
+             faa_geotiff_dir,
              ukho_dup_dir,
              ukho_png_dir,
              wavey_line_geotiff_dir,

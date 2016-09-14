@@ -39,13 +39,28 @@ class OrderedEnum(Enum):
 
 
 class CheckPoint(OrderedEnum):
-    CHECKPOINT_NOT_STARTED, CHECKPOINT_CATALOG, CHECKPOINT_TILE_VERIFY, CHECKPOINT_MERGE, CHECKPOINT_OPT, \
-    CHECKPOINT_ENCRYPTED, CHECKPOINT_ARCHIVE, CHECKPOINT_METADATA, CHECKPOINT_PUBLISHED = range(9)
+    CHECKPOINT_NOT_STARTED, \
+    CHECKPOINT_CATALOG, \
+    CHECKPOINT_TILE_VERIFY, \
+    CHECKPOINT_MERGE, \
+    CHECKPOINT_OPT, \
+    CHECKPOINT_ENCRYPTED, \
+    CHECKPOINT_ARCHIVE, \
+    CHECKPOINT_METADATA, \
+    CHECKPOINT_PUBLISHED = range(9)
 
     @classmethod
-    def from_string(cls, str_value):
-        str_value = str_value[str_value.find('.') + 1:]
-        return getattr(cls, str_value, CheckPoint.CHECKPOINT_NOT_STARTED)
+    def fromstring(cls, str):
+        return getattr(cls, str.upper(), CheckPoint.CHECKPOINT_NOT_STARTED)
+
+    @classmethod
+    def tostring(cls, val):
+        for k, v in vars(cls).iteritems():
+            if v == val:
+                return k
+
+    def __str__(self):
+        return CheckPoint.tostring(self)
 
 
 class CheckPointStore:
@@ -62,10 +77,10 @@ class CheckPointStore:
         lines = store.readlines()
         if len(lines) > 0:
             for ea in lines:
-                values = ea.strip().split('\t')
-                if len(values) is 3:
+                values = ea.strip().split(':::')
+                if len(values) == 3:
                     r, p, c = values
-                    self._set_checkpoint_internal(r, p, CheckPoint.from_string(c))
+                    self._set_checkpoint_internal(r, p, CheckPoint.fromstring(c))
 
         store.close()
         self._commit()
@@ -92,5 +107,6 @@ class CheckPointStore:
         store = open(self._p_path, 'w+')
         for region in self.checkpoints:
             for profile in self.checkpoints[region]:
-                store.write('%s\t%s\t%s\n' % (region, profile, self.checkpoints[region][profile]))
+                cp = CheckPoint.tostring(self.checkpoints[region][profile])
+                store.write('{}:::{}:::{}\n'.format(region, profile, cp))
         store.close()

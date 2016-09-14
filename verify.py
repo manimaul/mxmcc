@@ -167,7 +167,7 @@ def verify(region_lst):
         print '------------------------------'
 
 
-# if __name__ == '__main__':
-#     # import regions
-#     # verify(regions._db.db['noaa'].keys())
-#     verify(['REGION_03', 'REGION_30'])
+if __name__ == '__main__':
+    # import regions
+    # verify(regions._db.db['noaa'].keys())
+    verify(['REGION_FAA'])

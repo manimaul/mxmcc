@@ -73,7 +73,8 @@ map_type_bsb = 'kap'
 map_type_geotiff = 'tif'
 
 # Providers
-privider_noaa = 'noaa'
+provider_noaa = 'noaa'
+provider_faa = 'faa'
 provider_brazil = 'brazil'
 provider_linz = 'linz'
 provider_ukho = 'ukho'
@@ -83,28 +84,28 @@ provider_wavey_lines = 'wavey-lines'
 _db = _RegionDatabase()
 
 # US - NOAA
-_db.add_provider(privider_noaa, config.noaa_bsb_dir)
-_db.add_region(privider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_03', 'New York to Nantucket and Cape May NJ', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_04', 'Chesapeake and Delaware Bays', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_06', 'Norfolk VA to Florida including the ICW', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_07', 'Florida East Coast and the Keys', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_08', 'Florida West Coast and the Keys', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_10', 'Puerto Rico and the U.S. Virgin Islands', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_12', 'Southern California, Point Arena to the Mexican Border', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_13', 'Lake Michigan', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_14', 'San Francisco to Cape Flattery', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_15', 'Pacific Northwest, Puget Sound to the Canadian Border', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_17', 'Mobile AL to the Mexican Border', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_22', 'Lake Superior and Lake Huron (U.S. Waters)', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_24', 'Lake Erie (U.S. Waters)', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_26', 'Lake Ontario (U.S. Waters)', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_30', 'Southeast Alaska', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_32', 'South Central Alaska, Yakutat to Kodiak', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_34', 'Alaska, The Aleutians and Bristol Bay', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_36', 'Alaska, Norton Sound to Beaufort Sea', map_type_bsb)
-_db.add_region(privider_noaa, 'REGION_40', 'Hawaiian Islands and U.S. Territories', map_type_bsb)
+_db.add_provider(provider_noaa, config.noaa_bsb_dir)
+_db.add_region(provider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_03', 'New York to Nantucket and Cape May NJ', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_04', 'Chesapeake and Delaware Bays', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_06', 'Norfolk VA to Florida including the ICW', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_07', 'Florida East Coast and the Keys', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_08', 'Florida West Coast and the Keys', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_10', 'Puerto Rico and the U.S. Virgin Islands', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_12', 'Southern California, Point Arena to the Mexican Border', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_13', 'Lake Michigan', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_14', 'San Francisco to Cape Flattery', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_15', 'Pacific Northwest, Puget Sound to the Canadian Border', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_17', 'Mobile AL to the Mexican Border', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_22', 'Lake Superior and Lake Huron (U.S. Waters)', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_24', 'Lake Erie (U.S. Waters)', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_26', 'Lake Ontario (U.S. Waters)', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_30', 'Southeast Alaska', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_32', 'South Central Alaska, Yakutat to Kodiak', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_34', 'Alaska, The Aleutians and Bristol Bay', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_36', 'Alaska, Norton Sound to Beaufort Sea', map_type_bsb)
+_db.add_region(provider_noaa, 'REGION_40', 'Hawaiian Islands and U.S. Territories', map_type_bsb)
 
 # BRAZIL NAVY
 _db.add_provider(provider_brazil, config.brazil_bsb_dir)
@@ -127,6 +128,10 @@ _db.add_provider(provider_wavey_lines, config.wavey_line_geotiff_dir)
 _db.add_region(provider_wavey_lines, REGION_WL1, 'Caribbean West Florida and Bahamas to Long Island', map_type_geotiff)
 _db.add_region(provider_wavey_lines, REGION_WL2, 'Caribbean East Turks And Caicos Islands Crooked Island to Dominican Republic', map_type_geotiff)
 
+# FAA
+_db.add_provider(provider_faa, config.faa_geotiff_dir)
+_db.add_region(provider_faa, 'REGION_FAA', 'FAA VFR Sectional charts', map_type_geotiff)
+
 
 def description_for_region(region):
     """returns the description for region defined in regions.py"""
@@ -147,20 +152,20 @@ def map_list_for_region(region):
     provider = _db.provider_for_region(region)
     region = region.upper()
     if _db.provider_has_region(provider, region):
-        if provider is privider_noaa:
+        if provider == provider_noaa:
             reader = NoaaXmlReader(region)
             mps = MapPathSearch(config.noaa_bsb_dir, [map_type_for_region(region)], reader.get_map_files())
             return mps.file_paths
-        elif provider is provider_linz:
+        elif provider == provider_linz:
             mps = MapPathSearch(config.linz_bsb_dir, [map_type_for_region(region)])
             return mps.file_paths
-        elif provider is provider_brazil:
+        elif provider == provider_brazil:
             mps = MapPathSearch(config.brazil_bsb_dir, [map_type_geotiff, map_type_bsb])
             return mps.file_paths
-        elif provider is provider_wavey_lines:
+        elif provider == provider_wavey_lines:
             file_name_sanitizer.sanitize(config.wavey_line_geotiff_dir)
             return wl_filter_list_generator.get_file_list_region_dictionary()[region]
-        elif provider is provider_ukho:
+        elif provider == provider_ukho:
             region_txt = os.path.join(config.ukho_meta_dir, region.upper() + '.txt')
             paths = []
             with open(region_txt, 'r') as manifest:
@@ -176,6 +181,9 @@ def map_list_for_region(region):
                             raise Exception('path not found for chart: ' + p)
 
             return paths
+        elif provider == provider_faa:
+            mps = MapPathSearch(config.faa_geotiff_dir, [map_type_for_region(region)])
+            return mps.file_paths
         else:
             raise Exception('unknown region')
 
@@ -185,12 +193,14 @@ def lookup_for_region(region):
        see lookups.py which are used to build the region's catalog
     """
     provider = _db.provider_for_region(region)
-    if provider is provider_ukho:
+    if provider == provider_ukho:
         return lookups.UKHOLookup()
-    elif provider is provider_wavey_lines:
+    elif provider == provider_wavey_lines:
         return lookups.WaveylinesLookup()
-    elif provider is provider_brazil:
+    elif provider == provider_brazil:
         return lookups.BsbGdalMixLookup()
+    elif provider == provider_faa:
+        return lookups.GdalGeoTiffLookup()
     else:
         return lookups.BsbLookup()
 

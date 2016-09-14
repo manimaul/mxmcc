@@ -534,7 +534,7 @@ def _build_tiles_for_map_helper(entry, name):
     """
     try:
         m_name = os.path.basename(entry['path'])
-        out_dir = os.path.join(config.unmerged_tile_dir, name, m_name[0:m_name.find('.')])
+        out_dir = os.path.join(config.unmerged_tile_dir, name, m_name[0:m_name.rfind('.')])
         m_path = entry['path']
         m_zoom = int(entry['zoom'])
         m_outline = entry['outline']
