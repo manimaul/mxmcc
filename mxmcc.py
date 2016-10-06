@@ -210,30 +210,18 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    region = 'REGION_FAA'
-    compile_region(region, profile=PROFILE_MB_C, perform_clean=False)
-
-    # region_charts_dir = os.path.join(config.unmerged_tile_dir, 'REGION_FAA')
-    # for chart in os.listdir(region_charts_dir):
-    #     print 'archiving mbtiles for chart:', chart
-    #     chart_dir = os.path.join(region_charts_dir, chart)
-    #     mbtiles_file = os.path.join(config.compiled_dir, chart + '.mbtiles')
-    #     if os.path.isfile(mbtiles_file):
-    #         os.remove(mbtiles_file)
-    #     mb.disk_to_mbtiles(chart_dir, mbtiles_file, format='png', scheme='xyz')
-
-    # if config.check_dirs():
-    #     args = sys.argv
-    #     if len(args) < 2:
-    #         print_usage()
-    #     else:
-    #         rgn = args[1]
-    #         if len(args) >= 3:
-    #             prof = args[2]
-    #         else:
-    #             prof = PROFILE_MX_R
-    #         compile_region(rgn, prof)
-    # else:
-    #     print 'Your mxmcc directory structure is not ready\n' + \
-    #           'Please edit the top portion of config.py, run config.py,\n' + \
-    #           'and place charts in their corresponding directories.'
+    if config.check_dirs():
+        args = sys.argv
+        if len(args) < 2:
+            print_usage()
+        else:
+            rgn = args[1]
+            if len(args) >= 3:
+                prof = args[2]
+            else:
+                prof = PROFILE_MX_R
+            compile_region(rgn, prof)
+    else:
+        print 'Your mxmcc directory structure is not ready\n' + \
+              'Please edit the top portion of config.py, run config.py,\n' + \
+              'and place charts in their corresponding directories.'
