@@ -27,7 +27,8 @@ png_nq_binary = 'pngnq'
 # png_nq_binary = 'C:\\pngnq\\pngnqi.exe'
 
 # InputOutput directory
-_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
+# _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
+_root_dir = os.path.join('/Volumes/USB_DATA', 'mxmcc')
 # _root_dir = os.path.join('D:\\', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')

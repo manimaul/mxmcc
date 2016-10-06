@@ -61,7 +61,10 @@ class Lookup(object):
     def get_name(self, map_path):
         return self._get(map_path).get_name()
 
-    def get_zoom(self, map_path):
+    def get_min_zoom(self, map_path):
+        return self._get(map_path).get_zoom()
+
+    def get_max_zoom(self, map_path):
         return self._get(map_path).get_zoom()
 
     def get_scale(self, map_path):
@@ -99,10 +102,13 @@ class UKHOLookup(Lookup):
     def _get(self, map_path):
         return self.meta_lookup.get_data(map_path)
 
-    def get_zoom(self, map_path):
+    def get_min_zoom(self, map_path):
         data_set = gdalds.get_ro_dataset(map_path)
         true_scale = gdalds.get_true_scale(data_set, config.ukho_chart_dpi)
         return findzoom.get_zoom_from_true_scale(true_scale)
+
+    def get_max_zoom(self, map_path):
+        return self.get_min_zoom(map_path)
 
 
 class GdalGeoTiffLookup(Lookup):
@@ -113,7 +119,10 @@ class GdalGeoTiffLookup(Lookup):
     def get_name(self, map_path):
         return os.path.basename(map_path)[:-4]
 
-    def get_zoom(self, map_path):
+    def get_min_zoom(self, map_path):
+        return findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) + 1
+
+    def get_max_zoom(self, map_path):
         return findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) + 1
 
     def get_scale(self, map_path):
@@ -153,11 +162,14 @@ class BsbGdalMixLookup(GdalGeoTiffLookup):
 
         return super(BsbGdalMixLookup, self).get_name(map_path)
 
-    def get_zoom(self, map_path):
+    def get_min_zoom(self, map_path):
         if self._is_bsb(map_path):
             return self.bsb_lookup.get_zoom(map_path)
 
         return super(BsbGdalMixLookup, self).get_zoom(map_path)
+
+    def get_max_zoom(self, map_path):
+        return self.get_min_zoom(map_path)
 
     def get_scale(self, map_path):
         if self._is_bsb(map_path):
@@ -188,6 +200,11 @@ class BsbGdalMixLookup(GdalGeoTiffLookup):
             return self.bsb_lookup.get_is_valid(map_path)
 
         return super(BsbGdalMixLookup, self).get_is_valid(map_path)
+
+
+class FAALookup(GdalGeoTiffLookup):
+    def get_min_zoom(self, map_path):
+        return max(0, (super(FAALookup, self).get_min_zoom(map_path) - 8))
 
 
 class WaveylinesLookup(BsbGdalMixLookup):

@@ -536,9 +536,10 @@ def _build_tiles_for_map_helper(entry, name):
         m_name = os.path.basename(entry['path'])
         out_dir = os.path.join(config.unmerged_tile_dir, name, m_name[0:m_name.rfind('.')])
         m_path = entry['path']
-        m_zoom = int(entry['zoom'])
+        min_zoom = int(entry['min_zoom'])
+        max_zoom = int(entry['max_zoom'])
         m_outline = entry['outline']
-        build_tiles_for_map(m_name, m_path, m_zoom, m_zoom, cutline=m_outline, out_dir=out_dir)
+        build_tiles_for_map(m_name, m_path, min_zoom, max_zoom, cutline=m_outline, out_dir=out_dir)
 
     except BaseException as e:
         traceback.print_exc()

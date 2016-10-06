@@ -24,6 +24,7 @@ import encryption_shim
 import platform
 import os
 import mbutil as mb
+import re
 
 import shutil
 
@@ -32,7 +33,7 @@ PROFILE_MB_C = 'MB_CHARTS'  # renders each chart as mbtiles file
 PROFILE_MB_R = 'MB_REGION'  # renders entire region as mbtiles file
 
 
-def compile_region(region, profile=PROFILE_MX_R):
+def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
     region = region.upper()
     profile = profile.upper()
 
@@ -172,7 +173,8 @@ def compile_region(region, profile=PROFILE_MX_R):
             for chart in os.listdir(region_charts_dir):
                 print 'archiving mbtiles for chart:', chart
                 chart_dir = os.path.join(region_charts_dir, chart)
-                mbtiles_file = os.path.join(config.compiled_dir, chart + '.mbtiles')
+                prefix = re.sub(r'\W+', '_', chart).lower()
+                mbtiles_file = os.path.join(config.compiled_dir, prefix + '.mbtiles')
                 if os.path.isfile(mbtiles_file):
                     os.remove(mbtiles_file)
                 mb.disk_to_mbtiles(chart_dir, mbtiles_file, format='png', scheme='xyz')
@@ -182,7 +184,7 @@ def compile_region(region, profile=PROFILE_MX_R):
             # ----------------------------------------------------------------------------------------------------------
 
     print 'final checkpoint', checkpoint_store.get_checkpoint(region, profile)
-    if checkpoint_store.get_checkpoint(region, profile) > CheckPoint.CHECKPOINT_ENCRYPTED:
+    if perform_clean and checkpoint_store.get_checkpoint(region, profile) > CheckPoint.CHECKPOINT_ENCRYPTED:
         cleanup(region, config.unmerged_tile_dir)
         cleanup(region, config.merged_tile_dir)
 
@@ -192,7 +194,15 @@ def cleanup(region, base_dir):
         if region in ea:
             abs_path = os.path.join(base_dir, ea)
             print 'clean', abs_path
-            shutil.rmtree(abs_path)
+            for root, dirs, files in os.walk(abs_path, topdown=False):
+                for name in files:
+                    p = os.path.join(root, name)
+                    try:
+                        os.remove(p)
+                    except:
+                        print 'failed to delete', p
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
 
 
 def print_usage():
@@ -200,7 +210,18 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    compile_region('REGION_FAA', 'MB_CHARTS')
+    region = 'REGION_FAA'
+    compile_region(region, profile=PROFILE_MB_C, perform_clean=False)
+
+    # region_charts_dir = os.path.join(config.unmerged_tile_dir, 'REGION_FAA')
+    # for chart in os.listdir(region_charts_dir):
+    #     print 'archiving mbtiles for chart:', chart
+    #     chart_dir = os.path.join(region_charts_dir, chart)
+    #     mbtiles_file = os.path.join(config.compiled_dir, chart + '.mbtiles')
+    #     if os.path.isfile(mbtiles_file):
+    #         os.remove(mbtiles_file)
+    #     mb.disk_to_mbtiles(chart_dir, mbtiles_file, format='png', scheme='xyz')
+
     # if config.check_dirs():
     #     args = sys.argv
     #     if len(args) < 2:

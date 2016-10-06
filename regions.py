@@ -200,7 +200,7 @@ def lookup_for_region(region):
     elif provider == provider_brazil:
         return lookups.BsbGdalMixLookup()
     elif provider == provider_faa:
-        return lookups.GdalGeoTiffLookup()
+        return lookups.FAALookup()
     else:
         return lookups.BsbLookup()
 
