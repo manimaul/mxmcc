@@ -30,7 +30,7 @@ max_longitude = 180.
 inches_per_meter = 39.3701
 max_zoom_level = 23
 
-##Following methods adapted from http://msdn.microsoft.com/en-us/library/bb259689.aspx
+# Following methods adapted from http://msdn.microsoft.com/en-us/library/bb259689.aspx
 
 
 def clip(num, min_value, max_value):
@@ -147,8 +147,8 @@ def level_of_detail_for_pixel_size(latitude, pixel_size):
                 return 0  # We don't want to scale up
 
 
-#Following methods adapted from http://www.klokan.cz/projects/gdal2tiles/gdal2tiles.py
-#and changed from TMS pyramid coordinate to ZXY coordinate outputs
+# Following methods adapted from http://www.klokan.cz/projects/gdal2tiles/gdal2tiles.py
+# and changed from TMS pyramid coordinate to ZXY coordinate outputs
 
 def pixels_to_meters(px, py, level_of_detail):
     """
@@ -224,13 +224,13 @@ def lat_lng_bounds_to_pixel_bounds_res((min_lng, max_lat, max_lng, min_lat), lev
         :param level_of_detail: tile system zoom level
         :return: tile system pixel extents and resolution
     """
-    #this seems counter intuitive... tile / pixel 0,0 is top left where as lat long 0,0 is bottom left
+    # this seems counter intuitive... tile / pixel 0,0 is top left where as lat long 0,0 is bottom left
     pixel_west, pixel_north = lat_lng_to_pixel_xy(min_lat, min_lng, int(level_of_detail))
     pixel_east, pixel_south = lat_lng_to_pixel_xy(max_lat, max_lng, int(level_of_detail))
     res_x = pixel_east - pixel_west + 1
     res_y = pixel_north - pixel_south + 1
 
-    #dateline wrap
+    # dateline wrap
     if res_x < 0:
         res_x = (map_size(level_of_detail) - pixel_west) + pixel_east + 2
 
@@ -243,13 +243,13 @@ def lat_lng_bounds_to_tile_bounds_count((min_lng, max_lat, max_lng, min_lat), le
         :param level_of_detail: tile system zoom level
         :return: tile bounding extents and count
     """
-    #this seems counter intuitive... tile / pixel 0,0 is top left where as lat long 0,0 is bottom left
+    # this seems counter intuitive... tile / pixel 0,0 is top left where as lat long 0,0 is bottom left
     tile_west, tile_north = lat_lng_to_tile_xy(min_lat, min_lng, level_of_detail)
     tile_east, tile_south = lat_lng_to_tile_xy(max_lat, max_lng, level_of_detail)
     num_tiles_west_east = tile_east - tile_west + 1
     num_tiles_north_south = tile_north - tile_south + 1
 
-    #dateline wrap
+    # dateline wrap
     if num_tiles_west_east < 0:
         num_tiles_west_east = (map_size_tiles(level_of_detail) - tile_west) + tile_east + 2
 
