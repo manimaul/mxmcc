@@ -55,8 +55,8 @@ def _x_dir_has_tiles(x_dir):
     return False
 
 
-def verify_opt(catalog_name):
-    merged_region_tile_dir = os.path.join(config.merged_tile_dir, catalog_name)
+def verify_opt(catalog_name, base_dir=config.merged_tile_dir):
+    merged_region_tile_dir = os.path.join(base_dir, catalog_name)
     opt_dir = merged_region_tile_dir + ".opt"
     i = 0
     for path, subdirs, files in os.walk(merged_region_tile_dir):

@@ -80,16 +80,16 @@ def _merge_tiles(checkpoint_store, profile, region):
         print 'skipping checkpoint', point
 
 
-def _optimize_tiles(checkpoint_store, profile, region):
+def _optimize_tiles(checkpoint_store, profile, region, base_dir=config.merged_tile_dir):
     # optimize
     point = CheckPoint.CHECKPOINT_OPT
     if checkpoint_store.get_checkpoint(region, profile) < point:
         if platform.system() == 'Windows':
             tiles_opt.set_nothreads()
-        tiles_opt.optimize_dir(os.path.join(config.merged_tile_dir, region))
+        tiles_opt.optimize_dir(os.path.join(base_dir, region))
 
         # verify all optimized tiles are there
-        if not verify.verify_opt(region):
+        if not verify.verify_opt(region, base_dir=base_dir):
             raise Exception(region + ' was not optimized fully')
 
         checkpoint_store.clear_checkpoint(region, profile, point)
@@ -165,7 +165,7 @@ def _create_region_mb_tiles(checkpoint_store, profile, region):
 
 
 def __create_chart_mb_tiles(region):
-    region_charts_dir = os.path.join(config.unmerged_tile_dir, region)
+    region_charts_dir = os.path.join(config.unmerged_tile_dir, region + '.opt')
     for chart in os.listdir(region_charts_dir):
         print 'archiving mbtiles for chart:', chart
         chart_dir = os.path.join(region_charts_dir, chart)
@@ -212,6 +212,7 @@ def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
             _create_region_mb_tiles(checkpoint_store, profile, region)
 
     elif 'CHARTS' in profile and 'MB_' in profile:
+        _optimize_tiles(checkpoint_store, profile, region, base_dir=config.unmerged_tile_dir)
         _create_chart_mb_tiles(checkpoint_store, profile, region)
 
     print 'final checkpoint', checkpoint_store.get_checkpoint(region, profile)
