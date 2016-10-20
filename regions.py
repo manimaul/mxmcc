@@ -85,42 +85,41 @@ _db = _RegionDatabase()
 
 # US - NOAA
 _db.add_provider(provider_noaa, config.noaa_bsb_dir)
-_db.add_region(provider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_02', 'Block Island RI to the Canadian Border', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_03', 'New York to Nantucket and Cape May NJ', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_04', 'Chesapeake and Delaware Bays', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_06', 'Norfolk VA to Florida including the ICW', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_07', 'Florida East Coast and the Keys', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_08', 'Florida West Coast and the Keys', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_10', 'Puerto Rico and the U.S. Virgin Islands', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_12', 'Southern California, Point Arena to the Mexican Border', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_13', 'Lake Michigan', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_14', 'San Francisco to Cape Flattery', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_15', 'Pacific Northwest, Puget Sound to the Canadian Border', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_17', 'Mobile AL to the Mexican Border', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_22', 'Lake Superior and Lake Huron (U.S. Waters)', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_24', 'Lake Erie (U.S. Waters)', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_26', 'Lake Ontario (U.S. Waters)', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_30', 'Southeast Alaska', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_32', 'South Central Alaska, Yakutat to Kodiak', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_34', 'Alaska, The Aleutians and Bristol Bay', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_36', 'Alaska, Norton Sound to Beaufort Sea', map_type_bsb)
-_db.add_region(provider_noaa, 'REGION_40', 'Hawaiian Islands and U.S. Territories', map_type_bsb)
+_db.add_region(provider_noaa, REGION_02, 'Block Island RI to the Canadian Border', map_type_bsb)
+_db.add_region(provider_noaa, REGION_03, 'New York to Nantucket and Cape May NJ', map_type_bsb)
+_db.add_region(provider_noaa, REGION_04, 'Chesapeake and Delaware Bays', map_type_bsb)
+_db.add_region(provider_noaa, REGION_06, 'Norfolk VA to Florida including the ICW', map_type_bsb)
+_db.add_region(provider_noaa, REGION_07, 'Florida East Coast and the Keys', map_type_bsb)
+_db.add_region(provider_noaa, REGION_08, 'Florida West Coast and the Keys', map_type_bsb)
+_db.add_region(provider_noaa, REGION_10, 'Puerto Rico and the U.S. Virgin Islands', map_type_bsb)
+_db.add_region(provider_noaa, REGION_12, 'Southern California, Point Arena to the Mexican Border', map_type_bsb)
+_db.add_region(provider_noaa, REGION_13, 'Lake Michigan', map_type_bsb)
+_db.add_region(provider_noaa, REGION_14, 'San Francisco to Cape Flattery', map_type_bsb)
+_db.add_region(provider_noaa, REGION_15, 'Pacific Northwest, Puget Sound to the Canadian Border', map_type_bsb)
+_db.add_region(provider_noaa, REGION_17, 'Mobile AL to the Mexican Border', map_type_bsb)
+_db.add_region(provider_noaa, REGION_22, 'Lake Superior and Lake Huron (U.S. Waters)', map_type_bsb)
+_db.add_region(provider_noaa, REGION_24, 'Lake Erie (U.S. Waters)', map_type_bsb)
+_db.add_region(provider_noaa, REGION_26, 'Lake Ontario (U.S. Waters)', map_type_bsb)
+_db.add_region(provider_noaa, REGION_30, 'Southeast Alaska', map_type_bsb)
+_db.add_region(provider_noaa, REGION_32, 'South Central Alaska, Yakutat to Kodiak', map_type_bsb)
+_db.add_region(provider_noaa, REGION_34, 'Alaska, The Aleutians and Bristol Bay', map_type_bsb)
+_db.add_region(provider_noaa, REGION_36, 'Alaska, Norton Sound to Beaufort Sea', map_type_bsb)
+_db.add_region(provider_noaa, REGION_40, 'Hawaiian Islands and U.S. Territories', map_type_bsb)
 
 # BRAZIL NAVY
 _db.add_provider(provider_brazil, config.brazil_bsb_dir)
-_db.add_region(provider_brazil, 'REGION_BR', 'Brazil: Guyana to Uruguay', map_type_bsb)
+_db.add_region(provider_brazil, REGION_BR, 'Brazil: Guyana to Uruguay', map_type_bsb)
 
 # New Zealand - LINZ
 _db.add_provider(provider_linz, config.linz_bsb_dir)
-_db.add_region(provider_linz, 'REGION_NZ', 'New Zealand and South Pacific: Samoa to Ross Sea', map_type_bsb)
+_db.add_region(provider_linz, REGION_NZ, 'New Zealand and South Pacific: Samoa to Ross Sea', map_type_bsb)
 
 # United Kingdom - UKHO
 _db.add_provider(provider_ukho, config.ukho_geotiff_dir)
-_db.add_region(provider_ukho, 'REGION_UK1', 'United Kingdom North East Coast to Shetland Islands', map_type_geotiff)
-_db.add_region(provider_ukho, 'REGION_UK2', 'United Kingdom South East Coast and Channel Islands', map_type_geotiff)
-_db.add_region(provider_ukho, 'REGION_UK3', 'United Kingdom North West Coast and Ireland West Coast', map_type_geotiff)
-_db.add_region(provider_ukho, 'REGION_UK4', 'United Kingdom South West Coast and Ireland East Coast - Irish Sea',
+_db.add_region(provider_ukho, REGION_UK1, 'United Kingdom North East Coast to Shetland Islands', map_type_geotiff)
+_db.add_region(provider_ukho, REGION_UK2, 'United Kingdom South East Coast and Channel Islands', map_type_geotiff)
+_db.add_region(provider_ukho, REGION_UK3, 'United Kingdom North West Coast and Ireland West Coast', map_type_geotiff)
+_db.add_region(provider_ukho, REGION_UK4, 'United Kingdom South West Coast and Ireland East Coast - Irish Sea',
                map_type_geotiff)
 
 # Wavey Lines
@@ -130,7 +129,7 @@ _db.add_region(provider_wavey_lines, REGION_WL2, 'Caribbean East Turks And Caico
 
 # FAA
 _db.add_provider(provider_faa, config.faa_geotiff_dir)
-_db.add_region(provider_faa, 'REGION_FAA', 'FAA VFR Sectional charts', map_type_geotiff)
+_db.add_region(provider_faa, REGION_FAA_PLANNING, 'FAA VFR Planning charts', map_type_geotiff)
 
 
 def description_for_region(region):
