@@ -56,17 +56,27 @@ def _x_dir_has_tiles(x_dir):
 
 
 def verify_opt(catalog_name, base_dir=config.merged_tile_dir):
-    merged_region_tile_dir = os.path.join(base_dir, catalog_name)
-    opt_dir = merged_region_tile_dir + ".opt"
-    i = 0
-    for path, subdirs, files in os.walk(merged_region_tile_dir):
-        for _ in files:
-            i += 1
-    n = 0
-    for path, subdirs, files in os.walk(opt_dir):
-        for _ in files:
-            n += 1
+    un_opt_dir = os.path.join(base_dir, catalog_name)
+    opt_dir = un_opt_dir + ".opt"
+    un_opt_set = set()
+    for path, dirs, files in os.walk(un_opt_dir):
+        p = path.replace(un_opt_dir, '')
+        for f in files:
+            if not f.startswith('.'):
+                un_opt_set.add(os.path.join(p, f))
+    opt_set = set()
+    for path, dirs, files in os.walk(opt_dir):
+        p = path.replace(opt_dir, '')
+        for f in files:
+            if not f.startswith('.'):
+                opt_set.add(os.path.join(p, f))
 
+    i = len(un_opt_set)
+    n = len(opt_set)
+    print 'un-opt dir count:{}'.format(i)
+    print 'opt dir count:{}'.format(n)
+    missing = opt_set ^ un_opt_set
+    print 'number of missing charts: {} \n {}'.format(len(missing), missing)
     return i == n and i != 0
 
 

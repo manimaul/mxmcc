@@ -157,7 +157,8 @@ def counter():
 def optimize_png(src, dst, dpath):
     'optimize png using pngnq utility'
     png_tile = os.path.basename(src)
-    command([png_nq_binary, '-s1', '-g2.2', '-n', '256', '-e', '.png', '-d', dpath, src])
+    if not png_tile.startswith('.'):
+        command([png_nq_binary, '-s1', '-g2.2', '-n', '256', '-e', '.png', '-d', dpath, src])
 
 
 def to_jpeg(src, dst, dpath):
