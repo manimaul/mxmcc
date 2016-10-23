@@ -90,9 +90,10 @@ def build_catalog_for_bsb_directory(bsb_dir, name=None):
 
     build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
 
-if __name__ == "__main__":
-    build_catalog_for_region('REGION_FAA')
-    reader = get_reader_for_region('REGION_FAA')
-    for item in reader:
-        for key in reader.key_set():
-            print key, ':', item[key]
+# if __name__ == "__main__":
+#     r = 'REGION_FAA_PLANNING'
+#     build_catalog_for_region(r)
+#     reader = get_reader_for_region(r)
+#     for item in reader:
+#         for key in reader.key_set():
+#             print key, ':', item[key]

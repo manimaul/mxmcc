@@ -185,6 +185,26 @@ def _create_chart_mb_tiles(checkpoint_store, profile, region):
         print 'skipping checkpoint', point
 
 
+def _skip_zoom(region):
+    tile_path = os.path.join(config.unmerged_tile_dir, region)
+    for chart in os.listdir(tile_path):
+        zs = []
+        for z_dir in os.listdir(os.path.join(tile_path, chart)):
+            try:
+                z = int(z_dir)
+                zs.append(z)
+            except ValueError:
+                pass
+        zs.sort(reverse=True)
+        if len(zs) > 1 and (zs[0] - zs[1]) == 1:
+            i = 0
+            for z in zs:
+                if i % 2:
+                    p = os.path.join(tile_path, chart, str(z))
+                    shutil.rmtree(p)
+                i += 1
+
+
 def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
     region = region.upper()
     profile = profile.upper()
@@ -194,7 +214,6 @@ def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
     _build_catalog(checkpoint_store, profile, region)
 
     _create_tiles(checkpoint_store, profile, region)
-    # ------------------------------------------------------------------------------------------------------------------
 
     if 'REGION' in profile:
         _merge_tiles(checkpoint_store, profile, region)
@@ -212,6 +231,7 @@ def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
             _create_region_mb_tiles(checkpoint_store, profile, region)
 
     elif 'CHARTS' in profile and 'MB_' in profile:
+        _skip_zoom(region)
         _optimize_tiles(checkpoint_store, profile, region, base_dir=config.unmerged_tile_dir)
         _create_chart_mb_tiles(checkpoint_store, profile, region)
 
@@ -242,9 +262,8 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    # r = 'REGION_FAA'
+    # r = 'REGION_FAA_PLANNING'
     # compile_region(r, profile=PROFILE_MB_C, perform_clean=False)
-    # __create_chart_mb_tiles(r)
 
     if config.check_dirs():
         args = sys.argv

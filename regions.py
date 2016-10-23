@@ -129,7 +129,11 @@ _db.add_region(provider_wavey_lines, REGION_WL2, 'Caribbean East Turks And Caico
 
 # FAA
 _db.add_provider(provider_faa, config.faa_geotiff_dir)
-_db.add_region(provider_faa, REGION_FAA_PLANNING, 'FAA VFR Planning charts', map_type_geotiff)
+_db.add_region(provider_faa, REGION_FAA_PLANNING, 'FAA VFR Planning Charts', map_type_geotiff)
+_db.add_region(provider_faa, REGION_FAA_SECTIONAL, 'FAA VFR Sectional Charts', map_type_geotiff)
+_db.add_region(provider_faa, REGION_FAA_TERMINAL, 'FAA VFR Terminal Charts', map_type_geotiff)
+_db.add_region(provider_faa, REGION_FAA_HELICOPTER, 'FAA VFR Helicopter charts', map_type_geotiff)
+_db.add_region(provider_faa, REGION_FAA_CARIBBEAN, 'FAA VFR Caribbean Charts', map_type_geotiff)
 
 
 def description_for_region(region):
@@ -181,7 +185,8 @@ def map_list_for_region(region):
 
             return paths
         elif provider == provider_faa:
-            mps = MapPathSearch(config.faa_geotiff_dir, [map_type_for_region(region)])
+            map_dir = os.path.join(config.faa_geotiff_dir, region.upper())
+            mps = MapPathSearch(map_dir, [map_type_for_region(region)])
             return mps.file_paths
         else:
             raise Exception('unknown region')
