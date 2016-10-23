@@ -42,6 +42,8 @@ faa_regions = {
   }
 }
 
+excludes = {'VFR_WallPlan_.zip'}  # VFR_WallPlan_##.zip was renamed to US_WallPlan_##.zip
+
 
 def name_and_number(name):
     n = re.sub('[\d]', '', name)
@@ -55,7 +57,17 @@ def name_and_number(name):
 def list_links(url, ext=''):
     page = requests.get(url).text
     soup = BeautifulSoup(page, 'html.parser')
-    return [url + '/' + node.get('href') for node in soup.find_all('a') if node.get('href').endswith(ext)]
+    links = list()
+    for node in soup.find_all('a'):
+        if node.get('href').endswith(ext):
+            u = node.get('href')
+            if u.startswith('/'):
+                links.append('http://aeronav.faa.gov/' + u)
+            elif u.startswith(url):
+                links.append(u)
+            else:
+                links.append(url + '/' + u)
+    return links
 
 
 def directory_data(region):
@@ -64,6 +76,8 @@ def directory_data(region):
     for each in list_links(url=http_dir, ext='.zip'):
         name = each.split('/')[-1]
         name, number = name_and_number(name)
+        if name in excludes:
+            continue
         if name in data:
             if data[name]['number'] < number:
                 data[name] = {'number': number, 'link': each}
@@ -71,10 +85,10 @@ def directory_data(region):
             data[name] = {'number': number, 'link': each}
     return data
 
-for r in faa_regions:
-    d = directory_data(r)
-    for e in d:
-        faa_regions[r]['sources'].append(d[e]['link'])
+for each_region in faa_regions:
+    dir_data = directory_data(each_region)
+    for each_data in dir_data:
+        faa_regions[each_region]['sources'].append(dir_data[each_data]['link'])
 
 
 def unzip(source_filename, dest_dir):
@@ -97,17 +111,18 @@ def unzip(source_filename, dest_dir):
 
 def fetch_region(region):
     if region in faa_regions:
-        http_dir = faa_regions[region]['http']
-        for name in faa_regions[region]['sources']:
-            link = http_dir + name
+        for link in faa_regions[region]['sources']:
             p = urlsplit(link)
             file_name = os.path.split(p.path)[1]
-            dest = os.path.join(config.faa_geotiff_dir, file_name)
+            dest_path = os.path.join(config.faa_geotiff_dir, region)
+            if not os.path.isdir(dest_path):
+                os.makedirs(dest_path)
+            dest = os.path.join(dest_path, file_name)
             if not os.path.isfile(dest):
                 print 'retrieving {}'.format(link)
                 urllib.urlretrieve(link, dest)
                 print 'unzipping {}'.format(dest)
-                unzip(dest, config.faa_geotiff_dir)
+                unzip(dest, dest_path)
 
 
 def fetch_all():
