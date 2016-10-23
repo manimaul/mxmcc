@@ -204,7 +204,14 @@ class BsbGdalMixLookup(GdalGeoTiffLookup):
 
 class FAALookup(GdalGeoTiffLookup):
     def get_min_zoom(self, map_path):
-        return max(0, (super(FAALookup, self).get_min_zoom(map_path) - 8))
+        return max(0, findzoom.get_zoom_from_true_scale(self.get_scale(map_path)) - 8)
+
+    def get_max_zoom(self, map_path):
+        return findzoom.get_zoom_from_true_scale(self.get_scale(map_path))
+
+    def get_scale(self, map_path):
+        data_set = gdalds.get_ro_dataset(map_path)
+        return int(gdalds.get_true_scale(data_set, 300))
 
 
 class WaveylinesLookup(BsbGdalMixLookup):

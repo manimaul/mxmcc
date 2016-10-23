@@ -12,7 +12,6 @@ from osgeo import gdal
 import osr
 import os
 
-
 '''some convenience methods for information about gdal data sets
 '''
 
@@ -169,7 +168,7 @@ def dataset_get_bounds(gdal_ds, epsg=4326):
 
 
 # def get_true_scale(gdal_ds, dpi):
-# wnes, is_north_up = dataset_get_bounds(gdal_ds)
+#     wnes, is_north_up = dataset_get_bounds(gdal_ds)
 #     west, north, east, south = wnes
 #     inches = gdal_ds.RasterXSize / dpi
 #     meters = inches / 39.3701
@@ -183,16 +182,12 @@ def get_true_scale(gdal_ds, dpi):
     west, north, east, south = wnes
     inches = gdal_ds.RasterXSize / dpi
     meters = inches / 39.3701
-    true_scale = (east - west) / meters
+    if west <= east:
+        span_meters = east - west
+    else:
+        span_meters = (20037508.3428 - abs(east)) + (20037508.3428 - abs(west))
+    true_scale = span_meters / meters
     return true_scale
-
-
-# def get_lat_lng_center(gdal_ds):
-# wnes, is_north_up = dataset_lat_lng_bounds(gdal_ds)
-#     west, north, east, south = wnes
-#     center_lng = west + ((east - west) / 2)
-#     center_lat = south + ((north - south) / 2)
-#     return center_lat, center_lng
 
 
 def dataset_meters_bounds(gdal_ds):
@@ -268,7 +263,6 @@ def map_to_pixels(mx, my, gt):
 
 if __name__ == '__main__':
     import os
-
-    p = '/Volumes/sddat/mxmcc/charts/wavey-lines/geotiff/Bahamas_Overall/Bahamas_Overall_BAH019.tif' #os.path.join(config.ukho_geotiff_dir, '2182A-0.tif')
+    p = '/Volumes/USB_DATA/mxmcc/charts/faa/REGION_FAA_PLANNING/Alaska Wall Planning Chart 1.tif'
     d = get_ro_dataset(p)
     print get_true_scale(d, 127)
