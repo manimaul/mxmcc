@@ -152,8 +152,15 @@ def dataset_get_bounds(gdal_ds, epsg=4326):
     north = geotransform[3]
     south = north - ds.RasterYSize * geotransform[1]
 
-    east, south = transform.TransformPoint(east, south)[:2]
-    west, north = transform.TransformPoint(west, north)[:2]
+    east_south = transform.TransformPoint(east, south)[:2]
+    east_north = transform.TransformPoint(east, north)[:2]
+    west_south = transform.TransformPoint(west, south)[:2]
+    west_north = transform.TransformPoint(west, north)[:2]
+
+    north = max(east_north[1], west_north[1])
+    south = min(east_south[1], east_south[1])
+    east = max(east_north[0], east_south[0])
+    west = min(west_north[0], west_south[0])
 
     gt = get_geo_transform(gdal_ds)
 
@@ -265,4 +272,4 @@ if __name__ == '__main__':
     import os
     p = '/Volumes/USB_DATA/mxmcc/charts/faa/REGION_FAA_PLANNING/Alaska Wall Planning Chart 1.tif'
     d = get_ro_dataset(p)
-    print get_true_scale(d, 127)
+    print dataset_get_bounds(d)
