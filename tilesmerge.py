@@ -36,6 +36,7 @@ import re
 import shutil
 import sys
 import multiprocessing
+from tilesystem import tile_size
 
 
 def set_nothreads():
@@ -81,7 +82,7 @@ def transparency(img):
 class MergeSet:
     def __init__(self, src_dir, dst_dir):
         (self.src, self.dest) = (src_dir, dst_dir)
-        self.tile_sz = (256, 256) #tuple(map(int, options.tile_size.split(',')))
+        self.tile_sz = (tile_size, tile_size) #tuple(map(int, options.tile_size.split(',')))
 
         #if options.strip_src_ext:
         #    self.src = os.path.splitext(self.src)[0]

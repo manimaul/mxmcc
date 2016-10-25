@@ -13,10 +13,9 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 '''This parses through a given ZXY tiled map directory and generates a gemf file.'''
 
 import os
-
 from Crypto import Random
-
 import config
+from tilesystem import tile_size
 
 
 file_size_limit = 2000000000L
@@ -59,7 +58,7 @@ def generate_gemf(name, add_uid=False):
 
     base_name = name[:name.rfind('.')].upper()  # remove .enc or .opt
     output_file = os.path.join(config.compiled_dir, base_name + ext)
-    tilesize = 256
+    tilesize = tile_size
 
     extensions = ('.png.tile', '.jpg.tile', '.png', '.jpg')
 
