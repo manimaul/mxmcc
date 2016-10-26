@@ -71,8 +71,36 @@ def generate(data=None, base_url=BASE_URL):
                                        'data_checksum': checksum(abs_path_data),
                                        'size_bytes': os.path.getsize(abs_path_gemf),
                                        'epoch': epoch}
-    # print data
     abs_path_json = os.path.join(config.compiled_dir, 'manifest.json')
+    if os.path.exists(abs_path_json):
+        os.remove(abs_path_json)
+    with open(abs_path_json, 'w') as f:
+        json.dump(data, f, indent=2)
+
+    return data
+
+
+def generate_chart_manifest(base_url=BASE_URL):
+    data = {'manifest_version': 1, 'charts': []}
+
+    for each in os.listdir(config.compiled_dir):
+        if each.endswith('mbtiles'):
+            chart_name = each[:each.find('.')]
+
+            abs_path_org = os.path.join(config.compiled_dir, each)
+            epoch = os.path.getmtime(abs_path_org)
+            ts = get_time_stamp(epoch, local=True)
+
+            chart_rename = ts + '_' + each
+            abs_path_chart_rename = os.path.join(config.compiled_dir, chart_rename)
+
+            os.rename(abs_path_org, abs_path_chart_rename)
+            data['charts'].append({'name': chart_name,
+                                   'url': base_url + '/' + chart_rename,
+                                   'check_sum': checksum(abs_path_chart_rename),
+                                   'size_bytes': os.path.getsize(abs_path_chart_rename),
+                                   'epoch': epoch})
+    abs_path_json = os.path.join(config.compiled_dir, 'chart_manifest.json')
     if os.path.exists(abs_path_json):
         os.remove(abs_path_json)
     with open(abs_path_json, 'w') as f:
