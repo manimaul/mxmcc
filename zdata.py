@@ -101,7 +101,7 @@ def generate_zdat_for_catalog(catalog_name, description=None):
     for entry in reader:
             sql_file.write(fmt1 % (region, os.path.basename(entry['path']), entry['name'], entry['date'],
                                                             entry['scale'], entry['outline'], entry['depths'],
-                                                            entry['zoom']))
+                                                            entry['max_zoom']))
 
     sql_file.close()
     zdat_file.write(sql_path, sql_fname)

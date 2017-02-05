@@ -215,7 +215,7 @@ class MetaLookup:
                 except:
                     # print 'error finding depth unit for', chart_number, depth_code
                     depth_unit = 'UNKNOWN'
-                d = Data(chart_number, suffix, panel_number, name, scale, depth_unit)
+                d = Data(chart_number, suffix, panel_number, name, scale, depth_unit.strip())
                 s = stamp_from_detail(chart_number, suffix, panel_number)
                 self.charts[s] = d
 

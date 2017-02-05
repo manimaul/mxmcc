@@ -36,5 +36,8 @@ Version 1.x (2.x not currently compatible)
 
 * enum34
 
+* xlrd
+
 * pngnq (binary)
+
 
