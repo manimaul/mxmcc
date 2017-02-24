@@ -29,8 +29,10 @@ import re
 import shutil
 
 PROFILE_MX_R = 'MX_REGION'  # (default) renders standard MX Mariner gemf + zdat
-PROFILE_MB_C = 'MB_CHARTS'  # renders each chart as mbtiles file
 PROFILE_MB_R = 'MB_REGION'  # renders entire region as mbtiles file
+
+PROFILE_MX_C = 'MX_CHARTS'  # renders each chart as a MX Mariner sqlite file
+PROFILE_MB_C = 'MB_CHARTS'  # renders each chart as mbtiles file
 
 
 def _build_catalog(checkpoint_store, profile, region):
@@ -164,6 +166,10 @@ def _create_region_mb_tiles(checkpoint_store, profile, region):
         print 'skipping checkpoint', point
 
 
+def __create_chart_mx_tiles(region):
+    pass
+
+
 def __create_chart_mb_tiles(region):
     region_charts_dir = os.path.join(config.unmerged_tile_dir, region + '.opt')
     for chart in os.listdir(region_charts_dir):
@@ -174,6 +180,15 @@ def __create_chart_mb_tiles(region):
         if os.path.isfile(mbtiles_file):
             os.remove(mbtiles_file)
         mb.disk_to_mbtiles(chart_dir, mbtiles_file, format='png', scheme='xyz')
+
+
+def _create_chart_mx_tiles(checkpoint_store, profile, region):
+    point = CheckPoint.CHECKPOINT_ARCHIVE
+    if checkpoint_store.get_checkpoint(region, profile) < point:
+        __create_chart_mx_tiles(region)
+        checkpoint_store.clear_checkpoint(region, profile, point)
+    else:
+        print 'skipping checkpoint', point
 
 
 def _create_chart_mb_tiles(checkpoint_store, profile, region):
@@ -220,20 +235,24 @@ def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
         _fill_tiles(region)
         _optimize_tiles(checkpoint_store, profile, region)
 
-        if 'MX_' in profile:
+        if profile == PROFILE_MX_R:
             should_encrypt = _should_encrypt(region)
             if should_encrypt:
                 _encrypt_region(checkpoint_store, profile, region)
             _create_gemf(checkpoint_store, profile, region)
             _create_zdat(checkpoint_store, profile, region)
 
-        if 'MB_' in profile:
+        if profile == PROFILE_MB_R:
             _create_region_mb_tiles(checkpoint_store, profile, region)
 
-    elif 'CHARTS' in profile and 'MB_' in profile:
+    elif 'CHARTS' in profile:
         _skip_zoom(region)
         _optimize_tiles(checkpoint_store, profile, region, base_dir=config.unmerged_tile_dir)
-        _create_chart_mb_tiles(checkpoint_store, profile, region)
+        if profile == PROFILE_MB_C:
+            _create_chart_mb_tiles(checkpoint_store, profile, region)
+        if profile == PROFILE_MX_C:
+            _create_chart_mx_tiles(checkpoint_store, profile, region)
+
 
     print 'final checkpoint', checkpoint_store.get_checkpoint(region, profile)
     if perform_clean and checkpoint_store.get_checkpoint(region, profile) > CheckPoint.CHECKPOINT_ENCRYPTED:
@@ -272,7 +291,11 @@ if __name__ == "__main__":
         else:
             rgn = args[1]
             if len(args) >= 3:
+                valid_profiles = {PROFILE_MX_R, PROFILE_MX_C, PROFILE_MB_C, PROFILE_MB_R}
                 prof = args[2]
+                if prof not in valid_profiles:
+                    print "'{}' is not a valid profile".format(prof)
+                    sys.exit()
             else:
                 prof = PROFILE_MX_R
             compile_region(rgn, prof)
