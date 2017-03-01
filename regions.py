@@ -105,6 +105,7 @@ _db.add_region(provider_noaa, REGION_32, 'South Central Alaska, Yakutat to Kodia
 _db.add_region(provider_noaa, REGION_34, 'Alaska, The Aleutians and Bristol Bay', map_type_bsb)
 _db.add_region(provider_noaa, REGION_36, 'Alaska, Norton Sound to Beaufort Sea', map_type_bsb)
 _db.add_region(provider_noaa, REGION_40, 'Hawaiian Islands and U.S. Territories', map_type_bsb)
+_db.add_region(provider_noaa, REGION_WA, 'Washington State', map_type_bsb)
 
 # BRAZIL NAVY
 _db.add_provider(provider_brazil, config.brazil_bsb_dir)
