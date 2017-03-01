@@ -36,7 +36,7 @@ def _add_meta_data(cur, key, value):
     cur.execute("""INSERT INTO meta (m_key, val) values (?, ?)""", (str(key), value))
 
 
-def disk_to_mx_chart(directory_path, file_out_path, name, outline, updated, depth_units, scale):
+def disk_to_mx_chart(directory_path, file_out_path, meta):
     con = sqlite3.connect(file_out_path)
     cur = con.cursor()
     _optimize_connection(cur)
@@ -87,12 +87,12 @@ def disk_to_mx_chart(directory_path, file_out_path, name, outline, updated, dept
     if min_x is None or max_x is None or min_y is None or max_y is None or chart_z is None:
         os.remove(file_out_path)
     else:
-        _add_meta_data(cur, "name", str(name))
-        _add_meta_data(cur, "outline", str(outline))
-        _add_meta_data(cur, "updated", str(updated))
-        _add_meta_data(cur, "depth_units", str(depth_units))
-        _add_meta_data(cur, "scale", str(scale))
-        _add_meta_data(cur, "zoom", str(chart_z))
+        _add_meta_data(cur, "name", str(meta.name))
+        _add_meta_data(cur, "outline", str(meta.outline_geometry.wkt))
+        _add_meta_data(cur, "updated", str(meta.date))
+        _add_meta_data(cur, "depth_units", str(meta.depths))
+        _add_meta_data(cur, "scale", str(meta.scale))
+        _add_meta_data(cur, "zoom", str(meta.max_zoom))
         _add_meta_data(cur, "min_x", str(min_x))
         _add_meta_data(cur, "max_x", str(max_x))
         _add_meta_data(cur, "min_y", str(min_y))
@@ -103,7 +103,7 @@ def disk_to_mx_chart(directory_path, file_out_path, name, outline, updated, dept
 
 """m_key:val Key values
     name        : string(the name of the chart e.g. "PUGET SOUND")
-    outline     : string(linear ring wkt of the chart's outline in WGS84 coordinates)
+    outline     : string(geometry wkt of the chart's visible area)
     updated     : integer(the unix epoch time since 1970 in seconds when the chart was upated)
     depth_units : string(chart depths unit of measure e.g. METRES, FATHOMS)
     scale       : integer(the chart scale as 1:<scale>)

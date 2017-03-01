@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+import os
+from operator import itemgetter
+from search import MapPathSearch
+import regions
+import config
+import lookups
+import json
+import shapely.geometry as geo
+from chart_outline_geometry import ChartOutline, SVG_TEMPLATE
+
 __author__ = 'Will Kamp'
 __copyright__ = 'Copyright 2013, Matrix Mariner Inc.'
 __license__ = 'BSD'
@@ -11,54 +21,11 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
    (csv values are tab separated)
 '''
 
-import os
-from operator import itemgetter
-
-from search import MapPathSearch
-import regions
-import config
-import lookups
-import json
-import shapely.geometry as geo
-
-SVG_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   version="1.1"
-   id="svg2"
-   viewBox="-180 -90 360 180">
-  <defs
-     id="defs4" />
-  <metadata
-     id="metadata7">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     id="layer1">
-    {}
-  </g>
-</svg>
-"""
-
-west = geo.Polygon(shell=geo.LinearRing([(-180, 90), (0, 90), (0, -90), (-180, -90), (-180, 90)]))
-east = geo.Polygon(shell=geo.LinearRing([(180, 90), (0, 90), (0, -90), (180, -90), (180, 90)]))
-
 
 class CatalogMapItem(object):
     def __init__(self, items):
         self.__dict__ = items
+        self._chart_outline = ChartOutline(self.outline)
 
     @property
     def path(self):
@@ -94,20 +61,7 @@ class CatalogMapItem(object):
 
     @property
     def outline_geometry(self):
-        coords = []
-        for lat_lng_str in self.outline.split(':'):
-            lat_str, lng_str = lat_lng_str.split(',')
-            lng = float(lng_str)
-            lat = float(lat_str)
-            coords.append((lng, lat))
-
-        ply = geo.Polygon(shell=geo.LinearRing(coords))
-        w = ply.intersection(west)
-        e = ply.intersection(east)
-        if not w.is_empty and not e.is_empty:
-            return geo.GeometryCollection([w, e])
-        else:
-            return ply
+        return self._chart_outline.geometry
 
 
 class CatalogReader:
@@ -126,20 +80,20 @@ class CatalogReader:
         return CatalogMapItem(self._entries[index])
 
     @property
-    def envelope_geometry(self):
+    def geometry(self):
         geometries = []
         for each in self:
             item = CatalogMapItem(each)
             geometries.append(item.outline_geometry)
-        geometry = geo.GeometryCollection(geometries)
-        return geometry.envelope
+        return geo.GeometryCollection(geometries)
 
-    def visualize(self):
-        envelope = self.envelope_geometry
+    def svg(self):
+        envelope = self.geometry.envelope
         paths = envelope.svg(scale_factor=.5)
         for each in self:
             item = CatalogMapItem(each)
             paths += item.outline_geometry.svg(scale_factor=.25) + '\n'
+
         return SVG_TEMPLATE.format(paths)
 
 

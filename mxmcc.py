@@ -175,9 +175,6 @@ def __create_chart_mx_tiles(region):
         key = os.path.basename(each["path"])[:-4]
         meta_data[key] = catalog.CatalogMapItem(each)
 
-    svg = reader.visualize()
-    region_envelope = reader.get_envelope_geometry()
-
     for chart in os.listdir(region_charts_dir):
         print 'archiving mx_chart for chart:', chart
         chart_dir = os.path.join(region_charts_dir, chart)
@@ -189,7 +186,7 @@ def __create_chart_mx_tiles(region):
             os.remove(file_out)
 
         meta = meta_data[chart]
-        mx_chart.disk_to_mx_chart(chart_dir, file_out, meta.name, meta.outline_wkt, meta.date, meta.depths, meta.scale)
+        mx_chart.disk_to_mx_chart(chart_dir, file_out, meta)
 
 
 def __create_chart_mb_tiles(region):
@@ -302,25 +299,25 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    # r = 'REGION_WA'
-    # compile_region(r, profile=PROFILE_MX_C, perform_clean=False)
+    r = 'REGION_WA'
+    compile_region(r, profile=PROFILE_MX_C, perform_clean=False)
 
-    if config.check_dirs():
-        args = sys.argv
-        if len(args) < 2:
-            print_usage()
-        else:
-            rgn = args[1]
-            if len(args) >= 3:
-                valid_profiles = {PROFILE_MX_R, PROFILE_MX_C, PROFILE_MB_C, PROFILE_MB_R}
-                prof = args[2]
-                if prof not in valid_profiles:
-                    print "'{}' is not a valid profile".format(prof)
-                    sys.exit()
-            else:
-                prof = PROFILE_MX_R
-            compile_region(rgn, prof)
-    else:
-        print 'Your mxmcc directory structure is not ready\n' + \
-              'Please edit the top portion of config.py, run config.py,\n' + \
-              'and place charts in their corresponding directories.'
+    # if config.check_dirs():
+    #     args = sys.argv
+    #     if len(args) < 2:
+    #         print_usage()
+    #     else:
+    #         rgn = args[1]
+    #         if len(args) >= 3:
+    #             valid_profiles = {PROFILE_MX_R, PROFILE_MX_C, PROFILE_MB_C, PROFILE_MB_R}
+    #             prof = args[2]
+    #             if prof not in valid_profiles:
+    #                 print "'{}' is not a valid profile".format(prof)
+    #                 sys.exit()
+    #         else:
+    #             prof = PROFILE_MX_R
+    #         compile_region(rgn, prof)
+    # else:
+    #     print 'Your mxmcc directory structure is not ready\n' + \
+    #           'Please edit the top portion of config.py, run config.py,\n' + \
+    #           'and place charts in their corresponding directories.'
