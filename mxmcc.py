@@ -26,8 +26,10 @@ import os
 import mbutil as mb
 import re
 import mx_chart
-
+import shapely.geometry as geo
 import shutil
+import time
+import json
 
 PROFILE_MX_R = 'MX_REGION'  # (default) renders standard MX Mariner gemf + zdat
 PROFILE_MB_R = 'MB_REGION'  # renders entire region as mbtiles file
@@ -171,9 +173,27 @@ def __create_chart_mx_tiles(region):
     region_charts_dir = os.path.join(config.unmerged_tile_dir, region + '.opt')
     reader = catalog.get_reader_for_region(region)
     meta_data = dict()
+    geometries_west = []
+    geometries_east = []
     for each in reader:
-        key = os.path.basename(each["path"])[:-4]
-        meta_data[key] = catalog.CatalogMapItem(each)
+        item = catalog.CatalogMapItem(each)
+        meta_data[item.file_name] = item
+        if not item.west.is_empty:
+            geometries_west.append(item.west)
+        if not item.east.is_empty:
+            geometries_east.append(item.east)
+
+    west = geo.MultiPolygon(geometries_west).envelope.wkt
+    east = geo.MultiPolygon(geometries_east).envelope.wkt
+
+    region_manifest = {"name": region.upper(),
+                       "image": "",  # todo:
+                       "envelop_west_hemisphere": west,
+                       "envelop_east_hemisphere": east,
+                       "updated": int(time.time()), }
+
+    with open(os.path.join(config.compiled_dir, region + '.json'), 'w') as f:
+        json.dump(region_manifest, f, indent=2)
 
     for chart in os.listdir(region_charts_dir):
         print 'archiving mx_chart for chart:', chart
@@ -299,25 +319,25 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    # r = 'REGION_WA'
-    # compile_region(r, profile=PROFILE_MX_C, perform_clean=False)
+    r = 'REGION_WA'
+    compile_region(r, profile=PROFILE_MX_C, perform_clean=False)
 
-    if config.check_dirs():
-        args = sys.argv
-        if len(args) < 2:
-            print_usage()
-        else:
-            rgn = args[1]
-            if len(args) >= 3:
-                valid_profiles = {PROFILE_MX_R, PROFILE_MX_C, PROFILE_MB_C, PROFILE_MB_R}
-                prof = args[2]
-                if prof not in valid_profiles:
-                    print "'{}' is not a valid profile".format(prof)
-                    sys.exit()
-            else:
-                prof = PROFILE_MX_R
-            compile_region(rgn, prof)
-    else:
-        print 'Your mxmcc directory structure is not ready\n' + \
-              'Please edit the top portion of config.py, run config.py,\n' + \
-              'and place charts in their corresponding directories.'
+    # if config.check_dirs():
+    #     args = sys.argv
+    #     if len(args) < 2:
+    #         print_usage()
+    #     else:
+    #         rgn = args[1]
+    #         if len(args) >= 3:
+    #             valid_profiles = {PROFILE_MX_R, PROFILE_MX_C, PROFILE_MB_C, PROFILE_MB_R}
+    #             prof = args[2]
+    #             if prof not in valid_profiles:
+    #                 print "'{}' is not a valid profile".format(prof)
+    #                 sys.exit()
+    #         else:
+    #             prof = PROFILE_MX_R
+    #         compile_region(rgn, prof)
+    # else:
+    #     print 'Your mxmcc directory structure is not ready\n' + \
+    #           'Please edit the top portion of config.py, run config.py,\n' + \
+    #           'and place charts in their corresponding directories.'

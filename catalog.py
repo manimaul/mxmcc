@@ -7,8 +7,7 @@ import regions
 import config
 import lookups
 import json
-import shapely.geometry as geo
-from chart_outline_geometry import ChartOutline, SVG_TEMPLATE
+from chart_outline_geometry import ChartOutline
 
 __author__ = 'Will Kamp'
 __copyright__ = 'Copyright 2013, Matrix Mariner Inc.'
@@ -23,13 +22,17 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 
 class CatalogMapItem(object):
-    def __init__(self, items):
-        self.__dict__ = items
+    def __init__(self, item):
+        self.__dict__ = item
         self._chart_outline = ChartOutline(self.outline)
 
     @property
     def path(self):
         return self.__dict__['path']
+
+    @property
+    def file_name(self):
+        return os.path.basename(self.path)[:-4]
 
     @property
     def name(self):
@@ -60,8 +63,12 @@ class CatalogMapItem(object):
         return self.__dict__['outline']
 
     @property
-    def outline_geometry(self):
-        return self._chart_outline.geometry
+    def west(self):
+        return self._chart_outline.west
+
+    @property
+    def east(self):
+        return self._chart_outline.east
 
 
 class CatalogReader:
@@ -75,26 +82,6 @@ class CatalogReader:
 
     def __getitem__(self, index):
         return self._entries[index]
-
-    def get_item(self, index):
-        return CatalogMapItem(self._entries[index])
-
-    @property
-    def geometry(self):
-        geometries = []
-        for each in self:
-            item = CatalogMapItem(each)
-            geometries.append(item.outline_geometry)
-        return geo.GeometryCollection(geometries)
-
-    def svg(self):
-        envelope = self.geometry.envelope
-        paths = envelope.svg(scale_factor=.5)
-        for each in self:
-            item = CatalogMapItem(each)
-            paths += item.outline_geometry.svg(scale_factor=.25) + '\n'
-
-        return SVG_TEMPLATE.format(paths)
 
 
 def get_reader_for_region(catalog_name):
@@ -116,7 +103,7 @@ def build_catalog(region, list_of_map_paths, lookup):
     for map_path in list_of_map_paths:
         if lookup.get_is_valid(map_path):
             row = {"path": map_path,
-                   "name": lookup.get_name(map_path),
+                   "name": ' '.join(lookup.get_name(map_path).split()),
                    "min_zoom": lookup.get_min_zoom(map_path),
                    "max_zoom": lookup.get_max_zoom(map_path),
                    "scale": lookup.get_scale(map_path),
@@ -143,9 +130,5 @@ def build_catalog_for_bsb_directory(bsb_dir, name=None):
     build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
 
 # if __name__ == "__main__":
-#     r = 'REGION_FAA_PLANNING'
+#     r = 'REGION_WA'
 #     build_catalog_for_region(r)
-#     reader = get_reader_for_region(r)
-#     for item in reader:
-#         for key in reader.key_set():
-#             print key, ':', item[key]

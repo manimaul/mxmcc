@@ -43,8 +43,8 @@ SVG_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </svg>
 """
 
-_west_hemi = geo.Polygon(shell=geo.LinearRing([(-180, 90), (0, 90), (0, -90), (-180, -90), (-180, 90)]))
-_east_hemi = geo.Polygon(shell=geo.LinearRing([(180, 90), (0, 90), (0, -90), (180, -90), (180, 90)]))
+west_hemisphere = geo.Polygon(shell=geo.LinearRing([(-180, 90), (0, 90), (0, -90), (-180, -90), (-180, 90)]))
+east_hemisphere = geo.Polygon(shell=geo.LinearRing([(180, 90), (0, 90), (0, -90), (180, -90), (180, 90)]))
 
 
 def _outline_str_to_coordinates(outline_str):
@@ -72,21 +72,13 @@ def _split_hemisphere_coordinates(coords):
         else:
             projected_east_coords.append((lng, lat))
             projected_west_coords.append((lng, lat))
-    return geo.Polygon(shell=geo.LinearRing(projected_west_coords)).intersection(_west_hemi), \
-           geo.Polygon(shell=geo.LinearRing(projected_east_coords)).intersection(_east_hemi)
+    return geo.Polygon(shell=geo.LinearRing(projected_west_coords)).intersection(west_hemisphere), \
+           geo.Polygon(shell=geo.LinearRing(projected_east_coords)).intersection(east_hemisphere)
 
 
 class ChartOutline(object):
     def __init__(self, outline_str):
         coords = _outline_str_to_coordinates(outline_str)
         west, east = _split_hemisphere_coordinates(coords)
-        if not west.is_empty and not east.is_empty:
-            self._geometry = geo.MultiPolygon([west, east])
-        elif not west.is_empty:
-            self._geometry = west
-        else:
-            self._geometry = east
-
-    @property
-    def geometry(self):
-        return self._geometry
+        self.west = west
+        self.east = east

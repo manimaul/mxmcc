@@ -88,7 +88,8 @@ def disk_to_mx_chart(directory_path, file_out_path, meta):
         os.remove(file_out_path)
     else:
         _add_meta_data(cur, "name", str(meta.name))
-        _add_meta_data(cur, "outline", str(meta.outline_geometry.wkt))
+        _add_meta_data(cur, "ply_west", "" if meta.west.is_empty else meta.west.wkt)
+        _add_meta_data(cur, "ply_east", "" if meta.east.is_empty else meta.east.wkt)
         _add_meta_data(cur, "updated", str(meta.date))
         _add_meta_data(cur, "depth_units", str(meta.depths))
         _add_meta_data(cur, "scale", str(meta.scale))
@@ -103,7 +104,8 @@ def disk_to_mx_chart(directory_path, file_out_path, meta):
 
 """m_key:val Key values
     name        : string(the name of the chart e.g. "PUGET SOUND")
-    outline     : string(geometry wkt of the chart's visible area)
+    ply_west    : string(polygon wkt of the chart's visible area in the west hemisphere)
+    ply_east    : string(polygon wkt of the chart's visible area in the east hemisphere)
     updated     : integer(the unix epoch time since 1970 in seconds when the chart was upated)
     depth_units : string(chart depths unit of measure e.g. METRES, FATHOMS)
     scale       : integer(the chart scale as 1:<scale>)
