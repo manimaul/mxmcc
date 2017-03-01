@@ -19,6 +19,95 @@ import regions
 import config
 import lookups
 import json
+import shapely.geometry as geo
+
+SVG_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   id="svg2"
+   viewBox="-180 -90 360 180">
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1">
+    {}
+  </g>
+</svg>
+"""
+
+west = geo.Polygon(shell=geo.LinearRing([(-180, 90), (0, 90), (0, -90), (-180, -90), (-180, 90)]))
+east = geo.Polygon(shell=geo.LinearRing([(180, 90), (0, 90), (0, -90), (180, -90), (180, 90)]))
+
+
+class CatalogMapItem(object):
+    def __init__(self, items):
+        self.__dict__ = items
+
+    @property
+    def path(self):
+        return self.__dict__['path']
+
+    @property
+    def name(self):
+        return self.__dict__['name']
+
+    @property
+    def min_zoom(self):
+        return self.__dict__['min_zoom']
+
+    @property
+    def max_zoom(self):
+        return self.__dict__['max_zoom']
+
+    @property
+    def scale(self):
+        return self.__dict__['scale']
+
+    @property
+    def date(self):
+        return self.__dict__['date']
+
+    @property
+    def depths(self):
+        return self.__dict__['depths']
+
+    @property
+    def outline(self):
+        return self.__dict__['outline']
+
+    @property
+    def outline_geometry(self):
+        coords = []
+        for lat_lng_str in self.outline.split(':'):
+            lat_str, lng_str = lat_lng_str.split(',')
+            lng = float(lng_str)
+            lat = float(lat_str)
+            coords.append((lng, lat))
+
+        ply = geo.Polygon(shell=geo.LinearRing(coords))
+        w = ply.intersection(west)
+        e = ply.intersection(east)
+        if not w.is_empty and not e.is_empty:
+            return geo.GeometryCollection([w, e])
+        else:
+            return ply
 
 
 class CatalogReader:
@@ -27,22 +116,31 @@ class CatalogReader:
         with open(catalog_path, 'r') as fp:
             self._entries = json.load(fp)
 
-    @staticmethod
-    def key_set():
-        return {"path",
-                "name",
-                "min_zoom",
-                "max_zoom",
-                "scale",
-                "date",
-                "depths",
-                "outline"}
-
     def __iter__(self):
         return iter(self._entries)
 
     def __getitem__(self, index):
         return self._entries[index]
+
+    def get_item(self, index):
+        return CatalogMapItem(self._entries[index])
+
+    @property
+    def envelope_geometry(self):
+        geometries = []
+        for each in self:
+            item = CatalogMapItem(each)
+            geometries.append(item.outline_geometry)
+        geometry = geo.GeometryCollection(geometries)
+        return geometry.envelope
+
+    def visualize(self):
+        envelope = self.envelope_geometry
+        paths = envelope.svg(scale_factor=.5)
+        for each in self:
+            item = CatalogMapItem(each)
+            paths += item.outline_geometry.svg(scale_factor=.25) + '\n'
+        return SVG_TEMPLATE.format(paths)
 
 
 def get_reader_for_region(catalog_name):

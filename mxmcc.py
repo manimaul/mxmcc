@@ -25,6 +25,7 @@ import platform
 import os
 import mbutil as mb
 import re
+import mx_chart
 
 import shutil
 
@@ -167,7 +168,28 @@ def _create_region_mb_tiles(checkpoint_store, profile, region):
 
 
 def __create_chart_mx_tiles(region):
-    pass
+    region_charts_dir = os.path.join(config.unmerged_tile_dir, region + '.opt')
+    reader = catalog.get_reader_for_region(region)
+    meta_data = dict()
+    for each in reader:
+        key = os.path.basename(each["path"])[:-4]
+        meta_data[key] = catalog.CatalogMapItem(each)
+
+    svg = reader.visualize()
+    region_envelope = reader.get_envelope_geometry()
+
+    for chart in os.listdir(region_charts_dir):
+        print 'archiving mx_chart for chart:', chart
+        chart_dir = os.path.join(region_charts_dir, chart)
+        if chart.startswith('.'):
+            continue
+        prefix = re.sub(r'\W+', '_', chart).lower()
+        file_out = os.path.join(config.compiled_dir, prefix + mx_chart.MX_CHART_EXTENSION)
+        if os.path.isfile(file_out):
+            os.remove(file_out)
+
+        meta = meta_data[chart]
+        mx_chart.disk_to_mx_chart(chart_dir, file_out, meta.name, meta.outline_wkt, meta.date, meta.depths, meta.scale)
 
 
 def __create_chart_mb_tiles(region):
@@ -253,7 +275,6 @@ def compile_region(region, profile=PROFILE_MX_R, perform_clean=True):
         if profile == PROFILE_MX_C:
             _create_chart_mx_tiles(checkpoint_store, profile, region)
 
-
     print 'final checkpoint', checkpoint_store.get_checkpoint(region, profile)
     if perform_clean and checkpoint_store.get_checkpoint(region, profile) > CheckPoint.CHECKPOINT_ENCRYPTED:
         cleanup(region, config.unmerged_tile_dir)
@@ -281,8 +302,8 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    # r = 'REGION_FAA_PLANNING'
-    # compile_region(r, profile=PROFILE_MB_C, perform_clean=False)
+    # r = 'REGION_WA'
+    # compile_region(r, profile=PROFILE_MX_C, perform_clean=False)
 
     if config.check_dirs():
         args = sys.argv
