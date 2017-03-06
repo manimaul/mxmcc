@@ -187,9 +187,9 @@ def __create_chart_mx_tiles(region):
     east = geo.MultiPolygon(geometries_east).envelope.wkt
 
     region_manifest = {"name": region.upper(),
-                       "image": "",  # todo:
-                       "envelop_west_hemisphere": west,
-                       "envelop_east_hemisphere": east,
+                       "image": "https://api.mxmariner.com/v1/image/{}.png".format(region.upper()),
+                       "envelope_west_hemisphere": west,
+                       "envelope_east_hemisphere": east,
                        "updated": int(time.time()), }
 
     with open(os.path.join(config.compiled_dir, region + '.json'), 'w') as f:
