@@ -19,7 +19,7 @@ from PIL import Image
 import config
 
 
-match_f_name = "%s#%s#%s#%s#%s.png"  # chart#crest#score#xoff#yoff
+match_f_name = "%s:%s:%s:%s:%s.png"  # chart#crest#score#xoff#yoff
 matched_crest_dir = os.path.join(config.ukho_meta_dir, 'CRESTS', 'MATCHED')
 gdal.AllRegister()
 
@@ -78,7 +78,7 @@ def build_dictionary():
        tuples are (crest,x_offset,y_offset) """
     dictionary = {}
     for f in os.listdir(matched_crest_dir):
-        tif, crest, score, xoff, yoff = f.rstrip(".png").split("#")
+        tif, crest, score, xoff, yoff = f.rstrip(".png").split(":")
         if tif in dictionary:
             dictionary[tif].append((crest, score, xoff, yoff))
         else:

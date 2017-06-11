@@ -278,12 +278,16 @@ class MetaLookup:
 
     def get_data(self, tif_path):
         s = stamp(tif_path)
+        if s not in self.charts.keys():
+            s = s.replace('X', '-')
+            if not s in self.charts.keys():
+                raise Exception("Could not get data for chart: {}".format(tif_path))
         return self.charts[s]
 
 
 # if __name__ == '__main__':
 #     ml = MetaLookup()
-#     tp = os.path.join(config.ukho_geotiff_dir, '2552-0_W.tif')
+#     tp = os.path.join(config.ukho_geotiff_dir, '110X-0.tif')
 #     print file_name_decoder(tp)
 #     print stamp(tp)
 #     data = ml.get_data(tp)

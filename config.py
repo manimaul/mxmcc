@@ -27,8 +27,8 @@ png_nq_binary = 'pngnq'
 # png_nq_binary = 'C:\\pngnq\\pngnqi.exe'
 
 # InputOutput directory
-_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-# _root_dir = os.path.join('/Volumes/Data', 'mxmcc')
+#_root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
+_root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
 # _root_dir = os.path.join('D:\\', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
@@ -39,9 +39,9 @@ _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Dec16.xls'
-ukho_source_breakdown = 'Raster only source information (Standard Version) Q1 2017.xlsx'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Dec16.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts May 17.xls'
+ukho_source_breakdown = 'Raster only source information Q2 NLHO TSS 2017 (Standard Version).xlsx'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts May 17.xls'
 ukho_chart_dpi = 127
 
 ######################################################################
