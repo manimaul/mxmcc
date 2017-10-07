@@ -39,9 +39,9 @@ _root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts May 17.xls'
-ukho_source_breakdown = 'Raster only source information Q2 NLHO TSS 2017 (Standard Version).xlsx'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts May 17.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Oct 17.xls'
+ukho_source_breakdown = 'Raster only source information (Standard Version) Q4 2017.xlsx'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Oct 17.xls'
 ukho_chart_dpi = 127
 
 ######################################################################
