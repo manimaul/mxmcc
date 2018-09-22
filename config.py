@@ -23,12 +23,20 @@ import time
 # EDIT THIS SECTION ONLY##############################################
 ######################################################################
 
+# Links
+linz_web =    'https://www.linz.govt.nz/sea/charts/information-about-charts'
+linz_base =   'http://topo.linz.govt.nz/hydro/BSB_BASE.zip'
+linz_update = 'http://topo.linz.govt.nz/hydro/BSB_UPDATE.zip'
+
+noaa_web =    'http://www.charts.noaa.gov/RNCs/RNCs.shtml'
+noaa_all =    'http://www.charts.noaa.gov/RNCs/All_RNCs.zip'
+
 png_nq_binary = 'pngnq'
 # png_nq_binary = 'C:\\pngnq\\pngnqi.exe'
 
 # InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-_root_dir = os.path.join('/Volumes/Data', 'mxmcc')
+_root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
 # _root_dir = os.path.join('D:\\', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
@@ -39,9 +47,9 @@ _root_dir = os.path.join('/Volumes/Data', 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Dec16.xls'
-ukho_source_breakdown = 'Raster only source information (Standard Version) Q1 2017.xlsx'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Dec16.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts July 2018.xls'
+ukho_source_breakdown = 'Raster only source information (Standard Version) Q3 2018.xlsx'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts July 2018.xls'
 ukho_chart_dpi = 127
 
 ######################################################################

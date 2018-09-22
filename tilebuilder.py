@@ -228,7 +228,7 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
 
     # ---- grab inverted geomatrix from ground control points
     geotransform = gdalds.get_geo_transform(ds)
-    _success, inv_transform = gdal.InvGeoTransform(geotransform)
+    inv_transform = gdal.InvGeoTransform(geotransform)
 
     logger.log(log_on, 'west east', tile_west, tile_east)
 

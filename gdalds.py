@@ -44,7 +44,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
 
     # ---- grab inverted geomatrix
     geotransform = get_geo_transform(gdal_ds)
-    _success, inv_geotransform = gdal.InvGeoTransform(geotransform)
+    inv_geotransform = gdal.InvGeoTransform(geotransform)
 
     # ---- transform lat long to dataset coordinates, then coordinates to pixel/lines
     polygon_wkt = 'POLYGON (('
