@@ -164,9 +164,9 @@ class BsbGdalMixLookup(GdalGeoTiffLookup):
 
     def get_min_zoom(self, map_path):
         if self._is_bsb(map_path):
-            return self.bsb_lookup.get_zoom(map_path)
+            return self.bsb_lookup.get_min_zoom(map_path)
 
-        return super(BsbGdalMixLookup, self).get_zoom(map_path)
+        return super(BsbGdalMixLookup, self).get_min_zoom(map_path)
 
     def get_max_zoom(self, map_path):
         return self.get_min_zoom(map_path)

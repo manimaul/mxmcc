@@ -558,9 +558,10 @@ def build_tiles_for_catalog(catalog_name):
     pool.close()
     pool.join()  # wait for pool to empty
 
+
 # if __name__ == '__main__':
-#     out_dir = "D:\\mxmcc\\tiles\\unmerged\\REGION_NZ\\NZ531201"
-#     map_path = 'D:\\mxmcc\\charts\\linz\\BSB_ROOT\\NZ5312\NZ531201.KAP'
+#     out_dir = "/Volumes/MacData/mxmcc/charts/noaa/BSB_ROOT/19322/out"
+#     map_path = '/Volumes/MacData/mxmcc/charts/noaa/BSB_ROOT/19322/19322_1.KAP'
 #     import bsb
 #     header = bsb.BsbHeader(map_path)
 #     print header.get_base_filename()

@@ -136,6 +136,8 @@ def dataset_get_bounds(gdal_ds, epsg=4326):
 
     # we need a north up dataset
     ds = gdal.AutoCreateWarpedVRT(gdal_ds, ds_wkt, ds_wkt)
+    if ds is None:
+        ds = gdal_ds
     geotransform = get_geo_transform(ds)
     transform = osr.CoordinateTransformation(ds_srs, out_srs)
 
