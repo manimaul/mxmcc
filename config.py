@@ -47,9 +47,9 @@ _root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts July 2018.xls'
-ukho_source_breakdown = 'Raster only source information (Standard Version) Q3 2018.xlsx'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts July 2018.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Oct 2018.xls'
+ukho_source_breakdown = 'Raster only source information (Standard Version) Q4 2018.xlsx'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Oct 2018.xls'
 ukho_chart_dpi = 127
 
 ######################################################################
@@ -140,6 +140,7 @@ def setup_dir_structure():
     print 'MXMCC directory structure is ready :)'
 
 ######################################################################
+
 
 if __name__ == '__main__':
     setup_dir_structure()
