@@ -14,11 +14,11 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import datetime
 import os
 
-import bsb
-import ukho_xlrd_lookup
-import findzoom
-import gdalds
-import config
+from . import bsb
+from . import ukho_xlrd_lookup
+from . import findzoom
+from . import gdalds
+from . import config
 
 # coordinates need to be longitude,latitude,altitude
 cutline_kml = '''<?xml version='1.0' encoding='UTF-8'?>

@@ -13,8 +13,8 @@ import os.path
 
 from PIL import Image
 
-import catalog
-import config
+from . import catalog
+from . import config
 
 
 error_message = ''
@@ -48,7 +48,7 @@ def _x_dir_has_tiles(x_dir):
             img_path = os.path.join(x_dir, d)
             img = Image.open(img_path)
             if _full_transparency(img):
-                print img_path
+                print(img_path)
             else:
                 return True
 
@@ -73,10 +73,10 @@ def verify_opt(catalog_name, base_dir=config.merged_tile_dir):
 
     i = len(un_opt_set)
     n = len(opt_set)
-    print 'un-opt dir count:{}'.format(i)
-    print 'opt dir count:{}'.format(n)
+    print('un-opt dir count:{}'.format(i))
+    print('opt dir count:{}'.format(n))
     missing = opt_set ^ un_opt_set
-    print 'number of missing charts: {} \n {}'.format(len(missing), missing)
+    print('number of missing charts: {} \n {}'.format(len(missing), missing))
     return i == n and i != 0
 
 
@@ -167,14 +167,14 @@ def verify(region_lst):
     for region in region_lst:
         region = region.upper()
         v = verify_catalog(region)
-        print region, 'verify:', v
+        print(region, 'verify:', v)
         if not v:
-            print error_message
+            print(error_message)
         v = verify_opt(region)
-        print region, 'verify opt:', v
+        print(region, 'verify opt:', v)
         if not v:
-            print error_message
-        print '------------------------------'
+            print(error_message)
+        print('------------------------------')
 
 
 if __name__ == '__main__':

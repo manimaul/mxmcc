@@ -9,16 +9,16 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import json
 import hashlib
 import os
-import config
+from . import config
 import time
-from zdata import get_zdat_epoch
+from .zdata import get_zdat_epoch
 
 BASE_URL = ''
 
 
 def merge_manifest(json_path_old, json_path_new, json_path_result):
-    json_old = json.load(file(json_path_old, 'r'))
-    json_new = json.load(file(json_path_new, 'r'))
+    json_old = json.load(open(json_path_old, 'r'))
+    json_new = json.load(open(json_path_new, 'r'))
     for key in json_new['regions'].keys():
         json_old['regions'][key] = json_new['regions'][key]
 
@@ -64,7 +64,7 @@ def generate(data=None, base_url=BASE_URL):
 
             os.rename(abs_path_gemf_org, abs_path_gemf)
             os.rename(abs_path_data_org, abs_path_data)
-            print region
+            print(region)
             data['regions'][region] = {'gemf_url': base_url + '/' + gemf_name,
                                        'data_url': base_url + '/' + data_name,
                                        'gemf_checksum': checksum(abs_path_gemf),
@@ -115,7 +115,7 @@ def revert():
             region_ts = ea[:ea.find('.')]
             region = region_ts[region_ts.find('REGION'):]
             ext = ea[ea.find('.'):]
-            print ext, region, ea
+            print(ext, region, ea)
             os.rename(os.path.join(config.compiled_dir, ea), os.path.join(config.compiled_dir, region + ext))
 
 

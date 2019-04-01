@@ -12,13 +12,13 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 import os.path
 
-import config
-from noaaxml import NoaaXmlReader
-import lookups
-import wl_filter_list_generator
-import file_name_sanitizer
-from region_constants import *
-from search import MapPathSearch
+from . import config
+from .noaaxml import NoaaXmlReader
+from . import lookups
+from . import wl_filter_list_generator
+from . import file_name_sanitizer
+from .region_constants import *
+from .search import MapPathSearch
 
 
 class _RegionInfo:

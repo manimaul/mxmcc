@@ -2,11 +2,11 @@ import os
 
 from shapely.geometry import Polygon
 
-from search import MapPathSearch
-from region_constants import *
-import config
-import gdalds
-import ukho_remove_duplicates
+from .search import MapPathSearch
+from .region_constants import *
+from . import config
+from . import gdalds
+from . import ukho_remove_duplicates
 
 
 __author__ = 'Will Kamp'
@@ -67,7 +67,7 @@ def compare_previous(this_list, previous_list):
 
     difference = list(tl.symmetric_difference(pl))
     difference.sort()
-    print 'difference:', len(difference)
+    print('difference:', len(difference))
 
 
 def make_manifest():
@@ -89,7 +89,7 @@ def make_manifest():
     for abs_map_path in mps.file_paths:
         map_name = os.path.basename(abs_map_path)
         map_name = map_name[:map_name.rfind('.')]  # remove extension
-        print 'inspecting', map_name, 'for inclusion', '%s of %s' % (n, o)
+        print('inspecting', map_name, 'for inclusion', '%s of %s' % (n, o))
         n += 1
         ds = gdalds.get_ro_dataset(abs_map_path)
         wnes, is_north_up = gdalds.dataset_lat_lng_bounds(ds)
@@ -101,12 +101,12 @@ def make_manifest():
                 matched[region].append(map_name + '\n')
                 num_matched += 1
 
-    print 'writing included - ', num_matched
+    print('writing included - ', num_matched)
     for region in matched.keys():
         match_lst = matched[region]
         num = len(match_lst)
         if num > 0:
-            print region, num
+            print(region, num)
             manifest_path = os.path.join(config.ukho_meta_dir, region + '.txt')
             if os.path.exists(manifest_path):
                 bak = manifest_path + '.bak'  # '%s_BAK.txt' % time.time()
@@ -117,10 +117,10 @@ def make_manifest():
                 # todo: check crest burner to see if we write png to tif
                 manifest.writelines(matched[region])
 
-    print 'skipped - ', o - num_matched
+    print('skipped - ', o - num_matched)
 
     for region in previous.keys():
-        print 'comparing region:', region, 'with previous generated list'
+        print('comparing region:', region, 'with previous generated list')
         compare_previous(matched[region], previous[region])
 
 

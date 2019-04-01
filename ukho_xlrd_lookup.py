@@ -10,7 +10,7 @@ import os
 import re
 
 import xlrd
-import config
+from . import config
 
 
 def file_name_decoder(file_name):
@@ -85,7 +85,7 @@ class Data:
         or_name = str(self.chart_number) + '-' + str(self.panel_number)
         override_path = os.path.join(os.path.dirname(__file__), 'ukho_overrides', or_name)
         if os.path.isfile(override_path):
-            print 'using ply override coordinates', or_name
+            print('using ply override coordinates', or_name)
             self.override_coords = self._get_override_coords(override_path)
 
     def _get_override_coords(self, path_to_override):

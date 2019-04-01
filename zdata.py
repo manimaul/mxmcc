@@ -12,9 +12,9 @@ import codecs
 import os.path
 import zipfile
 
-import config
-import catalog
-import regions
+from . import config
+from . import catalog
+from . import regions
 
 
 upd_fmt = U'UPDATE regions SET installeddate=\'%s\' WHERE name=\'%s\';\n'
@@ -34,7 +34,7 @@ def get_zdat_epoch(zdat_path):
     :return: the installeddate value to be set
     """
     zdat_file = zipfile.ZipFile(zdat_path, 'r', zipfile.ZIP_DEFLATED)
-    line = zdat_file.open(zdat_file.namelist()[0], 'r').readlines()[1]
+    line = str(zdat_file.open(zdat_file.namelist()[0], 'r').readlines()[1])
     l = line.find('\'') + 1
     r = line.find('\'', l)
     return line[l:r]
@@ -46,7 +46,7 @@ def generate_update():
     sql_fname = 'UPDATE.sql'
     sql_path = os.path.join(config.compiled_dir, sql_fname)
     zdat_path = os.path.join(config.compiled_dir, 'UPDATE.zdat')
-    print zdat_path
+    print(zdat_path)
     zdat = zipfile.ZipFile(zdat_path, 'w', zipfile.ZIP_DEFLATED)
     sqlf = open(sql_path, 'w')
     gemf_lst = []
@@ -71,7 +71,7 @@ def generate_update():
     zdat.write(sql_path, sql_fname)
     os.remove(sql_path)
     zdat.close()
-    print 'update written to: ' + zdat_path
+    print('update written to: ' + zdat_path)
 
 
 def generate_zdat_for_catalog(catalog_name, description=None):
@@ -107,6 +107,7 @@ def generate_zdat_for_catalog(catalog_name, description=None):
     zdat_file.write(sql_path, sql_fname)
     os.remove(sql_path)
     zdat_file.close()
+
 
 if __name__ == '__main__':
     generate_update()

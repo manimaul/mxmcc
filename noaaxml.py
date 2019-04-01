@@ -9,9 +9,9 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 '''Downloads noaa product catalog xml by region name and retrieves listing of chart files in the catalog
 '''
 
-import urllib
+from urllib import request
 import os
-import config
+from . import config
 from xml.dom import minidom
 
 xml_urls = {'NOAA_ALL': 'http://www.charts.noaa.gov/RNCs/RNCProdCat_19115.xml',
@@ -118,10 +118,13 @@ class NoaaXmlReader():
         xml_file_path = os.path.join(xml_dir, self.region_name)
 
         if not os.path.isfile(xml_file_path):
-            print 'retrieving xml from NOAA: ' + self.region_name
-            urllib.urlretrieve(xml_url, xml_file_path)
+            print('retrieving xml from NOAA: ' + self.region_name)
+            with open(xml_file_path, "w") as xml:
+                req = request.Request(url=xml_url)
+                f = request.urlopen(req)
+                xml.write(f.read().decode('utf-8'))
 
-        self.xml_file = file(xml_file_path)
+        self.xml_file = open(xml_file_path)
 
     def get_map_files(self):
         map_files = []
@@ -138,6 +141,7 @@ class NoaaXmlReader():
         map_files.sort()
         return map_files
 
+
 if __name__ == '__main__':
     nxl = NoaaXmlReader('REGION_04')
-    print nxl.get_map_files()
+    print(nxl.get_map_files())

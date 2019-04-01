@@ -218,7 +218,7 @@ def tms_tile_to_zxy_tile(tx, ty, zoom):
     return tx, (2**zoom - 1) - ty
 
 
-def lat_lng_bounds_to_pixel_bounds_res((min_lng, max_lat, max_lng, min_lat), level_of_detail):
+def lat_lng_bounds_to_pixel_bounds_res(min_lng, max_lat, max_lng, min_lat, level_of_detail):
     """
         Latitude longitude bounds to tile system pixel bounds
         :param level_of_detail: tile system zoom level
@@ -237,7 +237,7 @@ def lat_lng_bounds_to_pixel_bounds_res((min_lng, max_lat, max_lng, min_lat), lev
     return pixel_west, pixel_north, pixel_east, pixel_south, res_x, res_y
 
 
-def lat_lng_bounds_to_tile_bounds_count((min_lng, max_lat, max_lng, min_lat), level_of_detail):
+def lat_lng_bounds_to_tile_bounds_count(min_lng, max_lat, max_lng, min_lat, level_of_detail):
     """
         Latitude longitude bounds to tile system bounds
         :param level_of_detail: tile system zoom level

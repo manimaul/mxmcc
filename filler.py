@@ -14,11 +14,11 @@ import os
 
 from PIL import Image
 
-from tilesystem import tile_size
-from regions import is_valid_region
-from search import MapPathSearch
-import logger
-import config
+from .tilesystem import tile_size
+from .regions import is_valid_region
+from .search import MapPathSearch
+from . import logger
+from . import config
 
 
 MAX_ZOOM_TIMES = 8

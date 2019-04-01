@@ -13,11 +13,11 @@ import os
 import json
 
 from shapely.geometry import Polygon
-from noaaxml import NoaaXmlReader
-import config
-import gdalds
-from region_constants import *
-from search import MapPathSearch
+from .noaaxml import NoaaXmlReader
+from . import config
+from . import gdalds
+from .region_constants import *
+from .search import MapPathSearch
 
 BOUNDARIES = {REGION_WL1: Polygon(((20.653346, -75.816650),
                                    (27.973699, -71.410607),
@@ -65,7 +65,7 @@ def _make_file_list_region_dictionary():
     for abs_map_path in mps.file_paths:
         map_name = os.path.basename(abs_map_path)
         map_name = map_name[:map_name.rfind('.')]  # remove extension
-        print 'inspecting', map_name, 'for inclusion', '%s of %s' % (n, o)
+        print('inspecting', map_name, 'for inclusion', '%s of %s' % (n, o))
         n += 1
         ds = gdalds.get_ro_dataset(abs_map_path)
         wnes, is_north_up = gdalds.dataset_lat_lng_bounds(ds)
@@ -78,12 +78,12 @@ def _make_file_list_region_dictionary():
                 matched[region].append(abs_map_path)
                 num_matched += 1
 
-    print 'num_matched : ', num_matched
-    print 'skipped : ', max(0, o - num_matched)
+    print('num_matched : ', num_matched)
+    print('skipped : ', max(0, o - num_matched))
 
     with open(os.path.join(JSON_PATH), 'w') as f:
         json.dump(matched, f, indent=2)
 
 
 if __name__ == '__main__':
-    print get_file_list_region_dictionary()
+    print(get_file_list_region_dictionary())

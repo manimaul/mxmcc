@@ -28,8 +28,9 @@ import logging
 import itertools
 import sys
 import os
-from config import png_nq_binary
+from .config import png_nq_binary
 from subprocess import *
+from .tilesystem import tile_size
 
 from PIL import Image
 
@@ -57,7 +58,7 @@ def set_nothreads():
 
 def parallel_map(func, iterable):
     if multiprocessing is None or len(iterable) < 2:
-        return map(func, iterable)
+        return list(map(func, iterable))
     else:
         # map in parallel
         mp_pool = multiprocessing.Pool()  # multiprocessing pool
@@ -69,7 +70,7 @@ def parallel_map(func, iterable):
 
 
 def ld(*parms):
-    logging.debug(' '.join(itertools.imap(repr, parms)))
+    logging.debug(' '.join(map(repr, parms)))
 
 
 def ld_nothing(*parms):
@@ -78,7 +79,7 @@ def ld_nothing(*parms):
 
 def pf(*parms, **kparms):
     end = kparms['end'] if 'end' in kparms else '\n'
-    sys.stdout.write(' '.join(itertools.imap(str, parms)) + end)
+    sys.stdout.write(' '.join(map(str, parms)) + end)
     sys.stdout.flush()
 
 
@@ -158,7 +159,7 @@ def optimize_png(src, dst, dpath):
     'optimize png using pngnq utility'
     png_tile = os.path.basename(src)
     if not png_tile.startswith('.'):
-        command([png_nq_binary, '-s1', '-g2.2', '-n', '256', '-e', '.png', '-d', dpath, src])
+        command([png_nq_binary, '-s1', '-g2.2', '-n', str(tile_size), '-e', '.png', '-d', dpath, src])
 
 
 def to_jpeg(src, dst, dpath):

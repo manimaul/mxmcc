@@ -1,8 +1,8 @@
 import os
 import shutil
 
-import config
-from ukho_xlrd_lookup import stamp
+from . import config
+from .ukho_xlrd_lookup import stamp
 
 
 __author__ = 'Will Kamp'
@@ -50,7 +50,7 @@ def inspect_lst(the_list):
         # print the_list
         while len(the_list) > 1:
             t = the_list.pop()
-            print 'moving:', t
+            print('moving:', t)
 
             if t is not None:
                 t = os.path.join(config.ukho_geotiff_dir, t + '.tif')

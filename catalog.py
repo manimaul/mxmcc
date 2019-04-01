@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-__author__ = 'Will Kamp'
 __copyright__ = 'Copyright 2013, Matrix Mariner Inc.'
 __license__ = 'BSD'
 __email__ = 'will@mxmariner.com'
@@ -14,10 +11,10 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import os
 from operator import itemgetter
 
-from search import MapPathSearch
-import regions
-import config
-import lookups
+from . import search
+from . import regions
+from . import config
+from . import lookups
 import json
 
 
@@ -83,17 +80,9 @@ def build_catalog_for_region(region):
 
 
 def build_catalog_for_bsb_directory(bsb_dir, name=None):
-    map_search = MapPathSearch(bsb_dir, ['kap'])
+    map_search = search.MapPathSearch(bsb_dir, ['kap'])
 
     if name is None:
         name = os.path.basename(bsb_dir).lower()
 
     build_catalog(name.upper(), map_search.file_paths, lookups.BsbLookup())
-
-# if __name__ == "__main__":
-#     r = 'REGION_FAA_PLANNING'
-#     build_catalog_for_region(r)
-#     reader = get_reader_for_region(r)
-#     for item in reader:
-#         for key in reader.key_set():
-#             print key, ':', item[key]

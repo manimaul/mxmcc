@@ -18,22 +18,39 @@ class MapPathSearch:
 
            file_paths is a list of all full paths found
         """
-
-        for i in range(len(map_extensions)):
-            map_extensions[i] = map_extensions[i].upper()
-
         self.file_paths = []
 
-        if os.path.isdir(directory):
-            os.path.walk(directory, self.__walker, (tuple(map_extensions), include_only))
-        else:
-            print directory, 'is not a directory.'
+        extensions = set()
+        for ext in map_extensions:
+            extensions.add(ext.upper())
 
-    def __walker(self, args, p_dir, p_file):
-        map_extensions, include_only = args
         if include_only is not None:
             include_only = set(include_only)
-        for f in p_file:
-            if f.upper().endswith(map_extensions) and (include_only is None or f in include_only) and not f.startswith(
-                    "."):
-                self.file_paths.append(os.path.join(p_dir, f))
+
+        if os.path.isdir(directory):
+            for root, dirs, files in os.walk(directory):
+                for f in files:
+                    include = False
+                    i = f.rfind(".")
+                    if i > 0:
+                        ext = f[i+1:].upper()
+                        include = ext in extensions
+                        if include and include_only is not None:
+                            include = f in include_only
+                    if include:
+                        self.file_paths.append(os.path.join(root, f))
+        else:
+            print(directory, 'is not a directory.')
+
+#    def __walker(self, args, p_dir, p_file):
+#        map_extensions, include_only = args
+#        if include_only is not None:
+#            include_only = set(include_only)
+#        for f in p_file:
+#            if f.upper().endswith(map_extensions) and (include_only is None or f in include_only) and not f.startswith(
+#                    "."):
+#                self.file_paths.append(os.path.join(p_dir, f))
+
+
+if __name__ == '__main__':
+    print("foo")

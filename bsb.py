@@ -13,7 +13,7 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 import os.path
 from re import sub
 
-import findzoom
+from . import findzoom
 
 
 class BsbHeader:
@@ -31,9 +31,9 @@ class BsbHeader:
         self._read_header(map_path)
 
     def _read_header(self, map_path):
-        with open(map_path, 'rU') as map_file:
+        with open(map_path, 'rb') as map_file:
             for line in map_file:
-                if '\x1A' in line:
+                if b'\x1A' in line:
                     break
                 line = line.decode('ascii', 'ignore')
                 self.lines.append(line)
@@ -174,7 +174,7 @@ class BsbHeader:
 
     def print_header(self):
         for line in self.lines:
-            print line.strip()
+            print(line.strip())
 
             # if __name__ == '__main__':
             #     import os

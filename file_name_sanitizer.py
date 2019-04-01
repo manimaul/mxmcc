@@ -24,7 +24,7 @@ def sanitize(root_path):
         raise Exception(root_path + 'is not a directory')
 
     if os.path.isfile(os.path.join(root_path, "sane")):
-        print 'sanitized already complete'
+        print('sanitized already complete')
         return
 
     for root, dirs, files in os.walk(root_path):

@@ -47,9 +47,9 @@ _root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Oct 2018.xls'
-ukho_source_breakdown = 'Raster only source information (Standard Version) Q4 2018.xlsx'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Oct 2018.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Jan 2019.xls'
+ukho_source_breakdown = 'Raster only source information Q1 2019 (Standard Version).xlsx'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Jan 2019.xls'
 ukho_chart_dpi = 127
 
 ######################################################################
@@ -125,7 +125,7 @@ def check_dirs():
 
 
 def setup_dir_structure():
-    print 'Setting up MXMCC directory structure'
+    print('Setting up MXMCC directory structure')
     if not os.path.isdir(_root_dir):
         os.makedirs(_root_dir)
 
@@ -134,10 +134,10 @@ def setup_dir_structure():
 
     for each in _all_dirs:
         if not os.path.isdir(each):
-            print 'creating directory: ' + each
+            print('creating directory: ' + each)
             os.makedirs(each)
 
-    print 'MXMCC directory structure is ready :)'
+    print('MXMCC directory structure is ready :)')
 
 ######################################################################
 

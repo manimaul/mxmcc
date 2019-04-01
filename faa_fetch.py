@@ -11,9 +11,9 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 import os
 import urllib
-from region_constants import *
+from .region_constants import *
 from urlparse import urlsplit
-import config
+from . import config
 import zipfile
 from bs4 import BeautifulSoup
 import requests
@@ -85,11 +85,6 @@ def directory_data(region):
             data[name] = {'number': number, 'link': each}
     return data
 
-for each_region in faa_regions:
-    dir_data = directory_data(each_region)
-    for each_data in dir_data:
-        faa_regions[each_region]['sources'].append(dir_data[each_data]['link'])
-
 
 def unzip(source_filename, dest_dir):
     try:
@@ -119,9 +114,9 @@ def fetch_region(region):
                 os.makedirs(dest_path)
             dest = os.path.join(dest_path, file_name)
             if not os.path.isfile(dest):
-                print 'retrieving {}'.format(link)
+                print('retrieving {}'.format(link))
                 urllib.urlretrieve(link, dest)
-                print 'unzipping {}'.format(dest)
+                print('unzipping {}'.format(dest))
                 unzip(dest, dest_path)
 
 
@@ -129,6 +124,13 @@ def fetch_all():
     for r in faa_regions:
         fetch_region(r)
 
+
+for each_region in faa_regions:
+    dir_data = directory_data(each_region)
+    for each_data in dir_data:
+        faa_regions[each_region]['sources'].append(dir_data[each_data]['link'])
+
+
 if __name__ == '__main__':
-    print 'downloading regions'
+    print('downloading regions')
     fetch_all()

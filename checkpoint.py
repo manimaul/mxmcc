@@ -13,7 +13,7 @@ import os
 
 from enum import Enum
 
-import config
+from . import config
 
 
 class OrderedEnum(Enum):
@@ -55,7 +55,7 @@ class CheckPoint(OrderedEnum):
 
     @classmethod
     def tostring(cls, val):
-        for k, v in vars(cls).iteritems():
+        for k, v in vars(cls).items():
             if v == val:
                 return k
 
@@ -110,3 +110,6 @@ class CheckPointStore:
                 cp = CheckPoint.tostring(self.checkpoints[region][profile])
                 store.write('{}:::{}:::{}\n'.format(region, profile, cp))
         store.close()
+
+if __name__ == '__main__':
+    print(CheckPoint.CHECKPOINT_ARCHIVE)

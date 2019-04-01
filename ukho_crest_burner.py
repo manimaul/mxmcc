@@ -16,7 +16,7 @@ import subprocess
 from osgeo import gdal
 from PIL import Image
 
-import config
+from . import config
 
 
 match_f_name = "%s:%s:%s:%s:%s.png"  # chart#crest#score#xoff#yoff
@@ -29,18 +29,18 @@ def burn(chart_f_name, burn_coord_list):
     png_path = os.path.join(config.ukho_png_dir, chart_f_name + ".png")
 
     if os.path.isfile(png_path):
-        print 'done'
+        print('done')
         return
 
     # chart png to open
     tif_path = os.path.join(config.ukho_geotiff_dir, chart_f_name + ".tif")
 
     if not os.path.isfile(tif_path):
-        print 'WARNING: not tif for: ' + chart_f_name
+        print('WARNING: not tif for: ' + chart_f_name)
         return
 
     if not os.path.isfile(png_path):
-        print "creating png with gdal"
+        print("creating png with gdal")
         # -----create a png
         command = "gdal_translate -of PNG -expand rgba \"%s\" \"%s\"" % (
         os.path.normpath(tif_path), os.path.normpath(png_path))
@@ -55,7 +55,7 @@ def burn(chart_f_name, burn_coord_list):
 
     for dicTuple in burn_coord_list:
         crest, score, xoff, yoff = dicTuple
-        print "burning away crest %s" % crest
+        print("burning away crest %s" % crest)
         cst = match_f_name % (chart_f_name, crest, score, xoff, yoff)
         cst_path = os.path.join(matched_crest_dir, cst)
 
@@ -94,6 +94,6 @@ if __name__ == "__main__":
     total = len(d.keys())
     num = 1
     for ea in d.keys():
-        print "%s of %s" % (num, total)
+        print("%s of %s" % (num, total))
         burn(ea, d[ea])
         num += 1

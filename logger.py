@@ -29,4 +29,4 @@ def log(debug=OFF, *msg):
             m = ''
         for ea in msg:
             m = m + ' ' + str(ea)
-        print m
+        print(m)

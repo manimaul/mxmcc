@@ -28,15 +28,15 @@
 
 from PIL import Image
 import glob
-import catalog
-import config
+from . import catalog
+from . import config
 import os
 import pickle
 import re
 import shutil
 import sys
 import multiprocessing
-from tilesystem import tile_size
+from .tilesystem import tile_size
 
 
 def set_nothreads():
@@ -95,8 +95,8 @@ class MergeSet:
             try:
                 self.max_zoom = max([int(i) for i in glob.glob('[0-9]*')])
             except:
-                print "there is a problem"
-                print self.src
+                print("there is a problem")
+                print(self.src)
                 sys.exit()
         finally:
             os.chdir(cwd)
@@ -150,7 +150,7 @@ class MergeSet:
                 #if options.underlay and transp != 0:
                 #    self.underlay(tile, src_path, src_raster, options.underlay)
         except KeyboardInterrupt: # http://jessenoller.com/2009/01/08/multiprocessingpool-and-keyboardinterrupt/
-            print 'got KeyboardInterrupt'
+            print('got KeyboardInterrupt')
             raise KeyboardInterruptError()
         return (tile, transp) # send back transparency values for caching
 

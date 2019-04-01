@@ -274,4 +274,4 @@ if __name__ == '__main__':
     import os
     p = '/Volumes/USB_DATA/mxmcc/charts/faa/REGION_FAA_PLANNING/Alaska Wall Planning Chart 1.tif'
     d = get_ro_dataset(p)
-    print dataset_get_bounds(d)
+    print(dataset_get_bounds(d))

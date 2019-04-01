@@ -42,11 +42,11 @@ from PIL import Image
 from osgeo import gdal
 import osr
 
-import logger
-import tilesystem
-import gdalds
-import catalog
-import config
+from . import logger
+from . import tilesystem
+from . import gdalds
+from . import catalog
+from . import config
 
 
 # http://www.gdal.org/formats_list.html
@@ -212,7 +212,9 @@ def _render_tmp_vrt_stack_for_map(map_stack, zoom, out_dir):
     # fetch vrt data-set extends as tile bounds
     lat_lng_bounds_wnes, is_north_up = gdalds.dataset_lat_lng_bounds(ds)
 
-    tile_bounds_wnes = tilesystem.lat_lng_bounds_to_tile_bounds_count(lat_lng_bounds_wnes, zoom_level)
+    min_lng, max_lat, max_lng, min_lat = lat_lng_bounds_wnes
+
+    tile_bounds_wnes = tilesystem.lat_lng_bounds_to_tile_bounds_count(min_lng, max_lat, max_lng, min_lat, zoom_level)
 
     tile_west, tile_north, tile_east, tile_south, tile_count_x, tile_count_y = tile_bounds_wnes
 
@@ -294,10 +296,10 @@ def _scale_tile(tile_dir, z, x, y):
 
 def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transform,
                         inv_transform, zoom_level, out_dir, ds):
-    for tile_x in range(tile_min_x, tile_max_x + 1, 1):
+    for tile_x in range(int(tile_min_x), int(tile_max_x) + 1, 1):
         tile_dir = os.path.join(out_dir, '%s/%s' % (zoom_level, tile_x))
 
-        for tile_y in range(tile_min_y, tile_max_y + 1, 1):
+        for tile_y in range(int(tile_min_y), int(tile_max_y) + 1, 1):
             tile_path = os.path.join(tile_dir, '%s.png' % tile_y)
             logger.log(log_on, tile_path)
 
@@ -364,7 +366,7 @@ def _cut_tiles_in_range(tile_min_x, tile_max_x, tile_min_y, tile_max_y, transfor
             transparent = True
             if data is not None:
                 for ea in data:
-                    if ord(ea) != 0:
+                    if ea != 0:
                         transparent = False
                         break
 
