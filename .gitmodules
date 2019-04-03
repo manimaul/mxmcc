@@ -1,3 +1,0 @@
-[submodule "lib/mbutil"]
-	path = mbutil
-	url = git@github.com:mapbox/mbutil.git

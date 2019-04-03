@@ -10,34 +10,8 @@ Charts in the BSB version 2 and 3 formats are supported as input as well as maps
 
 **Note: Generated gemf + meta data archives are compatible with [MX Mariner](http://mxmariner.com/).**
 
-submodules:
-
-https://github.com/mapbox/mbutil
-
-* run $git submodule init
-
-requirements:
-
-* python
-
-* pyproj
-
-* [shapely](http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely)
-Windows: `pip install C:/some-dir/some-file.whl`
-
-* [gdal](http://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal)
-Version 1.x (2.x not currently compatible)
-
-* pillow
-
-* numpy
-
-* pycrypto
-
-* enum34
-
-* xlrd
-
-* pngnq (binary)
-
-
+### Setup [VirtualEnvWrapper](https://virtualenvwrapper.readthedocs.io/en/latest/index.html)
+```bash
+mkvirtualenv -p python3 mxmcc
+pip install -r requirements.txt
+```

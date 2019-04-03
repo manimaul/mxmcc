@@ -1,22 +1,28 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-python mxmcc.py REGION_02
-python mxmcc.py REGION_03
-python mxmcc.py REGION_04
-python mxmcc.py REGION_06
-python mxmcc.py REGION_07
-python mxmcc.py REGION_08
-python mxmcc.py REGION_10
-python mxmcc.py REGION_12
-python mxmcc.py REGION_13
-python mxmcc.py REGION_14
-python mxmcc.py REGION_15
-python mxmcc.py REGION_17
-python mxmcc.py REGION_22
-python mxmcc.py REGION_24
-python mxmcc.py REGION_26
-python mxmcc.py REGION_30
-python mxmcc.py REGION_32
-python mxmcc.py REGION_34
-python mxmcc.py REGION_36
-python mxmcc.py REGION_40
+regions=(REGION_34
+REGION_40
+REGION_15
+REGION_32
+REGION_22
+REGION_14
+REGION_08
+REGION_24
+REGION_17
+REGION_26
+REGION_10
+REGION_02
+REGION_03
+REGION_13
+REGION_12
+REGION_06
+REGION_07
+REGION_06
+REGION_04
+REGION_30)
+
+for each in ${regions[@]}; do
+    echo "rendering $each"
+    python compiler.py $each
+done
+

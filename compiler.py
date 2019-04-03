@@ -82,7 +82,7 @@ def _optimize_tiles(checkpoint_store, profile, region, base_dir=config.merged_ti
     # optimize
     point = CheckPoint.CHECKPOINT_OPT
     if checkpoint_store.get_checkpoint(region, profile) < point:
-        #if platform.system() == 'Windows':
+        # if platform.system() == 'Windows':
         #   tiles_opt.set_nothreads()
         tiles_opt.optimize_dir(os.path.join(base_dir, region))
 
@@ -260,21 +260,20 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    r = 'REGION_10'
-    compile_region(r, profile=PROFILE_MB_C, perform_clean=False)
+    import sys
 
-    #if config.check_dirs():
-    #    args = sys.argv
-    #    if len(args) < 2:
-    #        print_usage()
-    #    else:
-    #        rgn = args[1]
-    #        if len(args) >= 3:
-    #            prof = args[2]
-    #        else:
-    #            prof = PROFILE_MX_R
-    #        compile_region(rgn, prof)
-    #else:
-    #    print('Your mxmcc directory structure is not ready\n' + \
-    #          'Please edit the top portion of config.py, run config.py,\n' + \
-    #          'and place charts in their corresponding directories.')
+    if config.check_dirs():
+        args = sys.argv
+        if len(args) < 2:
+            print_usage()
+        else:
+            rgn = args[1]
+            if len(args) >= 3:
+                prof = args[2]
+            else:
+                prof = PROFILE_MX_R
+            compile_region(rgn, prof)
+    else:
+        print('Your mxmcc directory structure is not ready\n' +
+              'Please edit the top portion of config.py, run config.py,\n' +
+              'and place charts in their corresponding directories.')
