@@ -16,7 +16,6 @@ from . import config
 from . import catalog
 from . import regions
 
-
 upd_fmt = U'UPDATE regions SET installeddate=\'%s\' WHERE name=\'%s\';\n'
 
 custom_fmt0 = u'DELETE from regions WHERE name=\'%s\';\n'
@@ -65,13 +64,21 @@ def generate_update():
         region = os.path.basename(p)
         region = region[:region.rfind('.')]
         z_path = os.path.join(config.compiled_dir, region + '.zdat')
-        sqlf.write(sqlstr % (get_zdat_epoch(z_path), size, region)+'\n')
+        sqlf.write(sqlstr % (get_zdat_epoch(z_path), size, region) + '\n')
 
     sqlf.close()
     zdat.write(sql_path, sql_fname)
     os.remove(sql_path)
     zdat.close()
     print('update written to: ' + zdat_path)
+
+
+def format_entry(region: str, entry: dict):
+    def san(thing):
+        return str(thing).strip()
+    return fmt1 % (region, os.path.basename(san(entry['path'])), san(entry['name']), san(entry['date']),
+                   san(entry['scale']), san(entry['outline']), san(entry['depths']),
+                   san(entry['max_zoom']))
 
 
 def generate_zdat_for_catalog(catalog_name, description=None):
@@ -99,9 +106,9 @@ def generate_zdat_for_catalog(catalog_name, description=None):
         sql_file.write(custom_fmt1 % (region, description, region.lower().replace('_', ''), num_bytes, config.epoch))
 
     for entry in reader:
-            sql_file.write(fmt1 % (region, os.path.basename(entry['path']), entry['name'], entry['date'],
-                                                            entry['scale'], entry['outline'], entry['depths'],
-                                                            entry['max_zoom']))
+        sql_file.write(fmt1 % (region, os.path.basename(entry['path']), entry['name'], entry['date'],
+                               entry['scale'], entry['outline'], entry['depths'],
+                               entry['max_zoom']))
 
     sql_file.close()
     zdat_file.write(sql_path, sql_fname)
