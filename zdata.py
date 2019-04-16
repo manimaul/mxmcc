@@ -86,7 +86,7 @@ def generate_zdat_for_catalog(catalog_name, description=None):
        catalog_name - the name of the catalog / region to generate data for
        description - if this is a custom catalog / region... set the description here
     """
-    region = catalog_name.upper()
+    region = catalog_name.upper().strip()
     reader = catalog.get_reader_for_region(catalog_name)
 
     sql_fname = region + '.sql'
@@ -106,9 +106,7 @@ def generate_zdat_for_catalog(catalog_name, description=None):
         sql_file.write(custom_fmt1 % (region, description, region.lower().replace('_', ''), num_bytes, config.epoch))
 
     for entry in reader:
-        sql_file.write(fmt1 % (region, os.path.basename(entry['path']), entry['name'], entry['date'],
-                               entry['scale'], entry['outline'], entry['depths'],
-                               entry['max_zoom']))
+        sql_file.write(format_entry(region, entry))
 
     sql_file.close()
     zdat_file.write(sql_path, sql_fname)
