@@ -86,14 +86,3 @@ def build_dictionary():
             dictionary[tif] = lst
 
     return dictionary
-
-
-if __name__ == "__main__":
-    d = build_dictionary()
-
-    total = len(d.keys())
-    num = 1
-    for ea in d.keys():
-        print("%s of %s" % (num, total))
-        burn(ea, d[ea])
-        num += 1

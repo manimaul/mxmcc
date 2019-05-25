@@ -122,8 +122,3 @@ def make_manifest():
     for region in previous.keys():
         print('comparing region:', region, 'with previous generated list')
         compare_previous(matched[region], previous[region])
-
-
-if __name__ == "__main__":
-    make_manifest()
-
