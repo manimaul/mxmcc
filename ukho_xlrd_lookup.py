@@ -185,6 +185,9 @@ class MetaLookup:
         sheet = self.xls.sheet_by_name('Charts & Titles')
         for n in range(sheet.nrows):
             if n > 0:
+                prefix = str(sheet.row(n)[0].value).strip()
+                if prefix != '---':
+                    continue
                 chart_number = str(int(sheet.row(n)[1].value))
                 suffix = sheet.row(n)[2].value
                 panel_number = '0'
@@ -204,6 +207,9 @@ class MetaLookup:
         sheet = self.xls.sheet_by_name('Panels')
         for n in range(sheet.nrows):
             if n > 0:
+                prefix = str(sheet.row(n)[0].value).strip()
+                if prefix != '---':
+                    continue
                 chart_number = str(int(sheet.row(n)[1].value))
                 suffix = sheet.row(n)[2].value
                 panel_number = str(int(sheet.row(n)[3].value))
@@ -223,6 +229,9 @@ class MetaLookup:
         sheet = self.xls.sheet_by_name('Edition date & latest NM')
         for n in range(sheet.nrows):
             if n > 0:
+                prefix = str(sheet.row(n)[0].value).strip()
+                if prefix != '---':
+                    continue
                 chart_number = str(int(sheet.row(n)[1].value))
                 try:
                     year, month, day, _, __, ___ = xlrd.xldate_as_tuple(sheet.row(n)[3].value, self.xls.datemode)
@@ -243,6 +252,9 @@ class MetaLookup:
 
         for n in range(sheet.nrows):
             if n > 0:
+                prefix = str(sheet.row(n)[0].value).strip()
+                if prefix != '---':
+                    continue
                 try:
                     chart_number = str(int(sheet.row(n)[1].value))
                     suffix = str(sheet.row(n)[2].value).strip()
@@ -279,21 +291,3 @@ class MetaLookup:
     def get_data(self, tif_path):
         s = stamp(tif_path)
         return self.charts[s]
-
-
-# if __name__ == '__main__':
-#     ml = MetaLookup()
-#     tp = os.path.join(config.ukho_geotiff_dir, '2552-0_W.tif')
-#     print file_name_decoder(tp)
-#     print stamp(tp)
-#     data = ml.get_data(tp)
-#     print 'chart number:', data.chart_number
-#     print 'panel number:', data.panel_number
-#     print 'suffix:', data.suffix
-#     print 'name:', data.name
-#     print 'scale:', data.scale
-#     print 'depths:', data.depth_units
-#     print 'updated:', data.updated
-#     # print 'zoom', data.get_zoom()
-#     print 'outline', data.get_outline()
-#     print 'coords', len(data.coords)

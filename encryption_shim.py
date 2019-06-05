@@ -71,7 +71,3 @@ def generate_token(region):
         return True
     else:
         return False
-
-
-if __name__ == '__main__':
-    _make_java_if_needed()
