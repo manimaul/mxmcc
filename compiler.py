@@ -123,8 +123,8 @@ def _create_gemf(checkpoint_store, profile, region):
         else:
             name = region + '.opt'
         gemf.generate_gemf(name, add_uid=should_encrypt)
-        if should_encrypt:
-            encryption_shim.generate_token(region)
+        #if should_encrypt:
+        #   encryption_shim.generate_token(region)
         checkpoint_store.clear_checkpoint(region, profile, point)
     else:
         print('skipping checkpoint', point)

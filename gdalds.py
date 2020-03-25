@@ -204,7 +204,7 @@ def dataset_meters_bounds(gdal_ds):
        bounding box returned as: min_lng, min_lat, max_lng, max_lat
     """
     # bounds (west, north, east, south)
-    return dataset_get_bounds(gdal_ds, 900913)
+    return dataset_get_bounds(gdal_ds, 3857)
 
 
 def get_geo_transform(gdal_ds):
