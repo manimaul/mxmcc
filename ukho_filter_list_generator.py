@@ -110,7 +110,10 @@ def make_manifest():
             manifest_path = os.path.join(config.ukho_meta_dir, region + '.txt')
             if os.path.exists(manifest_path):
                 bak = manifest_path + '.bak'  # '%s_BAK.txt' % time.time()
-                os.remove(bak)
+                try:
+                    os.remove(bak)
+                except:
+                    pass
                 os.rename(manifest_path, bak)
                 previous[region] = populate_previous(bak)
             with open(manifest_path, 'w+') as manifest:

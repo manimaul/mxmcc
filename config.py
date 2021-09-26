@@ -36,7 +36,9 @@ png_nq_binary = 'pngnq'
 
 # InputOutput directory
 # _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-_root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
+# _root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
+_root_dir = os.path.join('/media/william/f4f4cb37-0c77-42fd-b3db-87a626a0c897/macdata', 'mxmcc')
+# _root_dir = os.path.join('/', 'mxmcc')
 # _root_dir = os.path.join('D:\\', 'mxmcc')
 # _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
 # _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
@@ -47,9 +49,9 @@ _root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
 use_single_zoom_over_zoom = False
 
 # UKHO specific meta data excel sheets that change every quarter
-ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts APR 2019.xls'
-ukho_source_breakdown = 'Raster only source information Q2 2019 (Standard Version).xlsx'
-ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts APR 2019.xls'
+ukho_quarterly_extract = 'Quarterly Extract of Metadata for Raster Charts Jan 2021.xls'
+ukho_source_breakdown = 'Raster only source information Q1 2021.xlsx'
+ukho_chart_data = 'Titles,Scales,Editions,Codes,Projection,Vertices,Shifts Jan 2021.xls'
 ukho_chart_dpi = 127
 
 ######################################################################

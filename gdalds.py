@@ -8,8 +8,7 @@ __status__ = 'Development'  # 'Prototype', 'Development', or 'Production'
 
 import math
 
-from osgeo import gdal
-import osr
+from osgeo import gdal, osr
 import os
 
 '''some convenience methods for information about gdal data sets
@@ -72,7 +71,7 @@ def dataset_get_cutline_geometry(gdal_ds, cutline):
 def dataset_get_projection_wkt(gdal_ds):
     """returns a gdal dataset's projection in well known text"""
     ds_wkt = gdal_ds.GetProjectionRef()
-    if ds_wkt is '':
+    if ds_wkt == '':
         ds_wkt = gdal_ds.GetGCPProjection()
 
     return ds_wkt
@@ -270,8 +269,11 @@ def map_to_pixels(mx, my, gt):
         px, py = apply_geo_transform(mx, my, gdal.InvGeoTransform(gt))
     return int(px), int(py)
 
+
 if __name__ == '__main__':
     import os
-    p = '/Volumes/USB_DATA/mxmcc/charts/faa/REGION_FAA_PLANNING/Alaska Wall Planning Chart 1.tif'
+    # p = '/media/william/f4f4cb37-0c77-42fd-b3db-87a626a0c897/macdata/mxmcc/charts/ukho/geotiff/2124.tif'
+    p = '/media/william/f4f4cb37-0c77-42fd-b3db-87a626a0c897/macdata/mxmcc/charts/ukho/geotiff/0128-1.tif'
     d = get_ro_dataset(p)
+    print("projection wkt = {}".format(dataset_get_projection_wkt(d)))
     print(dataset_get_bounds(d))

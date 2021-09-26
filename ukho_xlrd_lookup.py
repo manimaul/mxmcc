@@ -17,10 +17,15 @@ def file_name_decoder(file_name):
     """returns tuple(chart_number, suffix, panel_number)"""
     file_name = file_name[:file_name.rfind('.')]
     fn = os.path.basename(file_name)
-    non_digit = re.search('\D', fn).start()
-    chart_number = fn[0:non_digit].lstrip('0')
+    ri = len(fn)
+    non_digit = re.search('\D', fn)
+    if non_digit is not None:
+        ri = non_digit.start()
+        #print("non_digit found at i {}".format(ri))
+    chart_number = fn[0:ri].lstrip('0')
     hyphen = fn.find('-')
-    suffix = fn[non_digit:hyphen]
+    suffix = fn[ri:hyphen]
+    #print("suffix: \"{}\"".format(suffix))
     if suffix == '':
         suffix = '-'
 
@@ -35,7 +40,7 @@ def file_name_decoder(file_name):
     if last_index is not -1:
         panel_number = panel_number[0:last_index]
 
-    # print 'fileNameDecoded', (chart_number, suffix, panel_number)
+    #mprint('fileNameDecoded: chart_number: {} suffix: {} panel_number: {}'.format(chart_number, suffix, panel_number))
     return chart_number, suffix, panel_number
 
 
