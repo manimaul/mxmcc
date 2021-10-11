@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __author__ = "Will Kamp"
 __copyright__ = "Copyright 2013, Matrix Mariner Inc."
@@ -10,17 +10,24 @@ __status__ = "Development"  # "Prototype", "Development", or "Production"
    task of compiling charts into the MX Mariner format.
 '''
 
-from . import regions
-from . import catalog
-from . import tilebuilder
-from . import tilesmerge
-from . import gemf
-from . import zdata
-from . import verify
-from . import tiles_opt
-from .checkpoint import *
-from . import encryption_shim
+import sys
 import os
+import inspect
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+
+from mxmcc import regions
+from mxmcc import catalog
+from mxmcc import tilebuilder
+from mxmcc import tilesmerge
+from mxmcc import gemf
+from mxmcc import zdata
+from mxmcc import verify
+from mxmcc import tiles_opt
+from mxmcc.checkpoint import *
+from mxmcc import encryption_shim
 import mbutil as mb
 import re
 
@@ -260,8 +267,6 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    import sys
-
     if config.check_dirs():
         args = sys.argv
         if len(args) < 2:
