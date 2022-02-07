@@ -559,13 +559,3 @@ def build_tiles_for_catalog(catalog_name):
     pool.map_async(partial(_build_tiles_for_map_helper, name=catalog_name), reader)
     pool.close()
     pool.join()  # wait for pool to empty
-
-
-# if __name__ == '__main__':
-#     out_dir = "/Volumes/MacData/mxmcc/charts/noaa/BSB_ROOT/19322/out"
-#     map_path = '/Volumes/MacData/mxmcc/charts/noaa/BSB_ROOT/19322/19322_1.KAP'
-#     import bsb
-#     header = bsb.BsbHeader(map_path)
-#     print header.get_base_filename()
-#     build_tiles_for_map(kap=header.get_base_filename(), map_path=map_path, start_zoom=header.get_zoom(),
-#                         stop_zoom=header.get_zoom(), cutline=header.get_outline(), out_dir=out_dir)

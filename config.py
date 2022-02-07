@@ -35,13 +35,7 @@ png_nq_binary = 'pngnq'
 # png_nq_binary = 'C:\\pngnq\\pngnqi.exe'
 
 # InputOutput directory
-# _root_dir = os.path.join(os.getenv('HOME'), 'mxmcc')
-# _root_dir = os.path.join('/Volumes/MacData', 'mxmcc')
-_root_dir = os.path.join('/media/william/f4f4cb37-0c77-42fd-b3db-87a626a0c897/macdata', 'mxmcc')
-# _root_dir = os.path.join('/', 'mxmcc')
-# _root_dir = os.path.join('D:\\', 'mxmcc')
-# _root_dir = os.path.join('/mnt/auxdrive', 'mxmcc')
-# _root_dir = os.path.join('/media/william/USB-DATA', 'mxmcc')
+_root_dir = '/charts'
 
 # set to true when rendering a single zoom level and you want the following behavior:
 # - render a (down zoom) layer first
